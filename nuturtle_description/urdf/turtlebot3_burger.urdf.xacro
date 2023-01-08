@@ -7,6 +7,19 @@
 
   <!-- <xacro:include filename="$(find turtlebot3_description)/urdf/common_properties.urdf"/> -->
 
+
+  <xacro:property name="yaml" value="$(find nuturtle_description)/config/diff_params.yaml" />
+  <xacro:property name="props" value="${xacro.load_yaml(yaml)}"/>
+  <xacro:property name="wildcard" value="${props['/**']}" />
+  <xacro:property name="ros_parameters" value="${wildcard['ros__parameters']}" />
+  <xacro:property name="wheel_radius" value="${ros_parameters['wheel_radius']}" />
+  <xacro:property name="track_width" value="${ros_parameters['track_width']}" />
+  <xacro:property name="motor_cmd_max" value="${ros_parameters['motor_cmd_max']}" />
+  <xacro:property name="motor_cmd_per_rad_sec" value="${ros_parameters['motor_cmd_per_rad_sec']}" />
+  <xacro:property name="encoder_ticks_per_rad" value="${ros_parameters['encoder_ticks_per_rad']}" />
+  <xacro:property name="collision_radius" value="${ros_parameters['collision_radius']}" />
+
+
   <!-- Init colour -->
   <material name="black">
       <color rgba="0.0 0.0 0.0 1.0"/>
@@ -65,12 +78,23 @@
       <material name="light_black"/>
     </visual>
 
-    <collision>
-      <origin xyz="-0.032 0 0.070" rpy="0 0 0"/>
-      <geometry>
-        <box size="0.140 0.140 0.143"/>
-      </geometry>
-    </collision>
+    <xacro:if value="${collision_radius >= 0}">
+      <collision>
+        <origin xyz="-0.032 0 0.070" rpy="0 0 0"/>
+        <geometry>
+          <cylinder radius="${collision_radius}" length="0.143"/>
+        </geometry>
+      </collision>
+    </xacro:if>
+
+    <xacro:if value="${collision_radius&lt;0}">
+      <collision>
+        <origin xyz="-0.032 0 0.070" rpy="0 0 0"/>
+        <geometry>
+          <box size="0.140 0.140 0.143"/>
+        </geometry>
+      </collision>
+    </xacro:if>
 
     <inertial>
       <origin xyz="0 0 0" rpy="0 0 0"/>
@@ -82,7 +106,7 @@
   <joint name="wheel_left_joint" type="continuous">
     <parent link="base_link"/>
     <child link="wheel_left_link"/>
-    <origin xyz="0.0 0.08 0.023" rpy="-1.57 0 0"/>
+    <origin xyz="0.0 ${track_width/2} 0.023" rpy="-1.57 0 0"/>
     <axis xyz="0 0 1"/>
   </joint>
 
@@ -98,7 +122,7 @@
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <cylinder length="0.018" radius="0.033"/>
+        <cylinder length="0.018" radius="${wheel_radius}"/>
       </geometry>
     </collision>
 
@@ -112,7 +136,7 @@
   <joint name="wheel_right_joint" type="continuous">
     <parent link="base_link"/>
     <child link="wheel_right_link"/>
-    <origin xyz="0.0 -0.080 0.023" rpy="-1.57 0 0"/>
+    <origin xyz="0.0 -${track_width/2} 0.023" rpy="-1.57 0 0"/>
     <axis xyz="0 0 1"/>
   </joint>
 
@@ -128,7 +152,7 @@
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <cylinder length="0.018" radius="0.033"/>
+        <cylinder length="0.018" radius="${wheel_radius}"/>
       </geometry>
     </collision>
 
