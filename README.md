@@ -4,3 +4,5 @@
 # Package List
 This repository consists of several ROS packages
 - nuturtle_description - This package contains urdf files and basic debugging, testing, and visualization code for the WI2023 ME 495 robots.
+
+Worked with: Dilan Wijesinghe, Meg Sindelar
