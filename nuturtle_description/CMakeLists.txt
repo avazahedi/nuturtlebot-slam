@@ -28,6 +28,7 @@ install(DIRECTORY
   launch 
   config 
   urdf
+  meshes
   DESTINATION share/nuturtle_description/
 )
 
