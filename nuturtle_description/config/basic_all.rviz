@@ -57,7 +57,7 @@ Visualization Manager:
         Durability Policy: Volatile
         History Policy: Keep Last
         Reliability Policy: Reliable
-        Value: /blue/robot_description
+        Value: /red/robot_description
       Enabled: true
       Links:
         All Links Enabled: true
@@ -101,8 +101,8 @@ Visualization Manager:
       Mass Properties:
         Inertia: false
         Mass: false
-      Name: RobotModel
-      TF Prefix: blue
+      Name: RedRobot
+      TF Prefix: red
       Update Interval: 0
       Value: true
       Visual Enabled: true
@@ -160,8 +160,67 @@ Visualization Manager:
       Mass Properties:
         Inertia: false
         Mass: false
-      Name: RobotModel
+      Name: GreenRobot
       TF Prefix: green
+      Update Interval: 0
+      Value: true
+      Visual Enabled: true
+    - Alpha: 1
+      Class: rviz_default_plugins/RobotModel
+      Collision Enabled: false
+      Description File: ""
+      Description Source: Topic
+      Description Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /blue/robot_description
+      Enabled: true
+      Links:
+        All Links Enabled: true
+        Expand Joint Details: false
+        Expand Link Details: false
+        Expand Tree: false
+        Link Tree Style: Links in Alphabetic Order
+        base_footprint:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        base_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        base_scan:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        caster_back_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        imu_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        wheel_left_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        wheel_right_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+      Mass Properties:
+        Inertia: false
+        Mass: false
+      Name: BlueRobot
+      TF Prefix: blue
       Update Interval: 0
       Value: true
       Visual Enabled: true
@@ -219,74 +278,135 @@ Visualization Manager:
       Mass Properties:
         Inertia: false
         Mass: false
-      Name: RobotModel
+      Name: PurpleRobot
       TF Prefix: purple
       Update Interval: 0
       Value: true
       Visual Enabled: true
-    - Alpha: 1
-      Class: rviz_default_plugins/RobotModel
-      Collision Enabled: false
-      Description File: ""
-      Description Source: Topic
-      Description Topic:
-        Depth: 5
-        Durability Policy: Volatile
-        History Policy: Keep Last
-        Reliability Policy: Reliable
-        Value: /red/robot_description
+    - Class: rviz_default_plugins/TF
       Enabled: true
-      Links:
-        All Links Enabled: true
-        Expand Joint Details: false
-        Expand Link Details: false
-        Expand Tree: false
-        Link Tree Style: Links in Alphabetic Order
-        base_footprint:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        base_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
+      Frame Timeout: 15
+      Frames:
+        All Enabled: false
+        blue/base_footprint:
+          Value: false
+        blue/base_link:
+          Value: false
+        blue/base_scan:
+          Value: false
+        blue/caster_back_link:
+          Value: false
+        blue/imu_link:
+          Value: false
+        blue/wheel_left_link:
+          Value: false
+        blue/wheel_right_link:
+          Value: false
+        green/base_footprint:
+          Value: false
+        green/base_link:
+          Value: false
+        green/base_scan:
+          Value: false
+        green/caster_back_link:
+          Value: false
+        green/imu_link:
+          Value: false
+        green/wheel_left_link:
+          Value: false
+        green/wheel_right_link:
+          Value: false
+        nusim/world:
           Value: true
-        base_scan:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        caster_back_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        imu_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        wheel_left_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        wheel_right_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-      Mass Properties:
-        Inertia: false
-        Mass: false
-      Name: RobotModel
-      TF Prefix: red
+        purple/base_footprint:
+          Value: false
+        purple/base_link:
+          Value: false
+        purple/base_scan:
+          Value: false
+        purple/caster_back_link:
+          Value: false
+        purple/imu_link:
+          Value: false
+        purple/wheel_left_link:
+          Value: false
+        purple/wheel_right_link:
+          Value: false
+        red/base_footprint:
+          Value: false
+        red/base_link:
+          Value: false
+        red/base_scan:
+          Value: false
+        red/caster_back_link:
+          Value: false
+        red/imu_link:
+          Value: false
+        red/wheel_left_link:
+          Value: false
+        red/wheel_right_link:
+          Value: false
+      Marker Scale: 1
+      Name: TF
+      Show Arrows: true
+      Show Axes: true
+      Show Names: false
+      Tree:
+        nusim/world:
+          blue/base_footprint:
+            blue/base_link:
+              blue/base_scan:
+                {}
+              blue/caster_back_link:
+                {}
+              blue/imu_link:
+                {}
+              blue/wheel_left_link:
+                {}
+              blue/wheel_right_link:
+                {}
+          green/base_footprint:
+            green/base_link:
+              green/base_scan:
+                {}
+              green/caster_back_link:
+                {}
+              green/imu_link:
+                {}
+              green/wheel_left_link:
+                {}
+              green/wheel_right_link:
+                {}
+          purple/base_footprint:
+            purple/base_link:
+              purple/base_scan:
+                {}
+              purple/caster_back_link:
+                {}
+              purple/imu_link:
+                {}
+              purple/wheel_left_link:
+                {}
+              purple/wheel_right_link:
+                {}
+          red/base_footprint:
+            red/base_link:
+              red/base_scan:
+                {}
+              red/caster_back_link:
+                {}
+              red/imu_link:
+                {}
+              red/wheel_left_link:
+                {}
+              red/wheel_right_link:
+                {}
       Update Interval: 0
       Value: true
-      Visual Enabled: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
-    Fixed Frame: blue/base_link
+    Fixed Frame: nusim/world
     Frame Rate: 30
   Name: root
   Tools:
@@ -329,7 +449,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz_default_plugins/Orbit
-      Distance: 0.9482007026672363
+      Distance: 1.767857551574707
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1

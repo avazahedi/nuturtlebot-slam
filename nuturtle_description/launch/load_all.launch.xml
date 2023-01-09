@@ -23,4 +23,9 @@
   <node name="rviz2" pkg="rviz2" exec="rviz2" args="-d $(find-pkg-share nuturtle_description)/config/basic_all.rviz" > 
   </node>
 
+  <node pkg="tf2_ros" exec="static_transform_publisher" name="red_transform" args="0.25 0 0 0 0 0 nusim/world red/base_footprint" />
+  <node pkg="tf2_ros" exec="static_transform_publisher" name="green_transform" args="0 0.5 0 0 0 0 nusim/world green/base_footprint" />
+  <node pkg="tf2_ros" exec="static_transform_publisher" name="blue_transform" args="-0.75 0 0 0 0 0 nusim/world blue/base_footprint" />
+  <node pkg="tf2_ros" exec="static_transform_publisher" name="purple_transform" args="0 -1 0 0 0 0 nusim/world purple/base_footprint" />
+
 </launch>
