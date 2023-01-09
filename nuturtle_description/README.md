@@ -10,7 +10,7 @@ URDF files for Nuturtle TurBo
         Arguments (pass arguments as '<name>:=<value>'):
 
             'color':
-                Robot base_link color. Valid choices are: ['red', 'green', 'blue', 'purple', '']
+                Robot base_link color. Valid choices are: ['red', 'green', 'blue', 'purple']
                 (default: 'purple')
 
             'rvizconfig':
@@ -29,7 +29,7 @@ URDF files for Nuturtle TurBo
         Arguments (pass arguments as '<name>:=<value>'):
 
             'color':
-                Robot base_link color. Valid choices are: ['red', 'green', 'blue', 'purple', '']
+                Robot base_link color. Valid choices are: ['red', 'green', 'blue', 'purple']
                 (default: 'purple')
 
             'rvizconfig':

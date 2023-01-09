@@ -25,8 +25,8 @@ endif()
 
 # Install launch files
 install(DIRECTORY
-  launch 
-  config 
+  launch
+  config
   urdf
   meshes
   DESTINATION share/nuturtle_description/
