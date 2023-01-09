@@ -7,7 +7,6 @@
 
   <!-- <xacro:include filename="$(find turtlebot3_description)/urdf/common_properties.urdf"/> -->
 
-
   <xacro:property name="yaml" value="$(find nuturtle_description)/config/diff_params.yaml" />
   <xacro:property name="props" value="${xacro.load_yaml(yaml)}"/>
   <xacro:property name="wildcard" value="${props['/**']}" />
@@ -19,8 +18,13 @@
   <xacro:property name="encoder_ticks_per_rad" value="${ros_parameters['encoder_ticks_per_rad']}" />
   <xacro:property name="collision_radius" value="${ros_parameters['collision_radius']}" />
 
+  <xacro:arg name="color" default="purple" />
 
   <!-- Init colour -->
+  <material name="purple">
+      <color rgba="0.3 0.16 0.52 1.0"/>
+  </material>
+
   <material name="black">
       <color rgba="0.0 0.0 0.0 1.0"/>
   </material>
@@ -75,7 +79,7 @@
       <geometry>
         <mesh filename="package://nuturtle_description/meshes/burger_base.stl" scale="0.001 0.001 0.001"/>
       </geometry>
-      <material name="light_black"/>
+      <material name="$(arg color)"/>
     </visual>
 
     <xacro:if value="${collision_radius >= 0}">
