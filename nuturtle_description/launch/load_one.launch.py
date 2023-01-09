@@ -15,7 +15,7 @@ def generate_launch_description():
 
         # color argument
         DeclareLaunchArgument(name='color', default_value='purple',
-                              choices=['red', 'green', 'blue', 'purple'],
+                              choices=['red', 'green', 'blue', 'purple',''],
                               description='Robot base_link color'),
 
         # rviz color option
@@ -39,6 +39,16 @@ def generate_launch_description():
                               choices=['true', 'false'],
                               description='Launch joint_state_publisher_gui '
                                         'if view_only is true'),
+        
+        # frame prefix arg
+        SetLaunchConfiguration(name='frame_prefix_arg', 
+                               value=[LaunchConfiguration('color'),
+                                      TextSubstitution(text='/')]),
+
+        # fixed frame arg
+        SetLaunchConfiguration(name='fixedf_arg', 
+                               value=[LaunchConfiguration('color'),
+                                      TextSubstitution(text='/base_link')]),
 
         ## Nodes ##
         # robot state publisher
@@ -53,8 +63,9 @@ def generate_launch_description():
                         [FindPackageShare("nuturtle_description"), "urdf", "turtlebot3_burger.urdf.xacro"]),
                         " color:=",
                         LaunchConfiguration('color')
-                        ])}
-            ]
+                        ]),
+                "frame_prefix" : LaunchConfiguration('frame_prefix_arg')
+                }],
         ),
 
         # launch rviz if use_rviz is true
@@ -64,7 +75,7 @@ def generate_launch_description():
             namespace=LaunchConfiguration('color'),
             name='rviz2',
             output='screen',
-            arguments=['-d', LaunchConfiguration('rvizconfig')],
+            arguments=['-d', LaunchConfiguration('rvizconfig'), '-f', LaunchConfiguration('fixedf_arg')],
             condition=LaunchConfigurationEquals('use_rviz', 'true'),
             on_exit=Shutdown()
         ),
