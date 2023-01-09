@@ -9,10 +9,6 @@ from launch_ros.substitutions import ExecutableInPackage, FindPackageShare
 
 def generate_launch_description():
     return LaunchDescription([
-        # load model
-        DeclareLaunchArgument(name='model', default_value=str((get_package_share_path('nuturtle_description') / 'urdf' / 'turtlebot3_burger.urdf.xacro')),
-                              description='Absolute path to robot urdf file'),
-
         # color argument
         DeclareLaunchArgument(name='color', default_value='purple',
                               choices=['red', 'green', 'blue', 'purple',''],
