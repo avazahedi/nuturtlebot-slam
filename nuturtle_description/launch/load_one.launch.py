@@ -81,8 +81,8 @@ def generate_launch_description():
 
         # joint state publisher
         Node(
-            package='joint_state_publisher_gui',
-            executable='joint_state_publisher_gui',
+            package='joint_state_publisher',
+            executable='joint_state_publisher',
             namespace=LaunchConfiguration('color'),
             condition=LaunchConfigurationEquals('use_jsp', 'true')
         )
