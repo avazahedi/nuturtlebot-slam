@@ -19,9 +19,8 @@ namespace turtlelib {
         if (c == '[') {
             is.get();
         }
-        is >> v.x;
-        is.get();
-        is >> v.y;
+
+        is >> v.x >> v.y;
         
         std::cin.ignore(100, '\n');
         return is;
@@ -40,11 +39,8 @@ namespace turtlelib {
         if (c == '[') {
             is.get();
         }
-        is >> t.w;
-        is.get();
-        is >> t.x;
-        is.get();
-        is >> t.y;
+
+        is >> t.w >> t.x >> t.y;
 
         std::cin.ignore(100, '\n');
         return is;
@@ -120,27 +116,15 @@ namespace turtlelib {
 
         if (is.peek() == 'd')
         {
-            is.get();
-            is.get();
-            is.get();
-            is.get();
-            is >> deg;
-            is.get();
-            is.get();
-            is.get();
-            is >> vec.x;
-            is.get();
-            is.get();
-            is.get();
-            is >> vec.y;
+            std::string s1;
+            std::string s2;
+            std::string s3;
+
+            is >> s1 >> deg >> s2 >> vec.x >> s3 >> vec.y;
         }
         else
         {
-            is >> deg;
-            is.get();
-            is >> vec.x;
-            is.get();
-            is >> vec.y;
+            is >> deg >> vec.x >> vec.y;
         }
 
         double rad = deg2rad(deg);

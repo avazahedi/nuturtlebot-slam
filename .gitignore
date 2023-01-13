@@ -1,11 +1,6 @@
-turtlelib/rigid2d
-sumtwo.cpp
-sumtwo
-
-# DLL files
 pycache/
 *.pyc
 .vscode
-
-# C extensions
 *.so
+
+turtlelib/rigid2d
