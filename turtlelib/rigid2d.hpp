@@ -100,8 +100,8 @@ namespace turtlelib
 
     /// \brief a rigid body transformation in 2 dimensions
     class Transform2D
-    {
-    public:
+    { double phi; Vector2D tvec;
+    public:        
         /// \brief Create an identity transformation
         Transform2D();
 
@@ -116,7 +116,7 @@ namespace turtlelib
         /// \brief Create a transformation with a translational and rotational
         /// component
         /// \param trans - the translation
-        /// \param rot - the rotation, in radians
+        /// \param radians - the rotation, in radians
         Transform2D(Vector2D trans, double radians);
 
         /// \brief apply a transformation to a Vector2D
