@@ -70,6 +70,19 @@ namespace turtlelib
         double y = 0.0;
     };
 
+    /// \brief A 2-Dimensional Twist
+    struct Twist2D
+    {
+        /// \brief the twist angle
+        double w = 0.0;
+
+        /// \brief the x coordinate
+        double x = 0.0;
+
+        /// \brief the y coordinate
+        double y = 0.0;
+    };
+
 
 
     /// \brief output a 2 dimensional vector as [xcomponent ycomponent]
@@ -124,7 +137,6 @@ namespace turtlelib
         /// \return a vector in the new coordinate system
         Vector2D operator()(Vector2D v) const;
 
-
         /// \brief invert the transformation
         /// \return the inverse transformation. 
         Transform2D inv() const;
@@ -146,6 +158,12 @@ namespace turtlelib
         /// \brief \see operator<<(...) (declared outside this class)
         /// for a description
         friend std::ostream & operator<<(std::ostream & os, const Transform2D & tf);
+
+        // Task B.2.2
+        /// \brief apply a transformation to a Twist2D
+        /// \param t - the twist to transform
+        /// \return a twist in the new reference frame
+        Twist2D operator()(Twist2D t) const;
 
     };
 
@@ -172,23 +190,10 @@ namespace turtlelib
     Transform2D operator*(Transform2D lhs, const Transform2D & rhs);
 
 
-    // Task B.2
-    /// \brief A 2-Dimensional Twist
-    struct Twist2D
-    {
-        /// \brief the twist angle
-        double w = 0.0;
-
-        /// \brief the x coordinate
-        double x = 0.0;
-
-        /// \brief the y coordinate
-        double y = 0.0;
-    };
-
+    // Task B.2.1
     /// \brief output a 2 dimensional twist as [wcomponent xcomponent ycomponent]
-    /// os - stream to output to
-    /// t - the twist to print
+    /// \param os - stream to output to
+    /// \param t - the twist to print
     std::ostream & operator<<(std::ostream & os, const Twist2D & t);
 
     /// \brief input a 2 dimensional twist
@@ -196,21 +201,13 @@ namespace turtlelib
     ///   [w x y] or w x y
     /// \param is - stream from which to read
     /// \param t [out] - output twist
-    ///
-    /// The way input works is (more or less): what the user types is stored in a buffer until the user types
-    /// a newline (by pressing enter).  The iostream methods then process the data in this buffer character by character.
-    /// Typically, each character is examined and then removed from the buffer automatically.
-    /// If the characters don't match what is expected (e.g., we are expecting an int but the letter 'q' is encountered)
-    /// an error flag is set on the stream object (e.g., std::cin) and processing stops.
-    ///
-    /// We have lower level control however.
-    /// std::peek() looks at the next unprocessed character in the buffer without removing it
-    ///     https://en.cppreference.com/w/cpp/io/basic_istream/peek
-    /// std::get() removes the next unprocessed character from the buffer.
-    ///     https://en.cppreference.com/w/cpp/io/basic_istream/get
-    /// When you call std::peek() it will wait for there to be at least one character in the buffer (e.g., the user types a character)
-    /// HINT: this function can be written in under 20 lines and uses only std::peek(), std::get(), istream::operator>>() and a little logic
     std::istream & operator>>(std::istream & is, Twist2D & t);
+
+    // Task B.2.3
+    /// \brief normalize a 2 dimensional vector
+    /// \param v - the vector to normalize
+    /// \return - the new normalized vector
+    Vector2D normalize(const Vector2D v);
 
 }
 

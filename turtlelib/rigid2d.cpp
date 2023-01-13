@@ -7,6 +7,7 @@
 
 namespace turtlelib {
 
+    // Vector2D
     std::ostream & operator<<(std::ostream & os, const Vector2D & v)
     {
         os << "[" << v.x << " " << v.y << "]";
@@ -26,12 +27,12 @@ namespace turtlelib {
         return is;
     }
 
+    // Twist2D
     std::ostream & operator<<(std::ostream & os, const Twist2D & t)
     {
         os << "[" << t.w << " " << t.x << " " << t.y << "]";
         return os;
     }
-
 
     std::istream & operator>>(std::istream & is, Twist2D & t)
     {
@@ -46,7 +47,7 @@ namespace turtlelib {
         return is;
     }
 
-
+    // Transform2D
     Transform2D::Transform2D(): tvec{0.0, 0.0}, phi{0.0} {}
 
     Transform2D::Transform2D(Vector2D trans): tvec{trans.x, trans.y}, phi{0.0} {}
@@ -97,7 +98,6 @@ namespace turtlelib {
         return trans;
     }
 
-
     double Transform2D::rotation() const
     {
         return phi;
@@ -142,6 +142,25 @@ namespace turtlelib {
         return lhs*=rhs;
     }
 
+    Twist2D Transform2D::operator()(Twist2D t) const
+    {
+        Twist2D new_t;
+        new_t.w = t.w;
+        new_t.x = tvec.y*t.w + cos(phi)*t.x - sin(phi)*t.y;
+        new_t.y = -tvec.x*t.w + sin(phi)*t.x + cos(phi)*t.y;
+
+        return new_t;
+    }
+
+    Vector2D normalize(const Vector2D v)
+    {
+        Vector2D norm;
+        double magnitude = pow(v.x, 2) + pow(v.y, 2);
+        norm.x = v.x / magnitude;
+        norm.y = v.y / magnitude;
+
+        return norm;
+    }
 
 }
 
