@@ -4,3 +4,4 @@ pycache/
 *.so
 
 turtlelib/rigid2d
+turtlelib/frame_main

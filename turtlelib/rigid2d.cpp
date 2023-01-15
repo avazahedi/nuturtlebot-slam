@@ -155,7 +155,7 @@ namespace turtlelib {
     Vector2D normalize(const Vector2D v)
     {
         Vector2D norm;
-        double magnitude = pow(v.x, 2) + pow(v.y, 2);
+        double magnitude = pow(pow(v.x, 2) + pow(v.y, 2), 0.5);
         norm.x = v.x / magnitude;
         norm.y = v.y / magnitude;
 
@@ -165,41 +165,41 @@ namespace turtlelib {
 }
 
 
-int main(void) {
-    // std::cout << turtlelib::deg2rad(180) << "\n";
-    // struct turtlelib::Vector2D v;
-    // v.x = 1.4;
-    // v.y = 2.8;
-    // std::cout << v << std::endl;
+// int main(void) {
+//     // std::cout << turtlelib::deg2rad(180) << "\n";
+//     // struct turtlelib::Vector2D v;
+//     // v.x = 1.4;
+//     // v.y = 2.8;
+//     // std::cout << v << std::endl;
 
-    // struct turtlelib::Vector2D w;
-    // std::cin >> w;
-    // std::cout << w << std::endl;
+//     // struct turtlelib::Vector2D w;
+//     // std::cin >> w;
+//     // std::cout << w << std::endl;
 
-    // struct turtlelib::Twist2D t;
-    // t.w = 0.9;
-    // t.x = 1.6;
-    // t.y = 1.2;
-    // std::cout << t << std::endl;
+//     // struct turtlelib::Twist2D t;
+//     // t.w = 0.9;
+//     // t.x = 1.6;
+//     // t.y = 1.2;
+//     // std::cout << t << std::endl;
 
-    // struct turtlelib::Twist2D t1;
-    // std::cin >> t1;
-    // std::cout << t1 << std::endl;   
+//     // struct turtlelib::Twist2D t1;
+//     // std::cin >> t1;
+//     // std::cout << t1 << std::endl;   
 
-    struct turtlelib::Vector2D v;
-    v.x = 0.;
-    v.y = 1.;
+//     struct turtlelib::Vector2D v;
+//     v.x = 0.;
+//     v.y = 1.;
 
-    double rad = 3.14;
-    turtlelib::Transform2D tf = turtlelib::Transform2D(v, rad);
+//     double rad = 3.14;
+//     turtlelib::Transform2D tf = turtlelib::Transform2D(v, rad);
 
-    turtlelib::Transform2D x;
-    std::cin >> x;
-    std::cout << x << std::endl;
+//     turtlelib::Transform2D x;
+//     std::cin >> x;
+//     std::cout << x << std::endl;
 
-    std::cout << tf*x << std::endl;
+//     std::cout << tf*x << std::endl;
 
-    // turtlelib::Transform2D Tab(1.5708, v);
+//     // turtlelib::Transform2D Tab(1.5708, v);
 
-    return 0;
-}
+//     return 0;
+// }

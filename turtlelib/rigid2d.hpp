@@ -113,7 +113,10 @@ namespace turtlelib
 
     /// \brief a rigid body transformation in 2 dimensions
     class Transform2D
-    { double phi; Vector2D tvec;
+    { 
+        Vector2D tvec;
+        double phi; 
+
     public:        
         /// \brief Create an identity transformation
         Transform2D();
