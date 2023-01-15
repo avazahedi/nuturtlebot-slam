@@ -23,6 +23,7 @@ namespace turtlelib {
 
         is >> v.x >> v.y;
         
+        is.clear();
         is.ignore(100, '\n');
         return is;
     }
@@ -43,6 +44,7 @@ namespace turtlelib {
 
         is >> t.w >> t.x >> t.y;
 
+        is.clear();
         is.ignore(100, '\n');
         return is;
     }
@@ -133,6 +135,7 @@ namespace turtlelib {
 
         tf = t;
 
+        is.clear();
         is.ignore(100, '\n');
         return is;
     }
