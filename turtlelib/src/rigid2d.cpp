@@ -23,7 +23,7 @@ namespace turtlelib {
 
         is >> v.x >> v.y;
         
-        std::cin.ignore(100, '\n');
+        is.ignore(100, '\n');
         return is;
     }
 
@@ -43,7 +43,7 @@ namespace turtlelib {
 
         is >> t.w >> t.x >> t.y;
 
-        std::cin.ignore(100, '\n');
+        is.ignore(100, '\n');
         return is;
     }
 
@@ -133,7 +133,7 @@ namespace turtlelib {
 
         tf = t;
 
-        std::cin.ignore(100, '\n');
+        is.ignore(100, '\n');
         return is;
     }
 
