@@ -2,7 +2,7 @@
 /// \brief Two-dimensional rigid body transformations.
 
 #include <iostream>
-#include "rigid2d.hpp"
+#include "turtlelib/rigid2d.hpp"
 #include <cmath>
 
 namespace turtlelib {
