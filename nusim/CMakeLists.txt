@@ -10,8 +10,11 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
 
-# executables
 add_executable(nusim src/nusim.cpp)
+ament_target_dependencies(nusim rclcpp std_msgs)
+
+install(TARGETS 
+DESTINATION lib/${PROJECT_NAME})
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
