@@ -92,8 +92,7 @@ TEST_CASE("operator *=", "[transform]"){    //Megan, Sindelar
    double rotate_bc = turtlelib::PI/2;
    turtlelib::Transform2D T_bc = {trans_bc, rotate_bc};
  
-   REQUIRE((T_ab_1*=T_bc).translation().x == 4.0);
-   REQUIRE((T_ab_2*=T_bc).translation().y == 6.0);
-   REQUIRE((T_ab_3*=T_bc).rotation() == (turtlelib::PI/2));
+   REQUIRE(turtlelib::almost_equal((T_ab_1*=T_bc).translation().x, 4.0));
+   REQUIRE(turtlelib::almost_equal((T_ab_2*=T_bc).translation().y, 6.0));
+   REQUIRE(turtlelib::almost_equal((T_ab_3*=T_bc).rotation(), (turtlelib::PI/2)));
 }
-
