@@ -5,4 +5,5 @@ pycache/
 
 turtlelib/rigid2d
 turtlelib/frame_main
+turtlelib/src/frame_main
 turtlelib/build
