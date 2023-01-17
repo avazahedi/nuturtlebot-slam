@@ -9,12 +9,14 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
+find_package(std_srvs REQUIRED)
 
 add_executable(nusim src/nusim.cpp)
-ament_target_dependencies(nusim rclcpp std_msgs)
+ament_target_dependencies(nusim rclcpp std_msgs std_srvs)
 
 install(TARGETS 
-DESTINATION lib/${PROJECT_NAME})
+  nusim
+  DESTINATION lib/${PROJECT_NAME})
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
