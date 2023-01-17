@@ -18,18 +18,18 @@ class NUSim : public rclcpp::Node
     NUSim()
     : Node("nusim"), count_(0)
     {
-        this->declare_parameter("rate", 200);  // default to 200 Hz
+        declare_parameter("rate", 200);  // default to 200 Hz
 
         int rate =
-          this->get_parameter("rate").get_parameter_value().get<int>();
+          get_parameter("rate").get_parameter_value().get<int>();
 
-        timestep_pub_ = this->create_publisher<std_msgs::msg::UInt64>("~/timestep", 10);
+        timestep_pub_ = create_publisher<std_msgs::msg::UInt64>("~/timestep", 10);
 
         reset_srv_ = create_service<std_srvs::srv::Empty>(
             "~/reset", std::bind(&NUSim::reset_callback, this, 
             std::placeholders::_1, std::placeholders::_2));
 
-        timer_ = this->create_wall_timer(
+        timer_ = create_wall_timer(
         std::chrono::milliseconds(1000/rate), std::bind(&NUSim::timer_callback, this));
     }
 
@@ -38,21 +38,20 @@ class NUSim : public rclcpp::Node
     {
         auto message = std_msgs::msg::UInt64();
         message.data = count_;
-        RCLCPP_INFO(this->get_logger(), "Publishing timestep %u", count_);
+        RCLCPP_INFO(get_logger(), "Publishing timestep %u", count_);
         timestep_pub_->publish(message);
         count_++;
     }
+
+    void reset_callback(std_srvs::srv::Empty::Request::SharedPtr,
+                std_srvs::srv::Empty::Response::SharedPtr)
+    {
+        count_ = 0;
+    }
+
     rclcpp::TimerBase::SharedPtr timer_;
     rclcpp::Publisher<std_msgs::msg::UInt64>::SharedPtr timestep_pub_;
     unsigned int count_;
-
-    void reset_callback(std_srvs::srv::Empty::Request::SharedPtr req,
-                std_srvs::srv::Empty::Response::SharedPtr res)
-    {
-        (void)req;  // get rid of unused parameter warnings
-        (void)res;
-        count_ = 0;
-    }
     rclcpp::Service<std_srvs::srv::Empty>::SharedPtr reset_srv_;
 };
 
