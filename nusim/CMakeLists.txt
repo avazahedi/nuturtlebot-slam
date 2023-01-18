@@ -15,6 +15,11 @@ find_package(tf2 REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(turtlesim REQUIRED)
 
+find_package(rosidl_default_generators REQUIRED)
+
+rosidl_generate_interfaces(${PROJECT_NAME}_srv "srv/Teleport.srv" LIBRARY_NAME ${PROJECT_NAME})
+rosidl_get_typesupport_target(cpp_typesupport_target ${PROJECT_NAME}_srv "rosidl_typesupport_cpp")
+
 add_executable(nusim src/nusim.cpp)
 ament_target_dependencies(
   nusim 
@@ -26,6 +31,8 @@ ament_target_dependencies(
   tf2_ros 
   turtlesim
 )
+
+target_link_libraries(nusim "${cpp_typesupport_target}")
 
 install(TARGETS 
   nusim
