@@ -9,7 +9,6 @@
 #include "geometry_msgs/msg/transform_stamped.hpp"
 #include "tf2/LinearMath/Quaternion.h"
 #include "tf2_ros/transform_broadcaster.h"
-#include "turtlesim/msg/pose.hpp"
 #include "nusim/srv/teleport.hpp"
 
 using namespace std::chrono_literals;
@@ -37,12 +36,12 @@ class NUSim : public rclcpp::Node
         x0 = get_parameter("x0").get_parameter_value().get<double>();
         y0 = get_parameter("y0").get_parameter_value().get<double>();
         theta0 = get_parameter("theta0").get_parameter_value().get<double>();
-        RCLCPP_INFO(get_logger(), "x0: %lf y0: %lf theta0: %lf", x0, y0, theta0);
+        // RCLCPP_INFO(get_logger(), "x0: %lf y0: %lf theta0: %lf", x0, y0, theta0);
 
         // set initial values to pose
-        pose.x = x0;
-        pose.y = y0;
-        pose.theta = theta0;
+        x = x0;
+        y = y0;
+        theta = theta0;
 
         // timestep publisher
         timestep_pub_ = create_publisher<std_msgs::msg::UInt64>("~/timestep", 10);
@@ -83,13 +82,13 @@ class NUSim : public rclcpp::Node
         t.child_frame_id = "red/base_footprint";
 
         // Set transform translation
-        t.transform.translation.x = pose.x;
-        t.transform.translation.y = pose.y;
+        t.transform.translation.x = x;
+        t.transform.translation.y = y;
         t.transform.translation.z = 0.0;
 
         // Set transform rotation in quaternion
         tf2::Quaternion q;
-        q.setRPY(0, 0, pose.theta);
+        q.setRPY(0, 0, theta);
         t.transform.rotation.x = q.x();
         t.transform.rotation.y = q.y();
         t.transform.rotation.z = q.z();
@@ -104,17 +103,17 @@ class NUSim : public rclcpp::Node
                 std_srvs::srv::Empty::Response::SharedPtr)
     {
         count_ = 0;
-        pose.x = x0;
-        pose.y = y0;
-        pose.theta = theta0;
+        x = x0;
+        y = y0;
+        theta = theta0;
     }
 
     void teleport_callback(const std::shared_ptr<nusim::srv::Teleport::Request> request,
                             std::shared_ptr<nusim::srv::Teleport::Response>)
     {
-        pose.x = request->x;
-        pose.y = request->y;
-        pose.theta = request->theta;
+        x = request->x;
+        y = request->y;
+        theta = request->theta;
     }
 
     double x0;
@@ -126,8 +125,9 @@ class NUSim : public rclcpp::Node
     rclcpp::Service<std_srvs::srv::Empty>::SharedPtr reset_srv_;
     rclcpp::Service<nusim::srv::Teleport>::SharedPtr teleport_srv_;
     std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
-    // rclcpp::Subscription<turtlesim::msg::Pose>::SharedPtr pose_sub_;
-    turtlesim::msg::Pose pose;
+    double x;
+    double y;
+    double theta;
 };
 
 int main(int argc, char * argv[])
