@@ -21,13 +21,23 @@ class NUSim : public rclcpp::Node
 {
   public:
     NUSim()
-    : Node("nusim"), x0{0}, y0{10}, theta0{0}, count_{0}
+    : Node("nusim"), count_{0}
     {
         // rate parameter
         declare_parameter("rate", 200);  // default to 200 Hz
 
         int rate =
           get_parameter("rate").get_parameter_value().get<int>();
+
+        // initial pose
+        declare_parameter("x0", 0.0);
+        declare_parameter("y0", 0.0);
+        declare_parameter("theta0", 0.0);
+
+        x0 = get_parameter("x0").get_parameter_value().get<double>();
+        y0 = get_parameter("y0").get_parameter_value().get<double>();
+        theta0 = get_parameter("theta0").get_parameter_value().get<double>();
+        RCLCPP_INFO(get_logger(), "x0: %lf y0: %lf theta0: %lf", x0, y0, theta0);
 
         // set initial values to pose
         pose.x = x0;
