@@ -49,12 +49,15 @@ class NUSim : public rclcpp::Node
         // obstacle lists parameters
         declare_parameter("obstacles.x", std::vector<double> {});
         declare_parameter("obstacles.y", std::vector<double> {});
-        declare_parameter("obstacles.r", 0.038);
+        declare_parameter("obstacles.r", 0.5);
 
         obstacles_x = get_parameter("obstacles.x").get_parameter_value().get<std::vector<double>>();
         obstacles_y = get_parameter("obstacles.y").get_parameter_value().get<std::vector<double>>();
-        // obstacles_x = get_parameter("obstacles/x").as_double_array();
-        // obstacles_y = get_parameter("obstacles/y").as_double_array();
+        if (obstacles_x.size() != obstacles_y.size())
+        {
+            throw std::runtime_error(std::string("Failed: Different number of obstacle x-coordinates than obstacle y-coordinates."));
+        }
+
         obstacles_r = get_parameter("obstacles.r").get_parameter_value().get<double>();
 
         double obstacles_z = 0.25;
