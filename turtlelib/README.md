@@ -6,8 +6,8 @@ A library for handling transformations in SE(2) and other turtlebot-related math
 - frame_main - Perform some rigid body computations based on user input
 
 # Conceptual Questions
-1. We need to be able to ~normalize~ Vector2D objects (i.e., find the unit vector in the direction of a given Vector2D):
-   - Propose three different designs for implementing the ~normalize~ functionality
+1. We need to be able to _normalize_ Vector2D objects (i.e., find the unit vector in the direction of a given Vector2D):
+   - Propose three different designs for implementing the _normalize_ functionality
         i. Add a member function to the Vector2D struct for normalizing.
         ii. Write an external function that takes in a Vector2D and returns a normalized copy.
         iii. Overload the () operator for Vector2D objects to normalize the Vector2D that calls it.
