@@ -5,11 +5,11 @@
     <arg name="use_rviz" value="false" />
   </include>
 
-  <node name="nusim" pkg="nusim" exec="nusim" > 
-    <param from="$(find-pkg-share nusim)/config/basic_world.yaml"/>
+  <node name="rviz2" pkg="rviz2" exec="rviz2" args="-d $(find-pkg-share nusim)/config/nusim.rviz" > 
   </node>
 
-  <node name="rviz2" pkg="rviz2" exec="rviz2" args="-d $(find-pkg-share nusim)/config/nusim.rviz" > 
+  <node name="nusim" pkg="nusim" exec="nusim" > 
+    <param from="$(find-pkg-share nusim)/config/basic_world.yaml"/>
   </node>
 
 </launch>
