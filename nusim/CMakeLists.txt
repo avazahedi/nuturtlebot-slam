@@ -22,19 +22,19 @@ rosidl_get_typesupport_target(cpp_typesupport_target ${PROJECT_NAME}_srv "rosidl
 
 add_executable(nusim src/nusim.cpp)
 ament_target_dependencies(
-  nusim 
-  rclcpp 
-  std_msgs 
-  std_srvs 
-  geometry_msgs 
-  tf2 
-  tf2_ros 
+  nusim
+  rclcpp
+  std_msgs
+  std_srvs
+  geometry_msgs
+  tf2
+  tf2_ros
   visualization_msgs
 )
 
 target_link_libraries(nusim "${cpp_typesupport_target}")
 
-install(TARGETS 
+install(TARGETS
   nusim
   DESTINATION lib/${PROJECT_NAME})
 

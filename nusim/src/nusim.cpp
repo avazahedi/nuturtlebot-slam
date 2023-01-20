@@ -1,3 +1,28 @@
+/// \file
+/// \brief The nusim node provides a simulated robot environment.
+/// 
+/// PARAMETERS:
+///     rate (int): frequency of timer callback (defaults to 200 Hz)
+///     x0: initial x-coordinate of the robot (m)
+///     y0: initial y-coordinate of the robot (m)
+///     theta0: initial rotation of the robot (rad)
+///     obstacles
+///         x: list of x-coordinates of obstacles (m)
+///         y: list of y-coordinates of obstacles (m)
+///         r: radius of obstacles (m)
+/// PUBLISHES:
+///     obstacles (visualization_msgs/MarkerArray): publishes the marker array of all current 
+///                                                 obstacles every iteration
+///     timestep (std_msgs/UInt64): publishes the current timestep every iteration
+/// SUBSCRIBES:
+///     No subscriptions
+/// SERVERS:
+///     reset (Empty): resets the timestep to 0 and teleports the robot back to its 
+///                    initial configuration
+///     Teleport (nusim/srv/Teleport.srv): teleports the robot to the specified x, y, theta
+/// CLIENTS:
+///     No clients
+
 #include <chrono>
 #include <functional>
 #include <memory>
@@ -16,9 +41,7 @@
 
 using namespace std::chrono_literals;
 
-/* This example creates a subclass of Node and uses std::bind() to register a
-* member function as a callback from the timer. */
-
+/// \brief The NUSim class inherits the Node class and creates a simulated robot environment.
 class NUSim : public rclcpp::Node
 {
   public:
@@ -39,7 +62,6 @@ class NUSim : public rclcpp::Node
         x0 = get_parameter("x0").get_parameter_value().get<double>();
         y0 = get_parameter("y0").get_parameter_value().get<double>();
         theta0 = get_parameter("theta0").get_parameter_value().get<double>();
-        // RCLCPP_INFO(get_logger(), "x0: %lf y0: %lf theta0: %lf", x0, y0, theta0);
 
         // set initial values to pose
         x = x0;
@@ -113,11 +135,11 @@ class NUSim : public rclcpp::Node
     }
 
   private:
+    /// \brief Timer callback that runs continuously on the provided frequency
     void timer_callback()
     {
         auto message = std_msgs::msg::UInt64();
         message.data = count_;
-        // RCLCPP_INFO(get_logger(), "Publishing timestep %u", count_);
         timestep_pub_->publish(message);
         count_++;
 
@@ -150,6 +172,10 @@ class NUSim : public rclcpp::Node
 
     }
 
+    /// \brief Callback for reset service, which resets the timestep count and robot pose
+    /// 
+    /// \param request - unused service request
+    /// \param response - unused service response
     void reset_callback(std_srvs::srv::Empty::Request::SharedPtr,
                 std_srvs::srv::Empty::Response::SharedPtr)
     {
@@ -159,6 +185,10 @@ class NUSim : public rclcpp::Node
         theta = theta0;
     }
 
+    /// \brief Callback for teleport service, which teleports the robot to the specified pose
+    /// 
+    /// \param request - service request specifying what x, y, and theta to teleport to
+    /// \param response - unused
     void teleport_callback(const std::shared_ptr<nusim::srv::Teleport::Request> request,
                             std::shared_ptr<nusim::srv::Teleport::Response>)
     {
