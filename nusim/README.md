@@ -11,8 +11,8 @@ A simulator and visualizer for a red NU turtlebot. This node provides a simulate
     - y0: initial y-coordinate of the robot (m)
     - theta0: initial rotation of the robot (rad)
     - obstacles
-        x: list of x-coordinates of obstacles (m)
-        y: list of y-coordinates of obstacles (m)
-        r: radius of obstacles (m)
+        - x: list of x-coordinates of obstacles (m)
+        - y: list of y-coordinates of obstacles (m)
+        - r: radius of obstacles (m)
 
 Worked With: Meg Sindelar, Katie Hughes, Rintaroh Shima, Ritika Ghosh, Allan Garcia, Shantao Cao, Nick Morales, Liz Metzger
