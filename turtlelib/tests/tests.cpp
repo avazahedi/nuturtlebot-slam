@@ -1,4 +1,5 @@
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_floating_point.hpp>
 #include "turtlelib/rigid2d.hpp"
 #include <iostream>
 #include <sstream>
@@ -95,4 +96,14 @@ TEST_CASE("operator *=", "[transform]"){    //Megan, Sindelar
    REQUIRE(turtlelib::almost_equal((T_ab_1*=T_bc).translation().x, 4.0));
    REQUIRE(turtlelib::almost_equal((T_ab_2*=T_bc).translation().y, 6.0));
    REQUIRE(turtlelib::almost_equal((T_ab_3*=T_bc).rotation(), (turtlelib::PI/2)));
+}
+
+TEST_CASE("Normalize angle"){     // Ava, Zahedi
+    double pi = turtlelib::PI;
+    REQUIRE_THAT( turtlelib::normalize_angle(pi), Catch::Matchers::WithinAbs(pi, 1e-5));
+    REQUIRE_THAT( turtlelib::normalize_angle(-pi), Catch::Matchers::WithinAbs(pi, 1e-5));
+    REQUIRE_THAT( turtlelib::normalize_angle(0), Catch::Matchers::WithinAbs(0, 1e-5));
+    REQUIRE_THAT( turtlelib::normalize_angle(-pi/4), Catch::Matchers::WithinAbs(-pi/4, 1e-5));
+    REQUIRE_THAT( turtlelib::normalize_angle(3*pi/2), Catch::Matchers::WithinAbs(-pi/2, 1e-5));
+    REQUIRE_THAT( turtlelib::normalize_angle(-5*pi/2), Catch::Matchers::WithinAbs(-pi/2, 1e-5));
 }

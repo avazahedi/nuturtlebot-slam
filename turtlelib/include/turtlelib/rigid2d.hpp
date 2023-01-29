@@ -48,6 +48,35 @@ namespace turtlelib
         return deg;
     }
 
+    /// \brief convert radians to degrees
+    /// \param rad - angle in radians
+    /// \returns the angle in degrees
+    constexpr double normalize_angle(double rad)
+    {
+        double normalized = rad;
+        while (!(normalized >= -2*PI && normalized <= 2*PI))
+        {
+            if (normalized > 0)
+            {
+                normalized -= (2*PI);
+            }
+            else if (normalized < 0)
+            {
+                normalized += (2*PI);
+            }
+        }
+        if (normalized > PI)
+        {
+            normalized = -(2*PI - normalized);
+        }
+        else if (normalized <= -PI)
+        {
+            normalized = (2*PI + normalized);
+        }
+
+        return normalized;
+    }
+
     /// static_assertions test compile time assumptions.
     /// You should write at least one more test for each function
     /// You should also purposely (and temporarily) make one of these tests fail
