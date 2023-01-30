@@ -98,7 +98,7 @@ TEST_CASE("operator *=", "[transform]"){    //Megan, Sindelar
    REQUIRE(turtlelib::almost_equal((T_ab_3*=T_bc).rotation(), (turtlelib::PI/2)));
 }
 
-TEST_CASE("Normalize angle"){     // Ava, Zahedi
+TEST_CASE("Normalize angle"){   // Ava, Zahedi
     double pi = turtlelib::PI;
     REQUIRE_THAT( turtlelib::normalize_angle(pi), Catch::Matchers::WithinAbs(pi, 1e-5));
     REQUIRE_THAT( turtlelib::normalize_angle(-pi), Catch::Matchers::WithinAbs(pi, 1e-5));
@@ -106,4 +106,71 @@ TEST_CASE("Normalize angle"){     // Ava, Zahedi
     REQUIRE_THAT( turtlelib::normalize_angle(-pi/4), Catch::Matchers::WithinAbs(-pi/4, 1e-5));
     REQUIRE_THAT( turtlelib::normalize_angle(3*pi/2), Catch::Matchers::WithinAbs(-pi/2, 1e-5));
     REQUIRE_THAT( turtlelib::normalize_angle(-5*pi/2), Catch::Matchers::WithinAbs(-pi/2, 1e-5));
+}
+
+TEST_CASE("Vector addition"){   // Ava, Zahedi
+    turtlelib::Vector2D v1, v2, sum;
+    v1.x = 1;
+    v1.y = 1.2;
+    v2.x = -4.5;
+    v2.y = 0.1;
+    sum = v1+v2;
+    REQUIRE_THAT( sum.x, Catch::Matchers::WithinAbs(-3.5, 1e-5));
+    REQUIRE_THAT( sum.y, Catch::Matchers::WithinAbs(1.3, 1e-5));
+}
+
+TEST_CASE("Vector subtraction"){   // Ava, Zahedi
+    turtlelib::Vector2D v1, v2, diff;
+    v1.x = 1;
+    v1.y = 1.2;
+    v2.x = -4.5;
+    v2.y = 0.1;
+    diff = v1-v2;
+    REQUIRE_THAT( diff.x, Catch::Matchers::WithinAbs(5.5, 1e-5));
+    REQUIRE_THAT( diff.y, Catch::Matchers::WithinAbs(1.1, 1e-5));
+}
+
+TEST_CASE("Scalar multiplication with a vector"){   // Ava, Zahedi
+    turtlelib::Vector2D v1, prod1, prod2;
+    double s;
+    v1.x = 1;
+    v1.y = 1.2;
+    s = 2.5;
+    prod1 = v1*s;
+    prod2 = s*v1;
+    REQUIRE_THAT( prod1.x, Catch::Matchers::WithinAbs(2.5, 1e-5));
+    REQUIRE_THAT( prod1.y, Catch::Matchers::WithinAbs(3, 1e-5));
+    REQUIRE_THAT( prod2.x, Catch::Matchers::WithinAbs(2.5, 1e-5));
+    REQUIRE_THAT( prod2.y, Catch::Matchers::WithinAbs(3, 1e-5));
+}
+
+TEST_CASE("Dot product of two vectors"){   // Ava, Zahedi
+    turtlelib::Vector2D v1, v2;
+    double dp;
+    v1.x = 1;
+    v1.y = 1.2;
+    v2.x = -4.5;
+    v2.y = 0.1;
+    dp = dot(v1, v2);
+    REQUIRE_THAT( dp, Catch::Matchers::WithinAbs(-4.38, 1e-5));
+}
+
+TEST_CASE("Vector magnitude"){   // Ava, Zahedi
+    turtlelib::Vector2D v;
+    double mag;
+    v.x = 6.0;
+    v.y = 8.0;
+    mag = magnitude(v);
+    REQUIRE_THAT( mag, Catch::Matchers::WithinAbs(10, 1e-5));
+}
+
+TEST_CASE("Angle between two vectors"){   // Ava, Zahedi
+    turtlelib::Vector2D v1, v2;
+    double ang;
+    v1.x = 3;
+    v1.y = -2;
+    v2.x = 1;
+    v2.y = 7;
+    ang = angle(v1, v2);
+    REQUIRE_THAT( ang, Catch::Matchers::WithinAbs(2.0169, 1e-5));
 }

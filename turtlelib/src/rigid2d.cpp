@@ -8,6 +8,28 @@
 namespace turtlelib {
 
     // Vector2D
+
+    Vector2D & Vector2D::operator+=(const Vector2D & rhs)
+    {
+        x = x + rhs.x;
+        y = y + rhs.y;
+        return *this;
+    }
+
+    Vector2D & Vector2D::operator-=(const Vector2D & rhs)
+    {
+        x = x - rhs.x;
+        y = y - rhs.y;
+        return *this;
+    }
+
+    Vector2D & Vector2D::operator*=(const double & scalar)
+    {
+        x = x * scalar;
+        y = y * scalar;
+        return *this;
+    }
+
     std::ostream & operator<<(std::ostream & os, const Vector2D & v)
     {
         os << "[" << v.x << " " << v.y << "]";
@@ -27,6 +49,45 @@ namespace turtlelib {
         is.ignore(100, '\n');
         return is;
     }
+
+    Vector2D operator+(Vector2D lhs, const Vector2D & rhs)
+    {
+        return lhs+=rhs;
+    }
+
+    Vector2D operator-(Vector2D lhs, const Vector2D & rhs)
+    {
+        return lhs-=rhs;
+    }
+
+    Vector2D operator*(Vector2D v, const double & scalar)
+    {
+        return v*=scalar;
+    }
+
+    Vector2D operator*(const double & scalar, Vector2D v)
+    {
+        return v*=scalar;
+    }
+
+    double dot(Vector2D v1, Vector2D v2)
+    {
+        double dp = v1.x*v2.x + v1.y*v2.y;
+        return dp;
+    }
+
+    double magnitude(Vector2D v)
+    {
+        double mag = pow(pow(v.x, 2) + pow(v.y, 2), 0.5);
+        return mag;
+    }
+
+    double angle(Vector2D v1, Vector2D v2)
+    {
+        double angle = dot(v1, v2) / (magnitude(v1) * magnitude(v2));
+        return acos(angle);
+    }
+
 
     // Twist2D
     std::ostream & operator<<(std::ostream & os, const Twist2D & t)

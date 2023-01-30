@@ -97,7 +97,66 @@ namespace turtlelib
 
         /// \brief the y coordinate
         double y = 0.0;
+
+        /// \brief add this Vector2D with another and store the result 
+        /// in this object
+        /// \param rhs - the Vector2D to add to this one
+        /// \return a reference to the newly transformed operator
+        Vector2D & operator+=(const Vector2D & rhs);
+
+        /// \brief subtract another Vector2D from this one and store the result 
+        /// in this object
+        /// \param rhs - the Vector2D to subtract out of this one
+        /// \return a reference to the newly transformed operator
+        Vector2D & operator-=(const Vector2D & rhs);
+
+        /// \brief multiply this Vector2D with a scalar and store the result 
+        /// in this object
+        /// \param scalar - the scalar to multiply with this Vector2D
+        /// \return a reference to the newly transformed operator
+        Vector2D & operator*=(const double & scalar);
     };
+
+    /// \brief add two Vector2Ds together, returning their composition
+    /// \param lhs - the left hand operand
+    /// \param rhs - the right hand operand
+    /// \return the sum of the two Vector2Ds
+    Vector2D operator+(Vector2D lhs, const Vector2D & rhs);
+
+    /// \brief subtract two Vector2Ds
+    /// \param lhs - the left hand operand
+    /// \param rhs - the right hand operand
+    /// \return the difference of the two Vector2Ds
+    Vector2D operator-(Vector2D lhs, const Vector2D & rhs);
+
+    /// \brief right multiply a vector and a scalar together, returning their composition
+    /// \param v - the vector
+    /// \param scalar - the scalar to multiply by
+    /// \return the product of the vector and scalar
+    Vector2D operator*(Vector2D v, const double & scalar);
+
+    /// \brief left multiply a vector and a scalar together, returning their composition
+    /// \param scalar - the scalar to multiply by
+    /// \param v - the vector
+    /// \return the product of the scalar and vector
+    Vector2D operator*(const double & scalar, Vector2D v);
+
+    /// \brief compute the dot product of two vectors
+    /// \param v1 - the first vector
+    /// \param v2 - the second vector
+    /// \return the dot product
+    double dot(Vector2D v1, Vector2D v2);
+
+    /// \brief compute the magnitude of a vector
+    /// \param v - the vector
+    /// \return the magnitude
+    double magnitude(Vector2D v);
+
+    /// \brief compute the angle between two vectors (rad)
+    /// \param v1 - the first vector
+    /// \param v2 - the second vector
+    /// \return the angle between them in radians
+    double angle(Vector2D v1, Vector2D v2);
 
     /// \brief A 2-Dimensional Twist
     struct Twist2D
