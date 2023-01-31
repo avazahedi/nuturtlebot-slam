@@ -54,7 +54,8 @@ namespace turtlelib
     constexpr double normalize_angle(double rad)
     {
         double normalized = rad;
-        while (!(normalized >= -2*PI && normalized <= 2*PI))
+        
+        while (!(normalized > -PI && normalized <=PI))
         {
             if (normalized > 0)
             {
@@ -64,14 +65,6 @@ namespace turtlelib
             {
                 normalized += (2*PI);
             }
-        }
-        if (normalized > PI)
-        {
-            normalized = -(2*PI - normalized);
-        }
-        else if (normalized <= -PI)
-        {
-            normalized = (2*PI + normalized);
         }
 
         return normalized;
