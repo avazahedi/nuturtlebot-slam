@@ -84,8 +84,8 @@ namespace turtlelib {
 
     double angle(Vector2D v1, Vector2D v2)
     {
-        double angle = dot(v1, v2) / (magnitude(v1) * magnitude(v2));
-        return acos(angle);
+        double ang = atan2(v1.x*v2.y-v1.y*v2.x, v1.x*v2.x+v1.y*v2.y);
+        return ang;
     }
 
 
