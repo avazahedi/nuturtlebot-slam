@@ -158,6 +158,7 @@ namespace turtlelib
     /// \return the angle between them in radians
     double angle(Vector2D v1, Vector2D v2);
 
+
     /// \brief A 2-Dimensional Twist
     struct Twist2D
     {
@@ -299,6 +300,14 @@ namespace turtlelib
     /// \param v - the vector to normalize
     /// \return - the new normalized vector
     Vector2D normalize(const Vector2D v);
+
+
+    // Task B.10
+    /// \brief compute the transformation corresponding to a rigid body following
+    /// a constant twist (in its original body frame) for one time-unit
+    /// \param t - the twist to integrate
+    /// \return the transformation corresponding to following the twist
+    Transform2D integrate_twist(Twist2D t);
 
 }
 

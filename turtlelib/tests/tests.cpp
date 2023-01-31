@@ -174,3 +174,36 @@ TEST_CASE("Angle between two vectors"){   // Ava, Zahedi
     ang = angle(v1, v2);
     REQUIRE_THAT( ang, Catch::Matchers::WithinAbs(2.0169, 1e-5));
 }
+
+TEST_CASE("Integrate twist pure translation") {     // Ava, Zahedi
+    turtlelib::Twist2D t;
+    t.w = 0;
+    t.x = 1.2;
+    t.y = -3;
+    turtlelib::Transform2D tf = turtlelib::integrate_twist(t);
+    REQUIRE_THAT( tf.rotation(), Catch::Matchers::WithinAbs(0, 1e-5));
+    REQUIRE_THAT( tf.translation().x, Catch::Matchers::WithinAbs(1.2, 1e-5)); 
+    REQUIRE_THAT( tf.translation().y, Catch::Matchers::WithinAbs(-3, 1e-5));
+}
+
+TEST_CASE("Integrate twist pure rotation") {     // Ava, Zahedi
+    turtlelib::Twist2D t;
+    t.w = 2.1;
+    t.x = 0;
+    t.y = 0;
+    turtlelib::Transform2D tf = turtlelib::integrate_twist(t);
+    REQUIRE_THAT( tf.rotation(), Catch::Matchers::WithinAbs(2.1, 1e-5));
+    REQUIRE_THAT( tf.translation().x, Catch::Matchers::WithinAbs(0, 1e-5)); 
+    REQUIRE_THAT( tf.translation().y, Catch::Matchers::WithinAbs(0, 1e-5));
+}
+
+TEST_CASE("Integrate twist simultaneous translation and rotation") {     // Ava, Zahedi
+    turtlelib::Twist2D t;
+    t.w = 2.1;
+    t.x = 1.2;
+    t.y = -3;
+    turtlelib::Transform2D tf = turtlelib::integrate_twist(t);
+    REQUIRE_THAT( tf.rotation(), Catch::Matchers::WithinAbs(2.1, 1e-5));
+    REQUIRE_THAT( tf.translation().x, Catch::Matchers::WithinAbs(0.3732441, 1e-5)); 
+    REQUIRE_THAT( tf.translation().y, Catch::Matchers::WithinAbs(-2.64304, 1e-5));
+}

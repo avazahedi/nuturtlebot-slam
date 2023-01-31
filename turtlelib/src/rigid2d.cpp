@@ -226,6 +226,34 @@ namespace turtlelib {
         return norm;
     }
 
+    Transform2D integrate_twist(Twist2D t)
+    {
+        double sb_rot;
+        Vector2D sb_v;
+
+        if (t.w == 0)
+        {
+            sb_rot = 0;
+            sb_v.x = t.x;
+            sb_v.y = t.y;
+            Transform2D T_bbp = Transform2D(sb_v, sb_rot);
+            return T_bbp;
+        }
+        else
+        {
+            sb_rot = t.w;
+            sb_v.x = -t.x/t.w;
+            sb_v.y = t.y/t.w;
+            Transform2D Tsb = Transform2D(sb_v, sb_rot);
+            Transform2D Tbs = Tsb.inv();
+            Transform2D T_ssp = Transform2D(t.w);
+            Transform2D T_spbp = Tbs.inv();
+            Transform2D T_bbp = Tbs*T_ssp*T_spbp;
+            return T_bbp;
+        }
+
+    }
+
 }
 
 
