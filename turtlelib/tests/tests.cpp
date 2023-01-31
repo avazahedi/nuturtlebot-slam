@@ -21,7 +21,10 @@ TEST_CASE( "Rotation", "[transform]" ) // Ava, Zahedi
 {
     double phi = 90;
     turtlelib::Transform2D tf = turtlelib::Transform2D(phi);
+    double theta = -90;
+    turtlelib::Transform2D tf2 = turtlelib::Transform2D(theta);
     REQUIRE( turtlelib::almost_equal(tf.rotation(), phi, 0.00001) );
+    REQUIRE( turtlelib::almost_equal(tf2.rotation(), theta, 0.00001) );
 }
 
 TEST_CASE( "Stream insertion operator <<", "[transform]" ) // Ava, Zahedi
@@ -199,11 +202,11 @@ TEST_CASE("Integrate twist pure rotation") {     // Ava, Zahedi
 
 TEST_CASE("Integrate twist simultaneous translation and rotation") {     // Ava, Zahedi
     turtlelib::Twist2D t;
-    t.w = 2.1;
+    t.w = -2.1;
     t.x = 1.2;
     t.y = -3;
     turtlelib::Transform2D tf = turtlelib::integrate_twist(t);
-    REQUIRE_THAT( tf.rotation(), Catch::Matchers::WithinAbs(2.1, 1e-5));
-    REQUIRE_THAT( tf.translation().x, Catch::Matchers::WithinAbs(0.3732441, 1e-5)); 
-    REQUIRE_THAT( tf.translation().y, Catch::Matchers::WithinAbs(-2.64304, 1e-5));
+    REQUIRE_THAT( tf.rotation(), Catch::Matchers::WithinAbs(-2.1, 1e-5));
+    REQUIRE_THAT( tf.translation().x, Catch::Matchers::WithinAbs(-1.65651765, 1e-5)); 
+    REQUIRE_THAT( tf.translation().y, Catch::Matchers::WithinAbs(-2.09306829, 1e-5));
 }

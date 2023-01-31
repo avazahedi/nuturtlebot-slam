@@ -145,7 +145,7 @@ namespace turtlelib {
         tmp.tvec.x = tvec.x;
         tmp.tvec.y = tvec.y;
 
-        phi = acos(cos(tmp.phi)*cos(rhs.phi) - sin(tmp.phi)*sin(rhs.phi));
+        phi = tmp.phi + rhs.phi;
         tvec.x = cos(tmp.phi)*rhs.tvec.x - sin(tmp.phi)*rhs.tvec.y + tmp.tvec.x;
         tvec.y = sin(tmp.phi)*rhs.tvec.x + cos(tmp.phi)*rhs.tvec.y + tmp.tvec.y;
 
@@ -228,27 +228,23 @@ namespace turtlelib {
 
     Transform2D integrate_twist(Twist2D t)
     {
-        double sb_rot;
         Vector2D sb_v;
 
         if (t.w == 0)
         {
-            sb_rot = 0;
             sb_v.x = t.x;
             sb_v.y = t.y;
-            Transform2D T_bbp = Transform2D(sb_v, sb_rot);
+            Transform2D T_bbp = Transform2D(sb_v);
             return T_bbp;
         }
         else
         {
-            sb_rot = t.w;
-            sb_v.x = -t.x/t.w;
-            sb_v.y = t.y/t.w;
-            Transform2D Tsb = Transform2D(sb_v, sb_rot);
+            sb_v.x = t.y/t.w;
+            sb_v.y = -t.x/t.w;
+            Transform2D Tsb = Transform2D(sb_v);
             Transform2D Tbs = Tsb.inv();
             Transform2D T_ssp = Transform2D(t.w);
-            Transform2D T_spbp = Tbs.inv();
-            Transform2D T_bbp = Tbs*T_ssp*T_spbp;
+            Transform2D T_bbp = Tbs*T_ssp*Tsb;
             return T_bbp;
         }
 
