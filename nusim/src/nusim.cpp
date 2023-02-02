@@ -76,9 +76,11 @@ public:
     obstacles_x = get_parameter("obstacles.x").get_parameter_value().get<std::vector<double>>();
     obstacles_y = get_parameter("obstacles.y").get_parameter_value().get<std::vector<double>>();
     if (obstacles_x.size() != obstacles_y.size()) {
-      throw std::runtime_error(
-              std::string(
-                "Failed: Different number of obstacle x-coordinates than obstacle y-coordinates."));
+      int error = 0;
+      // throw std::runtime_error(
+      //         std::string(
+      //           "Failed: Different number of obstacle x-coordinates than obstacle y-coordinates."));
+      throw (error);
     }
 
     obstacles_r = get_parameter("obstacles.r").get_parameter_value().get<double>();
@@ -224,7 +226,13 @@ private:
 int main(int argc, char * argv[])
 {
   rclcpp::init(argc, argv);
-  rclcpp::spin(std::make_shared<NUSim>());
+  try {
+    rclcpp::spin(std::make_shared<NUSim>());
+  } catch (int error) {
+    RCLCPP_ERROR(
+      std::make_shared<NUSim>()->get_logger(), "Failed: Different number of obstacle x-coordinates 
+                                                than obstacle y-coordinates.");
+  }
   rclcpp::shutdown();
   return 0;
 }
