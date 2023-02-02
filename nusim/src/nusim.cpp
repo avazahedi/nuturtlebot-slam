@@ -230,8 +230,8 @@ int main(int argc, char * argv[])
     rclcpp::spin(std::make_shared<NUSim>());
   } catch (int error) {
     RCLCPP_ERROR(
-      std::make_shared<NUSim>()->get_logger(), "Failed: Different number of obstacle x-coordinates 
-                                                than obstacle y-coordinates.");
+      std::make_shared<NUSim>()->get_logger(),
+      "Failed: Different number of obstacle x-coordinates than obstacle y-coordinates.");
   }
   rclcpp::shutdown();
   return 0;
