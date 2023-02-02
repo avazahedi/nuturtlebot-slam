@@ -46,9 +46,9 @@ namespace turtlelib{
         double thetab = Tbbp.rotation();
         Vector2D dvec = Tbbp.translation();
         RobotConfig new_q;
-        new_q.theta = q.theta + Vb.w;
-        new_q.x = q.x + Vb.x*cos(q.theta) - Vb.y*sin(q.theta);
-        new_q.y = q.y + Vb.x*sin(q.theta) + Vb.y*cos(q.theta);
+        new_q.theta = q.theta + thetab;
+        new_q.x = q.x + dvec.x*cos(q.theta) - dvec.y*sin(q.theta);
+        new_q.y = q.y + dvec.x*sin(q.theta) + dvec.y*cos(q.theta);
 
         q = new_q;
     }

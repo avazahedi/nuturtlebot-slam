@@ -1,6 +1,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 #include "turtlelib/rigid2d.hpp"
+#include "turtlelib/diff_drive.hpp"
 #include <iostream>
 #include <sstream>
 
@@ -209,4 +210,25 @@ TEST_CASE("Integrate twist simultaneous translation and rotation") {     // Ava,
     REQUIRE_THAT( tf.rotation(), Catch::Matchers::WithinAbs(-2.1, 1e-5));
     REQUIRE_THAT( tf.translation().x, Catch::Matchers::WithinAbs(-1.65651765, 1e-5)); 
     REQUIRE_THAT( tf.translation().y, Catch::Matchers::WithinAbs(-2.09306829, 1e-5));
+}
+
+TEST_CASE("Inverse kinematics", "[diffdrive]") {       // Ava, Zahedi
+    turtlelib::Twist2D Vb;
+    Vb.w = 0;
+    Vb.x = 1;
+    Vb.y = 0;
+    turtlelib::WheelPosn ik_wheels = turtlelib::DiffDrive::InverseKinematics(Vb);
+    REQUIRE_THAT( ik_wheels.left, Catch::Matchers::WithinAbs(1, 1e-5));
+    REQUIRE_THAT( ik_wheels.right, Catch::Matchers::WithinAbs(1, 1e-5));
+}
+
+TEST_CASE("Forward kinematics", "[diffdrive]") {       // Ava, Zahedi
+    turtlelib::WheelPosn wheels;
+    wheels.left = 1;
+    wheels.right = 1;
+
+    double track = 2;
+    double radius = 1;
+
+    turtlelib::DiffDrive dd = turtlelib::DiffDrive(track, radius, wheels);
 }
