@@ -11,14 +11,14 @@ namespace turtlelib
     /// \brief Robot configuration 
     struct RobotConfig
     {
+        /// \brief theta
+        double theta = 0.0;
+
         /// \brief the x coordinate
         double x = 0.0;
 
         /// \brief the y coordinate
         double y = 0.0;
-
-        /// \brief theta
-        double theta = 0.0;
     };
 
     /// \brief Robot wheel positions
@@ -42,12 +42,29 @@ namespace turtlelib
         RobotConfig q;          // robot configuration
 
     public:        
-        /// \brief Create a transformation that is a pure translation
-        /// \param trans - the vector by which to translate
-        explicit DiffDrive(double track, double radius);
+        /// @brief A diff-drive robot with a given track width and wheel radius. 
+        ///        Default wheel positions and configuration variables all 0.
+        /// @param track_width - distance between the wheels
+        /// @param radius - wheel radius
+        explicit DiffDrive(double track_width, double radius);
 
-        /// @brief Compute inverse kinematics
-        /// @param Vb - the twist to compute wheel positions from
+        /// @brief A diff-drive robot with specified track width, wheel radius, 
+        ///        and starting configuration
+        /// @param track_width - distance between the wheels
+        /// @param radius - wheel radius
+        /// @param rc_q - robot configuration (x, y, theta)
+        explicit DiffDrive(double track_width, double radius, RobotConfig rc_q);
+
+        /// @brief A diff-drive robot with specified track width, wheel radius, 
+        ///        wheel positions, and starting configuration
+        /// @param track_width - distance between the wheels
+        /// @param radius - wheel radius
+        /// @param wheel_posns - wheel positions
+        /// @param rc_q - robot configuration (x, y, theta)
+        explicit DiffDrive(double track_width, double radius, WheelPosn wheel_posns, RobotConfig rc_q);
+
+        /// @brief Compute inverse kinematics given a body twist
+        /// @param Vb - the body twist to compute wheel positions from
         /// @return wheel positions
         WheelPosn InverseKinematics(Twist2D Vb);
 
