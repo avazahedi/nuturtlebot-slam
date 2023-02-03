@@ -212,23 +212,133 @@ TEST_CASE("Integrate twist simultaneous translation and rotation") {     // Ava,
     REQUIRE_THAT( tf.translation().y, Catch::Matchers::WithinAbs(-2.09306829, 1e-5));
 }
 
-TEST_CASE("Inverse kinematics", "[diffdrive]") {       // Ava, Zahedi
+TEST_CASE("IK - forward", "[diffdrive]") {       // Ava, Zahedi
+    double track = 2.0;
+    double radius = 1.0;
+
     turtlelib::Twist2D Vb;
     Vb.w = 0;
     Vb.x = 1;
     Vb.y = 0;
-    turtlelib::WheelPosn ik_wheels = turtlelib::DiffDrive::InverseKinematics(Vb);
-    REQUIRE_THAT( ik_wheels.left, Catch::Matchers::WithinAbs(1, 1e-5));
-    REQUIRE_THAT( ik_wheels.right, Catch::Matchers::WithinAbs(1, 1e-5));
+
+    turtlelib::DiffDrive dd {track, radius};
+    turtlelib::WheelPosn ik_wheels = dd.InverseKinematics(Vb);
+    REQUIRE_THAT( ik_wheels.left, Catch::Matchers::WithinAbs(1.0, 1e-5));
+    REQUIRE_THAT( ik_wheels.right, Catch::Matchers::WithinAbs(1.0, 1e-5));
 }
 
-TEST_CASE("Forward kinematics", "[diffdrive]") {       // Ava, Zahedi
+TEST_CASE("FK - forward", "[diffdrive]") {       // Ava, Zahedi
     turtlelib::WheelPosn wheels;
     wheels.left = 1;
     wheels.right = 1;
-
     double track = 2;
     double radius = 1;
 
-    turtlelib::DiffDrive dd = turtlelib::DiffDrive(track, radius, wheels);
+    turtlelib::DiffDrive dd = turtlelib::DiffDrive(track, radius);
+    dd.ForwardKinematics(wheels);
+    turtlelib::RobotConfig q_new = dd.getConfig();
+    REQUIRE_THAT( q_new.theta, Catch::Matchers::WithinAbs(0.0, 1e-5));
+    REQUIRE_THAT( q_new.x, Catch::Matchers::WithinAbs(1.0, 1e-5));
+    REQUIRE_THAT( q_new.y, Catch::Matchers::WithinAbs(0.0, 1e-5));
+}
+
+TEST_CASE("IK/FK - backward", "[diffdrive]") {       // Ava, Zahedi
+    double track = 2.0;
+    double radius = 1.0;
+
+    turtlelib::Twist2D Vb;
+    Vb.w = 0;
+    Vb.x = -1;
+    Vb.y = 0;
+
+    turtlelib::DiffDrive dd {track, radius};
+    turtlelib::WheelPosn ik_wheels = dd.InverseKinematics(Vb);
+    REQUIRE_THAT( ik_wheels.left, Catch::Matchers::WithinAbs(-1.0, 1e-5));
+    REQUIRE_THAT( ik_wheels.right, Catch::Matchers::WithinAbs(-1.0, 1e-5));
+
+    turtlelib::DiffDrive dd2 {track, radius, ik_wheels};
+    dd2.ForwardKinematics(ik_wheels);
+    turtlelib::RobotConfig q_new = dd2.getConfig();
+    REQUIRE_THAT( q_new.theta, Catch::Matchers::WithinAbs(0.0, 1e-5));
+    REQUIRE_THAT( q_new.x, Catch::Matchers::WithinAbs(-1.0, 1e-5));
+    REQUIRE_THAT( q_new.y, Catch::Matchers::WithinAbs(0.0, 1e-5));
+}
+
+TEST_CASE("IK/FK - pure rotation CCW", "[diffdrive]") {       // Ava, Zahedi
+    double track = 2.0;
+    double radius = 1.0;
+
+    turtlelib::Twist2D Vb;
+    Vb.w = 1;
+    Vb.x = 0;
+    Vb.y = 0;
+
+    turtlelib::DiffDrive dd {track, radius};
+    turtlelib::WheelPosn ik_wheels = dd.InverseKinematics(Vb);
+    REQUIRE_THAT( ik_wheels.left, Catch::Matchers::WithinAbs(-1.0, 1e-5));
+    REQUIRE_THAT( ik_wheels.right, Catch::Matchers::WithinAbs(1.0, 1e-5));
+
+    turtlelib::DiffDrive dd2 {track, radius, ik_wheels};
+    dd2.ForwardKinematics(ik_wheels);
+    turtlelib::RobotConfig q_new = dd2.getConfig();
+    REQUIRE_THAT( q_new.theta, Catch::Matchers::WithinAbs(1, 1e-5));
+    REQUIRE_THAT( q_new.x, Catch::Matchers::WithinAbs(0, 1e-5));
+    REQUIRE_THAT( q_new.y, Catch::Matchers::WithinAbs(0, 1e-5));
+}
+
+TEST_CASE("IK/FK - pure rotation CW", "[diffdrive]") {       // Ava, Zahedi
+    double track = 2.0;
+    double radius = 1.0;
+
+    turtlelib::Twist2D Vb;
+    Vb.w = -1;
+    Vb.x = 0;
+    Vb.y = 0;
+
+    turtlelib::DiffDrive dd {track, radius};
+    turtlelib::WheelPosn ik_wheels = dd.InverseKinematics(Vb);
+    REQUIRE_THAT( ik_wheels.left, Catch::Matchers::WithinAbs(1, 1e-5));
+    REQUIRE_THAT( ik_wheels.right, Catch::Matchers::WithinAbs(-1, 1e-5));
+
+    turtlelib::DiffDrive dd2 {track, radius, ik_wheels};
+    dd2.ForwardKinematics(ik_wheels);
+    turtlelib::RobotConfig q_new = dd2.getConfig();
+    REQUIRE_THAT( q_new.theta, Catch::Matchers::WithinAbs(-1, 1e-5));
+    REQUIRE_THAT( q_new.x, Catch::Matchers::WithinAbs(0, 1e-5));
+    REQUIRE_THAT( q_new.y, Catch::Matchers::WithinAbs(0, 1e-5));
+}
+
+TEST_CASE("IK/FK - following an arc (rotation & translation)", "[diffdrive]") {       // Ava, Zahedi
+    double track = 2.0;
+    double radius = 1.0;
+
+    turtlelib::Twist2D Vb;
+    Vb.w = 1;
+    Vb.x = 1;
+    Vb.y = 0;
+
+    turtlelib::DiffDrive dd {track, radius};
+    turtlelib::WheelPosn ik_wheels = dd.InverseKinematics(Vb);
+    REQUIRE_THAT( ik_wheels.left, Catch::Matchers::WithinAbs(0, 1e-5));
+    REQUIRE_THAT( ik_wheels.right, Catch::Matchers::WithinAbs(2, 1e-5));
+
+    turtlelib::DiffDrive dd2 {track, radius, ik_wheels};
+    dd2.ForwardKinematics(ik_wheels);
+    turtlelib::RobotConfig q_new = dd2.getConfig();
+    REQUIRE_THAT( q_new.theta, Catch::Matchers::WithinAbs(1, 1e-5));
+    REQUIRE_THAT( q_new.x, Catch::Matchers::WithinAbs(0.8414709848, 1e-5));
+    REQUIRE_THAT( q_new.y, Catch::Matchers::WithinAbs(0.4596976941, 1e-5));
+}
+
+TEST_CASE("IK - wheels slipping", "[diffdrive]") {       // Ava, Zahedi
+    double track = 2.0;
+    double radius = 1.0;
+
+    turtlelib::Twist2D Vb;
+    Vb.w = 1;
+    Vb.x = 1;
+    Vb.y = 1;
+
+    turtlelib::DiffDrive dd {track, radius};
+    REQUIRE_THROWS_AS(dd.InverseKinematics(Vb), std::logic_error);
 }
