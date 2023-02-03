@@ -1,0 +1,43 @@
+<launch>
+
+  <arg name="cmd_src" default="none"/>
+  <arg name="robot" default="nusim"/>
+  <arg name="use_rviz" default="true"/>
+
+  <!-- <node pkg="pkg_name" exec="exec_name" if="$(eval '\'$(var arg_name)\' == \'desired_value\'')" /> -->
+  <!-- if="$(eval '\'$(var cmd_src)\' == \'teleop\'')" -->
+
+  <node name="turtle_control" pkg="nuturtle_control" exec="turtle_control" >
+  </node>
+
+  <node name="circle" pkg="nuturtle_control" exec="circle" 
+        if="$(eval '\'$(var cmd_src)\' == \'circle\'')" >
+  </node>
+
+  <node pkg="teleop_twist_keyboard" exec="teleop_twist_keyboard" name="teleop" output="screen" 
+        launch-prefix="xterm -e" if="$(eval '\'$(var cmd_src)\' == \'teleop\'')">
+  </node>
+
+  <node name="rviz2" pkg="rviz2" exec="rviz2" args="-d $(find-pkg-share nusim)/config/nusim.rviz" 
+        if="$(eval '\'$(var use_rviz)\' == \'true\' and \'$(var robot)\' != \'localhost\'')" > 
+  </node>
+
+  <node name="nusim" pkg="nusim" exec="nusim"
+        if="$(eval '\'$(var robot)\' == \'nusim\'')" >
+  </node>
+
+  <node name="nusim" pkg="nusim" exec="nusim"
+        if="$(eval '\'$(var robot)\' == \'nusim\'')" >
+  </node>
+
+  <!-- localhost - run nodes directly from the turtlebot3 -->
+  <!-- <node name="nusim" pkg="nusim" exec="nusim"
+        if="$(eval '\'$(var robot)\' == \'nusim\'')" >
+  </node> -->
+
+
+  <!-- <node name="turtle_control" pkg="nuturtle_control" exec="turtle_control" > 
+    <param from="$(find-pkg-share nuturtle_description)/config/diff_params.yaml"/>
+  </node> -->
+
+</launch>
