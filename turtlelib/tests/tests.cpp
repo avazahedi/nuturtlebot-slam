@@ -102,7 +102,8 @@ TEST_CASE("operator *=", "[transform]"){    //Megan, Sindelar
    REQUIRE(turtlelib::almost_equal((T_ab_3*=T_bc).rotation(), (turtlelib::PI/2)));
 }
 
-TEST_CASE("Normalize angle"){   // Ava, Zahedi
+// My test cases
+TEST_CASE("Normalize angle"){
     double pi = turtlelib::PI;
     REQUIRE_THAT( turtlelib::normalize_angle(pi), Catch::Matchers::WithinAbs(pi, 1e-5));
     REQUIRE_THAT( turtlelib::normalize_angle(-pi), Catch::Matchers::WithinAbs(pi, 1e-5));
@@ -112,7 +113,7 @@ TEST_CASE("Normalize angle"){   // Ava, Zahedi
     REQUIRE_THAT( turtlelib::normalize_angle(-5*pi/2), Catch::Matchers::WithinAbs(-pi/2, 1e-5));
 }
 
-TEST_CASE("Vector addition"){   // Ava, Zahedi
+TEST_CASE("Vector addition"){
     turtlelib::Vector2D v1, v2, sum;
     v1.x = 1;
     v1.y = 1.2;
@@ -123,7 +124,7 @@ TEST_CASE("Vector addition"){   // Ava, Zahedi
     REQUIRE_THAT( sum.y, Catch::Matchers::WithinAbs(1.3, 1e-5));
 }
 
-TEST_CASE("Vector subtraction"){   // Ava, Zahedi
+TEST_CASE("Vector subtraction"){
     turtlelib::Vector2D v1, v2, diff;
     v1.x = 1;
     v1.y = 1.2;
@@ -134,7 +135,7 @@ TEST_CASE("Vector subtraction"){   // Ava, Zahedi
     REQUIRE_THAT( diff.y, Catch::Matchers::WithinAbs(1.1, 1e-5));
 }
 
-TEST_CASE("Scalar multiplication with a vector"){   // Ava, Zahedi
+TEST_CASE("Scalar multiplication with a vector"){
     turtlelib::Vector2D v1, prod1, prod2;
     double s;
     v1.x = 1;
@@ -148,7 +149,7 @@ TEST_CASE("Scalar multiplication with a vector"){   // Ava, Zahedi
     REQUIRE_THAT( prod2.y, Catch::Matchers::WithinAbs(3, 1e-5));
 }
 
-TEST_CASE("Dot product of two vectors"){   // Ava, Zahedi
+TEST_CASE("Dot product of two vectors"){
     turtlelib::Vector2D v1, v2;
     double dp;
     v1.x = 1;
@@ -159,7 +160,7 @@ TEST_CASE("Dot product of two vectors"){   // Ava, Zahedi
     REQUIRE_THAT( dp, Catch::Matchers::WithinAbs(-4.38, 1e-5));
 }
 
-TEST_CASE("Vector magnitude"){   // Ava, Zahedi
+TEST_CASE("Vector magnitude"){
     turtlelib::Vector2D v;
     double mag;
     v.x = 6.0;
@@ -168,7 +169,7 @@ TEST_CASE("Vector magnitude"){   // Ava, Zahedi
     REQUIRE_THAT( mag, Catch::Matchers::WithinAbs(10, 1e-5));
 }
 
-TEST_CASE("Angle between two vectors"){   // Ava, Zahedi
+TEST_CASE("Angle between two vectors"){ 
     turtlelib::Vector2D v1, v2;
     double ang;
     v1.x = 3;
@@ -179,7 +180,7 @@ TEST_CASE("Angle between two vectors"){   // Ava, Zahedi
     REQUIRE_THAT( ang, Catch::Matchers::WithinAbs(2.0169, 1e-5));
 }
 
-TEST_CASE("Integrate twist pure translation") {     // Ava, Zahedi
+TEST_CASE("Integrate twist pure translation") {
     turtlelib::Twist2D t;
     t.w = 0;
     t.x = 1.2;
@@ -190,7 +191,7 @@ TEST_CASE("Integrate twist pure translation") {     // Ava, Zahedi
     REQUIRE_THAT( tf.translation().y, Catch::Matchers::WithinAbs(-3, 1e-5));
 }
 
-TEST_CASE("Integrate twist pure rotation") {     // Ava, Zahedi
+TEST_CASE("Integrate twist pure rotation") {
     turtlelib::Twist2D t;
     t.w = 2.1;
     t.x = 0;
@@ -201,7 +202,7 @@ TEST_CASE("Integrate twist pure rotation") {     // Ava, Zahedi
     REQUIRE_THAT( tf.translation().y, Catch::Matchers::WithinAbs(0, 1e-5));
 }
 
-TEST_CASE("Integrate twist simultaneous translation and rotation") {     // Ava, Zahedi
+TEST_CASE("Integrate twist simultaneous translation and rotation") {
     turtlelib::Twist2D t;
     t.w = -2.1;
     t.x = 1.2;
@@ -212,7 +213,7 @@ TEST_CASE("Integrate twist simultaneous translation and rotation") {     // Ava,
     REQUIRE_THAT( tf.translation().y, Catch::Matchers::WithinAbs(-2.09306829, 1e-5));
 }
 
-TEST_CASE("IK - forward", "[diffdrive]") {       // Ava, Zahedi
+TEST_CASE("IK - forward", "[diffdrive]") {
     double track = 2.0;
     double radius = 1.0;
 
@@ -227,7 +228,7 @@ TEST_CASE("IK - forward", "[diffdrive]") {       // Ava, Zahedi
     REQUIRE_THAT( ik_wheels.right, Catch::Matchers::WithinAbs(1.0, 1e-5));
 }
 
-TEST_CASE("FK - forward", "[diffdrive]") {       // Ava, Zahedi
+TEST_CASE("FK - forward", "[diffdrive]") {
     turtlelib::WheelPosn wheels;
     wheels.left = 1;
     wheels.right = 1;
@@ -242,7 +243,7 @@ TEST_CASE("FK - forward", "[diffdrive]") {       // Ava, Zahedi
     REQUIRE_THAT( q_new.y, Catch::Matchers::WithinAbs(0.0, 1e-5));
 }
 
-TEST_CASE("IK/FK - backward", "[diffdrive]") {       // Ava, Zahedi
+TEST_CASE("IK/FK - backward", "[diffdrive]") {
     double track = 2.0;
     double radius = 1.0;
 
@@ -256,7 +257,8 @@ TEST_CASE("IK/FK - backward", "[diffdrive]") {       // Ava, Zahedi
     REQUIRE_THAT( ik_wheels.left, Catch::Matchers::WithinAbs(-1.0, 1e-5));
     REQUIRE_THAT( ik_wheels.right, Catch::Matchers::WithinAbs(-1.0, 1e-5));
 
-    turtlelib::DiffDrive dd2 {track, radius, ik_wheels};
+
+    turtlelib::DiffDrive dd2 {track, radius};
     dd2.ForwardKinematics(ik_wheels);
     turtlelib::RobotConfig q_new = dd2.getConfig();
     REQUIRE_THAT( q_new.theta, Catch::Matchers::WithinAbs(0.0, 1e-5));
@@ -264,7 +266,7 @@ TEST_CASE("IK/FK - backward", "[diffdrive]") {       // Ava, Zahedi
     REQUIRE_THAT( q_new.y, Catch::Matchers::WithinAbs(0.0, 1e-5));
 }
 
-TEST_CASE("IK/FK - pure rotation CCW", "[diffdrive]") {       // Ava, Zahedi
+TEST_CASE("IK/FK - pure rotation CCW", "[diffdrive]") {
     double track = 2.0;
     double radius = 1.0;
 
@@ -278,7 +280,7 @@ TEST_CASE("IK/FK - pure rotation CCW", "[diffdrive]") {       // Ava, Zahedi
     REQUIRE_THAT( ik_wheels.left, Catch::Matchers::WithinAbs(-1.0, 1e-5));
     REQUIRE_THAT( ik_wheels.right, Catch::Matchers::WithinAbs(1.0, 1e-5));
 
-    turtlelib::DiffDrive dd2 {track, radius, ik_wheels};
+    turtlelib::DiffDrive dd2 {track, radius};
     dd2.ForwardKinematics(ik_wheels);
     turtlelib::RobotConfig q_new = dd2.getConfig();
     REQUIRE_THAT( q_new.theta, Catch::Matchers::WithinAbs(1, 1e-5));
@@ -286,7 +288,7 @@ TEST_CASE("IK/FK - pure rotation CCW", "[diffdrive]") {       // Ava, Zahedi
     REQUIRE_THAT( q_new.y, Catch::Matchers::WithinAbs(0, 1e-5));
 }
 
-TEST_CASE("IK/FK - pure rotation CW", "[diffdrive]") {       // Ava, Zahedi
+TEST_CASE("IK/FK - pure rotation CW", "[diffdrive]") {
     double track = 2.0;
     double radius = 1.0;
 
@@ -300,7 +302,7 @@ TEST_CASE("IK/FK - pure rotation CW", "[diffdrive]") {       // Ava, Zahedi
     REQUIRE_THAT( ik_wheels.left, Catch::Matchers::WithinAbs(1, 1e-5));
     REQUIRE_THAT( ik_wheels.right, Catch::Matchers::WithinAbs(-1, 1e-5));
 
-    turtlelib::DiffDrive dd2 {track, radius, ik_wheels};
+    turtlelib::DiffDrive dd2 {track, radius};
     dd2.ForwardKinematics(ik_wheels);
     turtlelib::RobotConfig q_new = dd2.getConfig();
     REQUIRE_THAT( q_new.theta, Catch::Matchers::WithinAbs(-1, 1e-5));
@@ -308,7 +310,7 @@ TEST_CASE("IK/FK - pure rotation CW", "[diffdrive]") {       // Ava, Zahedi
     REQUIRE_THAT( q_new.y, Catch::Matchers::WithinAbs(0, 1e-5));
 }
 
-TEST_CASE("IK/FK - following an arc (rotation & translation)", "[diffdrive]") {       // Ava, Zahedi
+TEST_CASE("IK/FK - following an arc (rotation & translation)", "[diffdrive]") {
     double track = 2.0;
     double radius = 1.0;
 
@@ -322,7 +324,7 @@ TEST_CASE("IK/FK - following an arc (rotation & translation)", "[diffdrive]") { 
     REQUIRE_THAT( ik_wheels.left, Catch::Matchers::WithinAbs(0, 1e-5));
     REQUIRE_THAT( ik_wheels.right, Catch::Matchers::WithinAbs(2, 1e-5));
 
-    turtlelib::DiffDrive dd2 {track, radius, ik_wheels};
+    turtlelib::DiffDrive dd2 {track, radius};
     dd2.ForwardKinematics(ik_wheels);
     turtlelib::RobotConfig q_new = dd2.getConfig();
     REQUIRE_THAT( q_new.theta, Catch::Matchers::WithinAbs(1, 1e-5));
@@ -330,7 +332,7 @@ TEST_CASE("IK/FK - following an arc (rotation & translation)", "[diffdrive]") { 
     REQUIRE_THAT( q_new.y, Catch::Matchers::WithinAbs(0.4596976941, 1e-5));
 }
 
-TEST_CASE("IK - wheels slipping", "[diffdrive]") {       // Ava, Zahedi
+TEST_CASE("IK - wheels slipping", "[diffdrive]") {
     double track = 2.0;
     double radius = 1.0;
 
