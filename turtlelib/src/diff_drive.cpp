@@ -40,6 +40,7 @@ namespace turtlelib{
               std::string("Failed: Wheels slipping: y-velocity not equal to 0."));
         }
 
+        // eqns 1.1 and 1.2
         ik.left = (-D/r)*Vb.w + Vb.x/r;
         ik.right = (D/r)*Vb.w + Vb.x/r;
 
@@ -49,17 +50,22 @@ namespace turtlelib{
 
     void DiffDrive::ForwardKinematics(WheelPosn new_posns)
     {
-        WheelPosn dphi = new_posns;
-        // WheelPosn dphi {new_posns.left-wheels.left, new_posns.right-wheels.right};
+        // need the difference in wheel positions
+        WheelPosn dphi {new_posns.left-wheels.left, new_posns.right-wheels.right};
         Twist2D Vb;
         double D = track/2;
+
+        // eqn 2.1
         Vb.w = (r/2)*(dphi.right-dphi.left)/D;
         Vb.x = (r/2)*(dphi.left+dphi.right);
         Vb.y = 0;
 
+        // eqn 2.2
         Transform2D Tbbp = integrate_twist(Vb);
         double thetab = Tbbp.rotation();
         Vector2D dvec = Tbbp.translation();
+
+        // eqns 2.3 - 2.5
         RobotConfig new_q;
         new_q.theta = q.theta + thetab;
         new_q.x = q.x + dvec.x*cos(q.theta) - dvec.y*sin(q.theta);

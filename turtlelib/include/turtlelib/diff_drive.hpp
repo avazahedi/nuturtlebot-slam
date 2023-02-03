@@ -43,7 +43,6 @@ namespace turtlelib
 
     public:        
         /// @brief A diff-drive robot with a given track width and wheel radius. 
-        ///        Default wheel positions and configuration variables all 0.
         /// @param track_width - distance between the wheels
         /// @param radius - wheel radius
         DiffDrive(double track_width, double radius);
@@ -74,7 +73,7 @@ namespace turtlelib
         /// @return wheel positions
         WheelPosn getWheels() const;
 
-        /// @brief Getter for robot config
+        /// @brief Getter for robot configuration
         /// @return robot config q
         RobotConfig getConfig() const;
 

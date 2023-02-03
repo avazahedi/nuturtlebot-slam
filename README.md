@@ -8,3 +8,5 @@ This repository consists of several ROS packages
 
 This repository also contains a custom C++ library
 -  turtlelib - A library for handling transformations in SE(2) and other turtlebot-related math.
+    * rigid2d -  vectors, twists, and transformations in 2D
+    * diff_drive - kinematics for a differential drive robot in 2D
