@@ -5,6 +5,7 @@
 
 
 #include<iosfwd> // contains forward definitions for iostream objects
+#include <cmath>
 
 namespace turtlelib
 {

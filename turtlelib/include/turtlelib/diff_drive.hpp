@@ -46,22 +46,37 @@ namespace turtlelib
         ///        Default wheel positions and configuration variables all 0.
         /// @param track_width - distance between the wheels
         /// @param radius - wheel radius
-        explicit DiffDrive(double track_width, double radius);
+        DiffDrive(double track_width, double radius);
 
         /// @brief A diff-drive robot with specified track width, wheel radius, 
         ///        and starting configuration
         /// @param track_width - distance between the wheels
         /// @param radius - wheel radius
-        /// @param rc_q - robot configuration (x, y, theta)
-        explicit DiffDrive(double track_width, double radius, RobotConfig rc_q);
+        /// @param rc_q - robot configuration (theta, x, y)
+        DiffDrive(double track_width, double radius, RobotConfig rc_q);
+
+        /// @brief A diff-drive robot with specified track width, wheel radius,
+        ///        and wheel positions
+        /// @param track_width - distance between the wheels
+        /// @param radius - wheel radius
+        /// @param wheel_posns - wheel positions 
+        DiffDrive(double track_width, double radius, WheelPosn wheel_posns);
 
         /// @brief A diff-drive robot with specified track width, wheel radius, 
         ///        wheel positions, and starting configuration
         /// @param track_width - distance between the wheels
         /// @param radius - wheel radius
         /// @param wheel_posns - wheel positions
-        /// @param rc_q - robot configuration (x, y, theta)
-        explicit DiffDrive(double track_width, double radius, WheelPosn wheel_posns, RobotConfig rc_q);
+        /// @param rc_q - robot configuration (theta, x, y)
+        DiffDrive(double track_width, double radius, WheelPosn wheel_posns, RobotConfig rc_q);
+
+        /// @brief Getter for wheel positions
+        /// @return wheel positions
+        WheelPosn getWheels() const;
+
+        /// @brief Getter for robot config
+        /// @return robot config q
+        RobotConfig getConfig() const;
 
         /// @brief Compute inverse kinematics given a body twist
         /// @param Vb - the body twist to compute wheel positions from

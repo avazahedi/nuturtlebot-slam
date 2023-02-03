@@ -3,7 +3,6 @@
 
 #include <iostream>
 #include "turtlelib/rigid2d.hpp"
-#include <cmath>
 
 namespace turtlelib {
 
