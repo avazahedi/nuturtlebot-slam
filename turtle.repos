@@ -1,0 +1,9 @@
+repositories:
+  nuturtle-avazahedi:
+    type: git
+    url: git@github.com:ME495-Navigation/nuturtle-avazahedi.git
+    version: task_E
+  nuturtlebot_msgs:
+    type: git
+    url: git@github.com:ME495-Navigation/nuturtlebot_msgs.git
+    version: humble

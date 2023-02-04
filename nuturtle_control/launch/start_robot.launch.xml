@@ -8,6 +8,7 @@
   <!-- if="$(eval '\'$(var cmd_src)\' == \'teleop\'')" -->
 
   <node name="turtle_control" pkg="nuturtle_control" exec="turtle_control" >
+    <param from="$(find-pkg-share nuturtle_description)/config/diff_params.yaml"/>
   </node>
 
   <node name="circle" pkg="nuturtle_control" exec="circle" 
