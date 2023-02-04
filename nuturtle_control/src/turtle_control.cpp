@@ -70,6 +70,8 @@ public:
         throw(error);
     }
 
+    time0 = -1.0;
+
     twist_sub_ = create_subscription<geometry_msgs::msg::Twist>("/cmd_vel", 10, 
                  std::bind(&TurtleControl::twist_callback, this, std::placeholders::_1));
 
@@ -94,6 +96,8 @@ private:
   void timer_callback()
   {
     wheel_cmd_pub_->publish(wheel_msg);
+
+    joint_states_pub_->publish(joint_state);
 
     // geometry_msgs::msg::TransformStamped t;
 
@@ -124,12 +128,13 @@ private:
 
   }
 
-
-  void twist_callback(const geometry_msgs::msg::Twist & twist_data)
+  /// @brief Callback for subscription to /cmd_vel
+  /// @param msg - Twist from /cmd_vel
+  void twist_callback(const geometry_msgs::msg::Twist & msg)
   {
-    twist.w = twist_data.angular.z;
-    twist.x = twist_data.linear.x;
-    twist.y = twist_data.linear.y;
+    twist.w = msg.angular.z;
+    twist.x = msg.linear.x;
+    twist.y = msg.linear.y;
 
     turtlelib::DiffDrive dd {track, radius};
 
@@ -153,12 +158,32 @@ private:
     else if (wheel_msg.right_velocity < -motor_cmd_max)
     {
       wheel_msg.right_velocity = -motor_cmd_max;
-    }    
+    }
   }
 
-  void sensor_callback(const nuturtlebot_msgs::msg::SensorData::SharedPtr sdata) const
+  /// @brief Callback for subscription to /sensor_data
+  /// @param msg - SensorData from /sensor_data
+  void sensor_callback(const nuturtlebot_msgs::msg::SensorData & msg)
   {
-    
+    joint_state.name = {"wheel_left_joint", "wheel_right_joint"};
+
+    if (time0 == -1)
+    {
+      // initialize positions and velocities to 0
+      joint_state.position = {0.0, 0.0};
+      joint_state.velocity = {0.0, 0.0};
+    }
+    else{
+      // compute dphi and dt
+      double dt = msg.stamp.sec + 1e-9*msg.stamp.nanosec - time0;
+      double dphi_l = msg.left_encoder/encoder_ticks;
+      double dphi_r = msg.right_encoder/encoder_ticks;
+      joint_state.position = {joint_state.position[0] + dphi_l,
+                              joint_state.position[1] + dphi_r};
+      joint_state.velocity = {dphi_l/dt, dphi_r/dt};
+    }
+    // update "previous" time stamp
+    time0 = msg.stamp.sec + 1e-9*msg.stamp.nanosec;
   }
 
   double radius;
@@ -167,11 +192,12 @@ private:
   double motor_cmd_prs;
   int encoder_ticks;
   double collision_rad;
+  double time0;
 
   turtlelib::Twist2D twist;
   turtlelib::WheelPosn wheels;
   nuturtlebot_msgs::msg::WheelCommands wheel_msg;
-
+  sensor_msgs::msg::JointState joint_state;
   
 
   rclcpp::TimerBase::SharedPtr timer_;

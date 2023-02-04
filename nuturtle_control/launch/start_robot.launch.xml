@@ -27,10 +27,6 @@
         if="$(eval '\'$(var robot)\' == \'nusim\'')" >
   </node>
 
-  <node name="nusim" pkg="nusim" exec="nusim"
-        if="$(eval '\'$(var robot)\' == \'nusim\'')" >
-  </node>
-
   <!-- localhost - run nodes directly from the turtlebot3 -->
   <!-- <node name="nusim" pkg="nusim" exec="nusim"
         if="$(eval '\'$(var robot)\' == \'nusim\'')" >
