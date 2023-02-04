@@ -60,6 +60,8 @@ namespace turtlelib {
 
     Vector2D Transform2D::operator()(Vector2D v) const
     {
+        //! No need to create a temporary vector here.
+        //! Can return {vector x componet, vector y component directly}
         Vector2D new_v;
         new_v.x = cos(phi)*v.x - sin(phi)*v.y + tvec.x;
         new_v.y = sin(phi)*v.x + cos(phi)*v.y + tvec.y;
@@ -69,6 +71,10 @@ namespace turtlelib {
 
     Transform2D Transform2D::inv() const
     {
+        //! You should be using the Transform2D constructor to create
+        //! The new Transform2D here. Otherwise you are bypassing the
+        //! constructor and could theoretically initialize incorrectly
+        //! return {}; what goes in the {} is arguments to the Transform2D constructor
         Transform2D inverse;
         inverse.phi = -phi;
         inverse.tvec.x = -tvec.x*cos(phi)-tvec.y*sin(phi);
@@ -79,6 +85,10 @@ namespace turtlelib {
 
     Transform2D & Transform2D::operator*=(const Transform2D & rhs)
     {
+        //! Should not create this temporary Transform2D and bypass the constructor
+        //! Here you are essentially using tmp as temporary storage for 3 temporary doubles
+        //! If you need a temporary use a temporary variable since you don't actually
+        //! use tmp as a Transform2D 
         Transform2D tmp;
         tmp.phi = phi;
         tmp.tvec.x = tvec.x;
@@ -93,6 +103,7 @@ namespace turtlelib {
 
     Vector2D Transform2D::translation() const
     {
+        //! No need for a temporary, can return {tvec.x, tvec.y};
         Vector2D trans;
         trans.x = tvec.x;
         trans.y = tvec.y;
@@ -113,8 +124,8 @@ namespace turtlelib {
 
     std::istream & operator>>(std::istream & is, Transform2D & tf)
     {
-        double deg;
-        Vector2D vec;
+        double deg; //! This double is unitialized which is dangerous
+        Vector2D vec; //! Since vec has default =0 in its definition this is less dangerous, but Vector2D vec{} would ensure initialization
 
         if (is.peek() == 'd')
         {
@@ -129,8 +140,10 @@ namespace turtlelib {
             is >> deg >> vec.x >> vec.y;
         }
 
+        //! const auto rad = deg2rad(deg);
         double rad = deg2rad(deg);
 
+        //! const auto t = Transform2D(vec, rad)
         Transform2D t = Transform2D(vec, rad);
 
         tf = t;
@@ -147,6 +160,7 @@ namespace turtlelib {
 
     Twist2D Transform2D::operator()(Twist2D t) const
     {
+        //! No need for the temporary, return with {}
         Twist2D new_t;
         new_t.w = t.w;
         new_t.x = tvec.y*t.w + cos(phi)*t.x - sin(phi)*t.y;
@@ -157,7 +171,9 @@ namespace turtlelib {
 
     Vector2D normalize(const Vector2D v)
     {
+        //! no need for the temporary
         Vector2D norm;
+        //! const auto magnitude =
         double magnitude = pow(pow(v.x, 2) + pow(v.y, 2), 0.5);
         norm.x = v.x / magnitude;
         norm.y = v.y / magnitude;
@@ -167,6 +183,7 @@ namespace turtlelib {
 
 }
 
+//! Do not leave commented out debugging code in the final version
 
 // int main(void) {
 //     // std::cout << turtlelib::deg2rad(180) << "\n";

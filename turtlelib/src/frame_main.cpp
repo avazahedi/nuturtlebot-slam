@@ -1,8 +1,9 @@
 #include <iostream>
 #include "turtlelib/rigid2d.hpp"
 
+//! in C it's int main(void)
+//! in C++ it's int main()
 int main(void) {
-
     // Transform2D operations
     turtlelib::Transform2D Tab;
     turtlelib::Transform2D Tbc;
@@ -41,5 +42,5 @@ int main(void) {
     std::cout << "V_a " << Tab(V_b) << std::endl;
     std::cout << "V_b " << V_b << std::endl;
     std::cout << "V_c " << Tcb(V_b) << std::endl;
-
+    //! Forgot to return 0 at the end. This is technically undefined behavior (which means technically your program can do anything)
 }

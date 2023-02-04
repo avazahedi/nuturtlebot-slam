@@ -77,12 +77,13 @@ public:
     obstacles_y = get_parameter("obstacles.y").get_parameter_value().get<std::vector<double>>();
     if (obstacles_x.size() != obstacles_y.size()) {
       throw std::runtime_error(
-              std::string(
+          std::string( //! No need to construct a std::string temporary here, can just "Failed: " ... etc
                 "Failed: Different number of obstacle x-coordinates than obstacle y-coordinates."));
     }
 
     obstacles_r = get_parameter("obstacles.r").get_parameter_value().get<double>();
 
+    //! const auto obstacles_z = 0.25
     double obstacles_z = 0.25;
 
     // obstacles publisher
@@ -110,16 +111,16 @@ public:
     for (unsigned int i = 0; i < obstacles_x.size(); i++) {
       visualization_msgs::msg::Marker obs;
       obs.header.frame_id = "nusim/world";
-      obs.header.stamp = get_clock()->now();
+      obs.header.stamp = get_clock()->now(); //! All markers exist "at the same time" so they should technically share a timestamp
       obs.type = visualization_msgs::msg::Marker::CYLINDER;
       obs.id = i;
       obs.action = visualization_msgs::msg::Marker::ADD;
-      obs.scale.x = 2 * obstacles_r;
+      obs.scale.x = 2 * obstacles_r; //! multiply by 2.0 to be safe
       obs.scale.y = 2 * obstacles_r;
       obs.scale.z = obstacles_z;
-      obs.pose.position.x = obstacles_x[i];
-      obs.pose.position.y = obstacles_y[i];
-      obs.pose.position.z = obstacles_z / 2;
+      obs.pose.position.x = obstacles_x[i]; //! use .at() rather than []
+      obs.pose.position.y = obstacles_y[i]; //! use .at() rather than []
+      obs.pose.position.z = obstacles_z / 2; //! divide by 2.0 to be safe
       obs.pose.orientation.x = 0.0;
       obs.pose.orientation.y = 0.0;
       obs.pose.orientation.z = 0.0;

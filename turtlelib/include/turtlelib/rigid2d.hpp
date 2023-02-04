@@ -22,6 +22,8 @@ namespace turtlelib
     /// if given a compile-time constant as input
     constexpr bool almost_equal(double d1, double d2, double epsilon=1.0e-12)
     {
+        //! It is redundant to have an if statement that just returns true/false
+        //! Instead, you can return std::abs(d1-d2) < epsilon, which is a boolean itself
         if (std::abs(d1-d2) < epsilon){
             return true;
         }
@@ -35,6 +37,8 @@ namespace turtlelib
     /// \returns radians
     constexpr double deg2rad(double deg)
     {
+        //! No need for a variable here.
+        //! Be in the habit of 180.0 rather than 180 to ensure double precision
         double rad = deg * PI/180;
         return rad;
     }
@@ -44,6 +48,8 @@ namespace turtlelib
     /// \returns the angle in degrees
     constexpr double rad2deg(double rad)
     {
+        //! Be in the habit of 180.0 rather than 180 to ensure double precision
+        //! local variable definition is unneeded here
         double deg = rad * 180/PI;
         return deg;
     }

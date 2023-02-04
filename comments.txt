@@ -1,0 +1,12 @@
+1. To see location of my comments
+   1. =sudo apt install ripgrep=
+   2. From the base directory: rg //!
+      - This searches through all files for //!
+
+
+2. The rigid2d binary should not be in the git repository src/turtlelib/rigid2d as that is the output of compilation
+
+3. Your code passes all of my tests! (which is no guarantee of 100% working, but is a good start).
+
+Overall, great job, just some minor coding-style tips have been included.
+
