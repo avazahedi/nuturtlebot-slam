@@ -26,9 +26,20 @@ namespace turtlelib{
          return wheels;
     }
 
+    void DiffDrive::setWheels(WheelPosn wps)
+    {
+        wheels.left = wps.left;
+        wheels.right = wps.right;
+    }
+
     RobotConfig DiffDrive::getConfig() const
     {
         return q;
+    }
+
+    void DiffDrive::setConfig(RobotConfig config)
+    {
+        q = config;
     }
 
     WheelPosn DiffDrive::InverseKinematics(Twist2D Vb)

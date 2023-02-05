@@ -19,10 +19,14 @@ find_package(tf2_ros REQUIRED)
 find_package(nav_msgs REQUIRED)
 # find_package(visualization_msgs REQUIRED)
 
-# find_package(rosidl_default_generators REQUIRED)
+find_package(rosidl_default_generators REQUIRED)
 
-# rosidl_generate_interfaces(${PROJECT_NAME}_srv "srv/Teleport.srv" LIBRARY_NAME ${PROJECT_NAME})
-# rosidl_get_typesupport_target(cpp_typesupport_target ${PROJECT_NAME}_srv "rosidl_typesupport_cpp")
+rosidl_generate_interfaces(${PROJECT_NAME}_srv 
+                           "srv/InitialPose.srv" 
+                           LIBRARY_NAME ${PROJECT_NAME})
+rosidl_get_typesupport_target(cpp_typesupport_target 
+                              ${PROJECT_NAME}_srv 
+                              "rosidl_typesupport_cpp")
 
 add_executable(turtle_control src/turtle_control.cpp)
 ament_target_dependencies(
@@ -48,7 +52,7 @@ ament_target_dependencies(
 )
 
 target_link_libraries(turtle_control turtlelib::turtlelib)
-target_link_libraries(odometry turtlelib::turtlelib)
+target_link_libraries(odometry turtlelib::turtlelib "${cpp_typesupport_target}")
 
 install(TARGETS
   turtle_control

@@ -1,27 +1,19 @@
 /// \file
-/// \brief The nusim node provides a simulated robot environment.
+/// \brief The odometry node publishes odometry messages and the odometry transform.
 ///
 /// PARAMETERS:
-///     rate (int): frequency of timer callback (defaults to 200 Hz)
-///     x0: initial x-coordinate of the robot (m)
-///     y0: initial y-coordinate of the robot (m)
-///     theta0: initial rotation of the robot (rad)
-///     obstacles
-///         x: list of x-coordinates of obstacles (m)
-///         y: list of y-coordinates of obstacles (m)
-///         r: radius of obstacles (m)
+///     wheel_radius (double): wheel radius
+///     track_width (double): track width (distance between the wheels)
+///     body_id (string): name of the body frame of the robot
+///     odom_id (string): name of the odometry frame
+///     wheel_left (string): name of the left wheel joint
+///     wheel_right (string): name of the right wheel joint
 /// PUBLISHES:
-///     obstacles (visualization_msgs/MarkerArray): publishes the marker array of all current
-///                                                 obstacles every iteration
-///     timestep (std_msgs/UInt64): publishes the current timestep every iteration
+///     odom (nav_msgs::msg::Odometry): publishes odometry
 /// SUBSCRIBES:
-///     No subscriptions
-/// SERVERS:
-///     reset (Empty): resets the timestep to 0 and teleports the robot back to its
-///                    initial configuration
-///     Teleport (nusim/srv/Teleport.srv): teleports the robot to the specified x, y, theta
-/// CLIENTS:
-///     No clients
+///     joint_state (sensor_msgs/JointState): joint states of the robot
+/// SERVICES:
+///     initial_pose (nuturtle_control/InitialPose.srv): resets the location of the odometry
 
 #include <chrono>
 #include <functional>
@@ -30,20 +22,18 @@
 #include <vector>
 
 #include "rclcpp/rclcpp.hpp"
-// #include "geometry_msgs/msg/twist.hpp"
-// #include "nuturtlebot_msgs/msg/wheel_commands.hpp"
-// #include "nuturtlebot_msgs/msg/sensor_data.hpp"
 #include "sensor_msgs/msg/joint_state.hpp"
 #include "turtlelib/diff_drive.hpp"
 #include "nav_msgs/msg/odometry.hpp"
-// #include "std_srvs/srv/empty.hpp"
 #include "geometry_msgs/msg/transform_stamped.hpp"
 #include "tf2/LinearMath/Quaternion.h"
 #include "tf2_ros/transform_broadcaster.h"
+#include "nuturtle_control/srv/initial_pose.hpp"
 
 using namespace std::chrono_literals;
 
-/// \brief The NUSim class inherits the Node class and creates a simulated robot environment.
+/// \brief The Odometry class inherits the Node class and publishes odometry messages and 
+///        the odometry transform.
 class Odometry : public rclcpp::Node
 {
 public:
@@ -79,6 +69,12 @@ public:
     // subscriber
     js_sub_ = create_subscription<sensor_msgs::msg::JointState>("/joint_state", 10,
                   std::bind(&Odometry::js_callback, this, std::placeholders::_1));
+
+    // initial pose service
+    initial_pose_srv_ = create_service<nuturtle_control::srv::InitialPose>(
+      "initial_pose", std::bind(
+        &Odometry::initpose_callback, this,
+        std::placeholders::_1, std::placeholders::_2));
 
     // transform broadcaster
     tf_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
@@ -146,6 +142,21 @@ private:
     }  
   }
 
+  /// \brief Callback for initial_pose service, which resets the location of the odometry
+  /// \param request - service request providing the configuration of the robot
+  /// \param response - unused
+  void initpose_callback(
+    const std::shared_ptr<nuturtle_control::srv::InitialPose::Request> request,
+    std::shared_ptr<nuturtle_control::srv::InitialPose::Response>)
+  {
+    turtlelib::RobotConfig cfg;
+    cfg.theta = request->theta;
+    cfg.x = request->x;
+    cfg.y = request->y;
+
+    dd.setConfig(cfg);
+  }
+
   std::string body_id;
   std::string odom_id;
   std::string wheel_left;
@@ -154,26 +165,14 @@ private:
   double track;
   turtlelib::DiffDrive dd;
 
-//   turtlelib::Twist2D twist;
-//   turtlelib::WheelPosn wheels;
-//   nuturtlebot_msgs::msg::WheelCommands wheel_msg;
-//   sensor_msgs::msg::JointState joint_state;
   nav_msgs::msg::Odometry odom_msg;
 
   rclcpp::TimerBase::SharedPtr timer_;
   rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odom_pub_;
   rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr js_sub_;
   
-//   rclcpp::Service<std_srvs::srv::Empty>::SharedPtr reset_srv_;
-//   rclcpp::Service<nusim::srv::Teleport>::SharedPtr teleport_srv_;
+  rclcpp::Service<nuturtle_control::srv::InitialPose>::SharedPtr initial_pose_srv_;
   std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
-//   double x;
-//   double y;
-//   double theta;
-//   std::vector<double> obstacles_x;
-//   std::vector<double> obstacles_y;
-//   double obstacles_r;
-//   visualization_msgs::msg::MarkerArray obstacles_mkrs;
 
 };
 

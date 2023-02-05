@@ -76,9 +76,17 @@ namespace turtlelib
         /// @return wheel positions
         WheelPosn getWheels() const;
 
+        /// @brief Setter for wheel positions
+        /// @param wps - wheel positions to set to
+        void setWheels(WheelPosn wps);
+
         /// @brief Getter for robot configuration
         /// @return robot config q
         RobotConfig getConfig() const;
+
+        /// @brief Setter for robot configuration
+        /// @param config - configuration to set to
+        void setConfig(RobotConfig config);
 
         /// @brief Compute inverse kinematics given a body twist
         /// @param Vb - the body twist to compute wheel positions from
