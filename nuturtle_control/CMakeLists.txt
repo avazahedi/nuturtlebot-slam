@@ -54,6 +54,8 @@ ament_target_dependencies(
 target_link_libraries(turtle_control turtlelib::turtlelib)
 target_link_libraries(odometry turtlelib::turtlelib "${cpp_typesupport_target}")
 
+ament_export_dependencies(rosidl_default_runtime)
+
 install(TARGETS
   turtle_control
   odometry
