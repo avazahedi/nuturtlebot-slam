@@ -1,15 +1,18 @@
 <launch>
 
+  <arg name="config_file" default="$(find-pkg-share nusim)/config/basic_world.yaml" />
+  <arg name="rviz_config" default="$(find-pkg-share nusim)/config/nusim.rviz" />
+
   <include file="$(find-pkg-share nuturtle_description)/launch/load_one.launch.py">
     <arg name="color" value="red" />
     <arg name="use_rviz" value="false" />
   </include>
 
-  <node name="rviz2" pkg="rviz2" exec="rviz2" args="-d $(find-pkg-share nusim)/config/nusim.rviz" > 
+  <node name="rviz2" pkg="rviz2" exec="rviz2" args="-d $(var rviz_config)" >
   </node>
 
   <node name="nusim" pkg="nusim" exec="nusim" > 
-    <param from="$(find-pkg-share nusim)/config/basic_world.yaml"/>
+    <param from="$(var config_file)"/>
   </node>
 
 </launch>
