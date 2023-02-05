@@ -131,6 +131,8 @@ private:
 
   }
 
+  /// @brief Callback for joint_state subscription
+  /// @param msg - joint state data
   void js_callback(const sensor_msgs::msg::JointState & msg)
   {
     turtlelib::WheelPosn wheels;
