@@ -11,9 +11,17 @@
     <param from="$(find-pkg-share nuturtle_description)/config/diff_params.yaml"/>
   </node>
 
-  <node name="circle" pkg="nuturtle_control" exec="circle" 
-        if="$(eval '\'$(var cmd_src)\' == \'circle\'')" >
+  <node name="odometry" pkg="nuturtle_control" exec="odometry" >
+    <param from="$(find-pkg-share nuturtle_description)/config/diff_params.yaml"/>
+    <param name="body_id" value="base_footprint"/>
+    <param name="odom_id" value="odom"/>
+    <param name="wheel_left" value="wheel_left_joint"/>
+    <param name="wheel_right" value="wheel_right_joint"/>
   </node>
+
+  <!-- <node name="circle" pkg="nuturtle_control" exec="circle" 
+        if="$(eval '\'$(var cmd_src)\' == \'circle\'')" >
+  </node> -->
 
   <node pkg="teleop_twist_keyboard" exec="teleop_twist_keyboard" name="teleop" output="screen" 
         launch-prefix="xterm -e" if="$(eval '\'$(var cmd_src)\' == \'teleop\'')">

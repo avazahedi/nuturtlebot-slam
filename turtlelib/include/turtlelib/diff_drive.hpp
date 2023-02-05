@@ -41,7 +41,10 @@ namespace turtlelib
         WheelPosn wheels;       // wheel positions
         RobotConfig q;          // robot configuration
 
-    public:        
+    public:
+        /// @brief Default diff-drive robot.
+        DiffDrive();
+
         /// @brief A diff-drive robot with a given track width and wheel radius. 
         /// @param track_width - distance between the wheels
         /// @param radius - wheel radius

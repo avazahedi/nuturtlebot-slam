@@ -4,6 +4,8 @@
 
 namespace turtlelib{
 
+    DiffDrive::DiffDrive(): track{0.16}, r{0.033}, wheels{0.0, 0.0}, q{0.0, 0.0, 0.0} {}
+
     DiffDrive::DiffDrive(double track_width, double radius): track{track_width}, r{radius}, 
                          wheels{0.0, 0.0}, q{0.0, 0.0, 0.0} {}
 

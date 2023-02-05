@@ -1,27 +1,21 @@
 /// \file
-/// \brief The nusim node provides a simulated robot environment.
+/// \brief The turtle_control node enables control of the turtlebot.
 ///
 /// PARAMETERS:
-///     rate (int): frequency of timer callback (defaults to 200 Hz)
-///     x0: initial x-coordinate of the robot (m)
-///     y0: initial y-coordinate of the robot (m)
-///     theta0: initial rotation of the robot (rad)
-///     obstacles
-///         x: list of x-coordinates of obstacles (m)
-///         y: list of y-coordinates of obstacles (m)
-///         r: radius of obstacles (m)
+///     wheel_radius (double): wheel radius
+///     track_width (double): track width (distance between the wheels)
+///     motor_cmd_max (int): maximum ticks for motor commands
+///     motor_cmd_per_rad_sec (double): number of rad/s equivalent to 1 motor command tick
+///     encoder_ticks_per_rad (int): number of encoder ticks per radian
+///     collision_radius (double): radius for collision detection
 /// PUBLISHES:
-///     obstacles (visualization_msgs/MarkerArray): publishes the marker array of all current
-///                                                 obstacles every iteration
-///     timestep (std_msgs/UInt64): publishes the current timestep every iteration
+///     wheel_cmd (nuturtlebot_msgs::msg::WheelCommands): publishes left and right wheel velocities
+///
+///     joint_state (sensor_msgs::msg::JointState): publishes robot joint states
 /// SUBSCRIBES:
-///     No subscriptions
-/// SERVERS:
-///     reset (Empty): resets the timestep to 0 and teleports the robot back to its
-///                    initial configuration
-///     Teleport (nusim/srv/Teleport.srv): teleports the robot to the specified x, y, theta
-/// CLIENTS:
-///     No clients
+///     cmd_vel (geometry_msgs/Twist): velocity commands for the body of the robot
+///
+///     sensor_data (nuturtlebot_msgs::msg::SensorData): velocity of each wheel (ticks)
 
 #include <chrono>
 #include <functional>
@@ -35,14 +29,11 @@
 #include "nuturtlebot_msgs/msg/sensor_data.hpp"
 #include "sensor_msgs/msg/joint_state.hpp"
 #include "turtlelib/diff_drive.hpp"
-// #include "std_srvs/srv/empty.hpp"
-// #include "geometry_msgs/msg/transform_stamped.hpp"
-// #include "tf2/LinearMath/Quaternion.h"
-// #include "tf2_ros/transform_broadcaster.h"
 
 using namespace std::chrono_literals;
 
-/// \brief The NUSim class inherits the Node class and creates a simulated robot environment.
+/// \brief The TurtleControl class inherits the Node class and enables control of the turtlebot 
+///        via Twist messages on the cmd_vel topic.
 class TurtleControl : public rclcpp::Node
 {
 public:
@@ -72,19 +63,17 @@ public:
 
     time0 = -1.0;
 
+    // subscriptions
     twist_sub_ = create_subscription<geometry_msgs::msg::Twist>("/cmd_vel", 10, 
                  std::bind(&TurtleControl::twist_callback, this, std::placeholders::_1));
 
     sensor_sub_ = create_subscription<nuturtlebot_msgs::msg::SensorData>("/sensor_data", 10,
                   std::bind(&TurtleControl::sensor_callback, this, std::placeholders::_1));
 
+    // publishers
     wheel_cmd_pub_ = create_publisher<nuturtlebot_msgs::msg::WheelCommands>("/wheel_cmd", 10);
 
     joint_states_pub_ = create_publisher<sensor_msgs::msg::JointState>("/joint_state", 10);
-
-    // // transform broadcaster
-    // tf_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
-
 
     // timer
     timer_ = create_wall_timer(
@@ -96,36 +85,7 @@ private:
   void timer_callback()
   {
     wheel_cmd_pub_->publish(wheel_msg);
-
     joint_states_pub_->publish(joint_state);
-
-    // geometry_msgs::msg::TransformStamped t;
-
-    // // Read message content and assign it to
-    // // corresponding tf variables
-    // t.header.stamp = get_clock()->now();
-    // t.header.frame_id = "nusim/world";
-    // t.child_frame_id = "red/base_footprint";
-
-    // // Set transform translation
-    // t.transform.translation.x = x;
-    // t.transform.translation.y = y;
-    // t.transform.translation.z = 0.0;
-
-    // // Set transform rotation in quaternion
-    // tf2::Quaternion q;
-    // q.setRPY(0, 0, theta);
-    // t.transform.rotation.x = q.x();
-    // t.transform.rotation.y = q.y();
-    // t.transform.rotation.z = q.z();
-    // t.transform.rotation.w = q.w();
-
-    // // Send the transformation
-    // tf_broadcaster_->sendTransform(t);
-
-    // // Publish to ~/obstacles
-    // obstacles_pub_->publish(obstacles_mkrs);
-
   }
 
   /// @brief Callback for subscription to /cmd_vel
@@ -140,7 +100,7 @@ private:
 
     wheels = dd.InverseKinematics(twist);
 
-    // convert to motor ticks/rad
+    // convert to motor ticks
     wheel_msg.left_velocity = (int32_t)wheels.left/motor_cmd_prs;
     wheel_msg.right_velocity = (int32_t)wheels.right/motor_cmd_prs;
     if (wheel_msg.left_velocity > motor_cmd_max)
@@ -199,24 +159,11 @@ private:
   nuturtlebot_msgs::msg::WheelCommands wheel_msg;
   sensor_msgs::msg::JointState joint_state;
   
-
   rclcpp::TimerBase::SharedPtr timer_;
   rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr twist_sub_;
   rclcpp::Subscription<nuturtlebot_msgs::msg::SensorData>::SharedPtr sensor_sub_;
   rclcpp::Publisher<nuturtlebot_msgs::msg::WheelCommands>::SharedPtr wheel_cmd_pub_;
   rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr joint_states_pub_;
-  
-//   rclcpp::Service<std_srvs::srv::Empty>::SharedPtr reset_srv_;
-//   rclcpp::Service<nusim::srv::Teleport>::SharedPtr teleport_srv_;
-//   std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
-//   double x;
-//   double y;
-//   double theta;
-//   std::vector<double> obstacles_x;
-//   std::vector<double> obstacles_y;
-//   double obstacles_r;
-//   visualization_msgs::msg::MarkerArray obstacles_mkrs;
-
 };
 
 int main(int argc, char * argv[])
