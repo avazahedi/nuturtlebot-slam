@@ -120,44 +120,37 @@ namespace turtlelib {
 
     Vector2D Transform2D::operator()(Vector2D v) const
     {
-        Vector2D new_v;
-        new_v.x = cos(phi)*v.x - sin(phi)*v.y + tvec.x;
-        new_v.y = sin(phi)*v.x + cos(phi)*v.y + tvec.y;
-
-        return new_v;
+        return {cos(phi)*v.x - sin(phi)*v.y + tvec.x, sin(phi)*v.x + cos(phi)*v.y + tvec.y};
     }
 
     Transform2D Transform2D::inv() const
     {
-        Transform2D inverse;
-        inverse.phi = -phi;
-        inverse.tvec.x = -tvec.x*cos(phi)-tvec.y*sin(phi);
-        inverse.tvec.y = -tvec.y*cos(phi)+tvec.x*sin(phi);
+        double new_phi = -phi;
+        Vector2D new_v;
+        new_v.x = -tvec.x*cos(phi)-tvec.y*sin(phi);
+        new_v.y = -tvec.y*cos(phi)+tvec.x*sin(phi);
+
+        Transform2D inverse {new_v, new_phi};
 
         return inverse;
     }
 
     Transform2D & Transform2D::operator*=(const Transform2D & rhs)
     {
-        Transform2D tmp;
-        tmp.phi = phi;
-        tmp.tvec.x = tvec.x;
-        tmp.tvec.y = tvec.y;
+        double tmp_phi = phi;
+        double tmp_x = tvec.x;
+        double tmp_y = tvec.y;
 
-        phi = tmp.phi + rhs.phi;
-        tvec.x = cos(tmp.phi)*rhs.tvec.x - sin(tmp.phi)*rhs.tvec.y + tmp.tvec.x;
-        tvec.y = sin(tmp.phi)*rhs.tvec.x + cos(tmp.phi)*rhs.tvec.y + tmp.tvec.y;
+        phi = tmp_phi + rhs.phi;
+        tvec.x = cos(tmp_phi)*rhs.tvec.x - sin(tmp_phi)*rhs.tvec.y + tmp_x;
+        tvec.y = sin(tmp_phi)*rhs.tvec.x + cos(tmp_phi)*rhs.tvec.y + tmp_y;
 
         return *this;
     }
 
     Vector2D Transform2D::translation() const
     {
-        Vector2D trans;
-        trans.x = tvec.x;
-        trans.y = tvec.y;
-
-        return trans;
+        return {tvec.x, tvec.y};
     }
 
     double Transform2D::rotation() const
@@ -173,8 +166,8 @@ namespace turtlelib {
 
     std::istream & operator>>(std::istream & is, Transform2D & tf)
     {
-        double deg;
-        Vector2D vec;
+        double deg = 0.0;
+        Vector2D vec{};
 
         if (is.peek() == 'd')
         {
@@ -189,9 +182,9 @@ namespace turtlelib {
             is >> deg >> vec.x >> vec.y;
         }
 
-        double rad = deg2rad(deg);
+        const auto rad = deg2rad(deg);
 
-        Transform2D t = Transform2D(vec, rad);
+        const auto t = Transform2D(vec, rad);
 
         tf = t;
 
@@ -207,22 +200,13 @@ namespace turtlelib {
 
     Twist2D Transform2D::operator()(Twist2D t) const
     {
-        Twist2D new_t;
-        new_t.w = t.w;
-        new_t.x = tvec.y*t.w + cos(phi)*t.x - sin(phi)*t.y;
-        new_t.y = -tvec.x*t.w + sin(phi)*t.x + cos(phi)*t.y;
-
-        return new_t;
+        return {t.w, tvec.y*t.w + cos(phi)*t.x - sin(phi)*t.y, -tvec.x*t.w + sin(phi)*t.x + cos(phi)*t.y};
     }
 
     Vector2D normalize(const Vector2D v)
     {
-        Vector2D norm;
-        double magnitude = pow(pow(v.x, 2) + pow(v.y, 2), 0.5);
-        norm.x = v.x / magnitude;
-        norm.y = v.y / magnitude;
-
-        return norm;
+        const auto magnitude = pow(pow(v.x, 2) + pow(v.y, 2), 0.5);
+        return {v.x / magnitude, v.y / magnitude};
     }
 
     Transform2D integrate_twist(Twist2D t)
@@ -250,43 +234,3 @@ namespace turtlelib {
     }
 
 }
-
-
-// int main(void) {
-//     // std::cout << turtlelib::deg2rad(180) << "\n";
-//     // struct turtlelib::Vector2D v;
-//     // v.x = 1.4;
-//     // v.y = 2.8;
-//     // std::cout << v << std::endl;
-
-//     // struct turtlelib::Vector2D w;
-//     // std::cin >> w;
-//     // std::cout << w << std::endl;
-
-//     // struct turtlelib::Twist2D t;
-//     // t.w = 0.9;
-//     // t.x = 1.6;
-//     // t.y = 1.2;
-//     // std::cout << t << std::endl;
-
-//     // struct turtlelib::Twist2D t1;
-//     // std::cin >> t1;
-//     // std::cout << t1 << std::endl;   
-
-//     struct turtlelib::Vector2D v;
-//     v.x = 0.;
-//     v.y = 1.;
-
-//     double rad = 3.14;
-//     turtlelib::Transform2D tf = turtlelib::Transform2D(v, rad);
-
-//     turtlelib::Transform2D x;
-//     std::cin >> x;
-//     std::cout << x << std::endl;
-
-//     std::cout << tf*x << std::endl;
-
-//     // turtlelib::Transform2D Tab(1.5708, v);
-
-//     return 0;
-// }

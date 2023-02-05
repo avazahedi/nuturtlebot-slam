@@ -83,7 +83,7 @@ public:
 
     obstacles_r = get_parameter("obstacles.r").get_parameter_value().get<double>();
 
-    const auto obstacles_z = 0.25
+    const auto obstacles_z = 0.25;
 
     // obstacles publisher
     obstacles_pub_ = create_publisher<visualization_msgs::msg::MarkerArray>("~/obstacles", 10);

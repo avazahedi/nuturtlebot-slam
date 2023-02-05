@@ -23,12 +23,7 @@ namespace turtlelib
     /// if given a compile-time constant as input
     constexpr bool almost_equal(double d1, double d2, double epsilon=1.0e-12)
     {
-        if (std::abs(d1-d2) < epsilon){
-            return true;
-        }
-        else {
-            return false;
-        }
+        return (std::abs(d1-d2) < epsilon);
     }
 
     /// \brief convert degrees to radians
@@ -36,8 +31,7 @@ namespace turtlelib
     /// \returns radians
     constexpr double deg2rad(double deg)
     {
-        double rad = deg * PI/180;
-        return rad;
+        return (deg * PI/180.0);
     }
 
     /// \brief convert radians to degrees
@@ -45,8 +39,7 @@ namespace turtlelib
     /// \returns the angle in degrees
     constexpr double rad2deg(double rad)
     {
-        double deg = rad * 180/PI;
-        return deg;
+        return (rad * 180.0/PI);
     }
 
     /// \brief convert radians to degrees

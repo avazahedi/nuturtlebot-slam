@@ -1,7 +1,7 @@
 #include <iostream>
 #include "turtlelib/rigid2d.hpp"
 
-int main(void) {
+int main() {
 
     // Transform2D operations
     turtlelib::Transform2D Tab;
@@ -42,4 +42,5 @@ int main(void) {
     std::cout << "V_b " << V_b << std::endl;
     std::cout << "V_c " << Tcb(V_b) << std::endl;
 
+    return 0;
 }
