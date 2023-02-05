@@ -38,6 +38,7 @@
 #include "nusim/srv/teleport.hpp"
 #include "visualization_msgs/msg/marker.hpp"
 #include "visualization_msgs/msg/marker_array.hpp"
+#include "nuturtlebot_msgs/msg/wheel_commands.hpp"
 
 using namespace std::chrono_literals;
 
@@ -77,15 +78,12 @@ public:
     obstacles_y = get_parameter("obstacles.y").get_parameter_value().get<std::vector<double>>();
     if (obstacles_x.size() != obstacles_y.size()) {
       int error = 0;
-      // throw std::runtime_error(
-      //         std::string(
-      //           "Failed: Different number of obstacle x-coordinates than obstacle y-coordinates."));
       throw (error);
     }
 
     obstacles_r = get_parameter("obstacles.r").get_parameter_value().get<double>();
 
-    double obstacles_z = 0.25;
+    const auto obstacles_z = 0.25
 
     // obstacles publisher
     obstacles_pub_ = create_publisher<visualization_msgs::msg::MarkerArray>("~/obstacles", 10);
@@ -109,19 +107,20 @@ public:
     tf_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
 
     // populate obstacles MarkerArray
+    auto marker_stamp = get_clock()->now();
     for (unsigned int i = 0; i < obstacles_x.size(); i++) {
       visualization_msgs::msg::Marker obs;
       obs.header.frame_id = "nusim/world";
-      obs.header.stamp = get_clock()->now();
+      obs.header.stamp = marker_stamp; // get_clock()->now();
       obs.type = visualization_msgs::msg::Marker::CYLINDER;
       obs.id = i;
       obs.action = visualization_msgs::msg::Marker::ADD;
-      obs.scale.x = 2 * obstacles_r;
-      obs.scale.y = 2 * obstacles_r;
+      obs.scale.x = 2.0 * obstacles_r;
+      obs.scale.y = 2.0 * obstacles_r;
       obs.scale.z = obstacles_z;
-      obs.pose.position.x = obstacles_x[i];
-      obs.pose.position.y = obstacles_y[i];
-      obs.pose.position.z = obstacles_z / 2;
+      obs.pose.position.x = obstacles_x.at(i);
+      obs.pose.position.y = obstacles_y.at(i);
+      obs.pose.position.z = obstacles_z / 2.0;
       obs.pose.orientation.x = 0.0;
       obs.pose.orientation.y = 0.0;
       obs.pose.orientation.z = 0.0;
