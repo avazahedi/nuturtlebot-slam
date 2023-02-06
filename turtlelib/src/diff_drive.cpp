@@ -61,7 +61,7 @@ namespace turtlelib{
     }        
 
 
-    void DiffDrive::ForwardKinematics(WheelPosn new_posns)
+    Twist2D DiffDrive::ForwardKinematics(WheelPosn new_posns)
     {
         // need the difference in wheel positions
         WheelPosn dphi {new_posns.left-wheels.left, new_posns.right-wheels.right};
@@ -85,6 +85,8 @@ namespace turtlelib{
         new_q.y = q.y + dvec.x*sin(q.theta) + dvec.y*cos(q.theta);
 
         q = new_q;
+
+        return Vb;
     }
 
         

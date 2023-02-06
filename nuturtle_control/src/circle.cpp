@@ -60,7 +60,7 @@ public:
 
     // timer
     timer_ = create_wall_timer(
-      std::chrono::milliseconds(500), std::bind(&Circle::timer_callback, this));
+      std::chrono::milliseconds(1000/frequency), std::bind(&Circle::timer_callback, this));
   }
 
 private:

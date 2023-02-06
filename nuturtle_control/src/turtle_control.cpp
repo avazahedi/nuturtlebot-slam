@@ -61,7 +61,11 @@ public:
         throw(error);
     }
 
-    time0 = -1.0;
+    // time0 = -1.0;
+
+    // initialize positions and velocities to 0
+    joint_state.position = {0.0, 0.0};
+    joint_state.velocity = {0.0, 0.0};
 
     // subscriptions
     twist_sub_ = create_subscription<geometry_msgs::msg::Twist>("/cmd_vel", 10, 
@@ -73,7 +77,7 @@ public:
     // publishers
     wheel_cmd_pub_ = create_publisher<nuturtlebot_msgs::msg::WheelCommands>("/wheel_cmd", 10);
 
-    joint_states_pub_ = create_publisher<sensor_msgs::msg::JointState>("/joint_state", 10);
+    joint_states_pub_ = create_publisher<sensor_msgs::msg::JointState>("/joint_states", 10);
 
     // timer
     timer_ = create_wall_timer(
@@ -82,11 +86,7 @@ public:
 
 private:
   /// \brief Timer callback that runs continuously on the provided frequency
-  void timer_callback()
-  {
-    wheel_cmd_pub_->publish(wheel_msg);
-    joint_states_pub_->publish(joint_state);
-  }
+  void timer_callback(){}
 
   /// @brief Callback for subscription to /cmd_vel
   /// @param msg - Twist from /cmd_vel
@@ -119,6 +119,8 @@ private:
     {
       wheel_msg.right_velocity = -motor_cmd_max;
     }
+
+    wheel_cmd_pub_->publish(wheel_msg);
   }
 
   /// @brief Callback for subscription to /sensor_data
@@ -126,6 +128,8 @@ private:
   void sensor_callback(const nuturtlebot_msgs::msg::SensorData & msg)
   {
     joint_state.name = {"wheel_left_joint", "wheel_right_joint"};
+    joint_state.header.stamp = msg.stamp;
+    // joint_state.header.frame_id = '';
 
     if (time0 == -1)
     {
@@ -134,16 +138,20 @@ private:
       joint_state.velocity = {0.0, 0.0};
     }
     else{
-      // compute dphi and dt
+      // compute dphi
       double dt = msg.stamp.sec + 1e-9*msg.stamp.nanosec - time0;
-      double dphi_l = msg.left_encoder/encoder_ticks;
-      double dphi_r = msg.right_encoder/encoder_ticks;
-      joint_state.position = {joint_state.position[0] + dphi_l,
-                              joint_state.position[1] + dphi_r};
+      RCLCPP_INFO_STREAM(get_logger(), "dt: " << dt);
+      double dphi_l = (double)msg.left_encoder/encoder_ticks;
+      double dphi_r = (double)msg.right_encoder/encoder_ticks;
+      RCLCPP_INFO_STREAM(get_logger(), "sensor data: " << dphi_l << " " << dphi_r);
+      joint_state.position = {dphi_l,
+                              dphi_r};
       joint_state.velocity = {dphi_l/dt, dphi_r/dt};
     }
     // update "previous" time stamp
     time0 = msg.stamp.sec + 1e-9*msg.stamp.nanosec;
+    RCLCPP_INFO_STREAM(get_logger(), "joint states: " << joint_state.position.at(0) << " " << joint_state.velocity.at(0));
+    joint_states_pub_->publish(joint_state);
   }
 
   double radius;

@@ -63,11 +63,14 @@ public:
 
     turtlelib::DiffDrive dd {track, radius};
 
+    odom_msg.header.frame_id = odom_id;
+    odom_msg.child_frame_id = body_id;
+
     // publisher
     odom_pub_ = create_publisher<nav_msgs::msg::Odometry>("/odom", 10);
 
     // subscriber
-    js_sub_ = create_subscription<sensor_msgs::msg::JointState>("/joint_state", 10,
+    js_sub_ = create_subscription<sensor_msgs::msg::JointState>("/joint_states", 10,
                   std::bind(&Odometry::js_callback, this, std::placeholders::_1));
 
     // initial pose service
@@ -115,17 +118,6 @@ private:
     // Send the transformation
     tf_broadcaster_->sendTransform(t);
 
-    // odom_msg
-    odom_msg.header.stamp = get_clock()->now();
-    odom_msg.header.frame_id = odom_id;
-    odom_msg.child_frame_id = body_id;
-    odom_msg.pose.pose.position.x = q.x;
-    odom_msg.pose.pose.position.y = q.y;
-    odom_msg.pose.pose.orientation.x = quat.x();
-    odom_msg.pose.pose.orientation.y = quat.y();
-    odom_msg.pose.pose.orientation.z = quat.z();
-    odom_msg.pose.pose.orientation.w = quat.w();
-
     // publishers
     odom_pub_->publish(odom_msg);
 
@@ -136,12 +128,26 @@ private:
   void js_callback(const sensor_msgs::msg::JointState & msg)
   {
     turtlelib::WheelPosn wheels;
-    if (msg.position.size() > 2)
-    {
-        wheels.left = msg.position[0];
-        wheels.right = msg.position[1];
-        dd.ForwardKinematics(wheels);  
-    }  
+    wheels.left = msg.position[0];
+    wheels.right = msg.position[1];
+    turtlelib::Twist2D Vb = dd.ForwardKinematics(wheels);
+    turtlelib::RobotConfig q = dd.getConfig();
+
+    // odom_msg
+    // odom_msg.header.stamp = get_clock()->now();
+    odom_msg.header.stamp = msg.header.stamp;
+    odom_msg.pose.pose.position.x = q.x;
+    odom_msg.pose.pose.position.y = q.y;
+    tf2::Quaternion quat;
+    quat.setRPY(0, 0, q.theta);
+    odom_msg.pose.pose.orientation.x = quat.x();
+    odom_msg.pose.pose.orientation.y = quat.y();
+    odom_msg.pose.pose.orientation.z = quat.z();
+    odom_msg.pose.pose.orientation.w = quat.w();
+    odom_msg.twist.twist.angular.z = Vb.w;
+    odom_msg.twist.twist.linear.x = Vb.x;
+    odom_msg.twist.twist.linear.y = Vb.y;
+    // }  
   }
 
   /// \brief Callback for initial_pose service, which resets the location of the odometry

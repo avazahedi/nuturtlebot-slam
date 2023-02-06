@@ -95,7 +95,8 @@ namespace turtlelib
 
         /// @brief Given new wheel positions, update the robot configuration q
         /// @param new_posns - new wheel positions
-        void ForwardKinematics(WheelPosn new_posns);
+        /// @return a 2D twist
+        Twist2D ForwardKinematics(WheelPosn new_posns);
 
     };
 }

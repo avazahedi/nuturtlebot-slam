@@ -39,6 +39,9 @@
 #include "visualization_msgs/msg/marker.hpp"
 #include "visualization_msgs/msg/marker_array.hpp"
 #include "nuturtlebot_msgs/msg/wheel_commands.hpp"
+#include "turtlelib/diff_drive.hpp"
+#include "nuturtlebot_msgs/msg/sensor_data.hpp"
+
 
 using namespace std::chrono_literals;
 
@@ -85,11 +88,33 @@ public:
 
     const auto obstacles_z = 0.25;
 
+    // diff drive parameters
+    declare_parameter("wheel_radius", -1.0);
+    declare_parameter("track_width", -1.0);
+    declare_parameter("encoder_ticks_per_rad", -1);
+    radius = get_parameter("wheel_radius").get_parameter_value().get<double>();
+    track = get_parameter("track_width").get_parameter_value().get<double>();
+    encoder_ticks = get_parameter("encoder_ticks_per_rad").get_parameter_value().get<int>();
+    if (radius==-1 || track==-1 || encoder_ticks==-1)
+    {
+        int error = 1;
+        throw(error);
+    }
+
+    turtlelib::DiffDrive dd {track, radius};
+
     // obstacles publisher
     obstacles_pub_ = create_publisher<visualization_msgs::msg::MarkerArray>("~/obstacles", 10);
 
     // timestep publisher
     timestep_pub_ = create_publisher<std_msgs::msg::UInt64>("~/timestep", 10);
+
+    // red/sensor_data publisher
+    red_sensor_pub_ = create_publisher<nuturtlebot_msgs::msg::SensorData>("red/sensor_data", 10);
+
+    // red/wheel_cmd subscriber
+    red_wheelcmd_sub_ = create_subscription<nuturtlebot_msgs::msg::WheelCommands>("red/wheel_cmd", 
+                        10, std::bind(&NUSim::red_wc_callback, this, std::placeholders::_1));
 
     // reset service
     reset_srv_ = create_service<std_srvs::srv::Empty>(
@@ -111,7 +136,7 @@ public:
     for (unsigned int i = 0; i < obstacles_x.size(); i++) {
       visualization_msgs::msg::Marker obs;
       obs.header.frame_id = "nusim/world";
-      obs.header.stamp = marker_stamp; // get_clock()->now();
+      obs.header.stamp = marker_stamp;
       obs.type = visualization_msgs::msg::Marker::CYLINDER;
       obs.id = i;
       obs.action = visualization_msgs::msg::Marker::ADD;
@@ -160,12 +185,12 @@ private:
     t.transform.translation.z = 0.0;
 
     // Set transform rotation in quaternion
-    tf2::Quaternion q;
-    q.setRPY(0, 0, theta);
-    t.transform.rotation.x = q.x();
-    t.transform.rotation.y = q.y();
-    t.transform.rotation.z = q.z();
-    t.transform.rotation.w = q.w();
+    tf2::Quaternion quat;
+    quat.setRPY(0, 0, theta);
+    t.transform.rotation.x = quat.x();
+    t.transform.rotation.y = quat.y();
+    t.transform.rotation.z = quat.z();
+    t.transform.rotation.w = quat.w();
 
     // Send the transformation
     tf_broadcaster_->sendTransform(t);
@@ -173,6 +198,28 @@ private:
     // Publish to ~/obstacles
     obstacles_pub_->publish(obstacles_mkrs);
 
+    // red_sensor_pub_->publish(wheel_cmds);
+
+  }
+
+  /// @brief Callback for red/wheel_cmd subscription to receive motion commands
+  /// @param msg - wheel commands
+  void red_wc_callback(const nuturtlebot_msgs::msg::WheelCommands & msg)
+  {
+    wheel_cmds.stamp = get_clock()->now();
+    wheel_cmds.left_encoder = msg.left_velocity;
+    wheel_cmds.right_encoder = msg.right_velocity;
+
+    turtlelib::WheelPosn wheels;
+    wheels.left = msg.left_velocity / encoder_ticks;
+    wheels.right = msg.right_velocity / encoder_ticks;
+    dd.ForwardKinematics(wheels);
+    turtlelib::RobotConfig q = dd.getConfig();
+    theta = q.theta;
+    x = q.x;
+    y = q.y;
+
+    red_sensor_pub_->publish(wheel_cmds);
   }
 
   /// \brief Callback for reset service, which resets the timestep count and robot pose
@@ -209,16 +256,25 @@ private:
   rclcpp::TimerBase::SharedPtr timer_;
   rclcpp::Publisher<std_msgs::msg::UInt64>::SharedPtr timestep_pub_;
   rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr obstacles_pub_;
+  rclcpp::Publisher<nuturtlebot_msgs::msg::SensorData>::SharedPtr red_sensor_pub_;
+  rclcpp::Subscription<nuturtlebot_msgs::msg::WheelCommands>::SharedPtr red_wheelcmd_sub_;
   rclcpp::Service<std_srvs::srv::Empty>::SharedPtr reset_srv_;
   rclcpp::Service<nusim::srv::Teleport>::SharedPtr teleport_srv_;
   std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
   double x;
   double y;
   double theta;
+
   std::vector<double> obstacles_x;
   std::vector<double> obstacles_y;
   double obstacles_r;
   visualization_msgs::msg::MarkerArray obstacles_mkrs;
+
+  nuturtlebot_msgs::msg::SensorData wheel_cmds;
+  double radius;
+  double track;
+  int encoder_ticks;
+  turtlelib::DiffDrive dd;
 
 };
 
@@ -228,9 +284,18 @@ int main(int argc, char * argv[])
   try {
     rclcpp::spin(std::make_shared<NUSim>());
   } catch (int error) {
-    RCLCPP_ERROR(
-      std::make_shared<NUSim>()->get_logger(),
-      "Failed: Different number of obstacle x-coordinates than obstacle y-coordinates.");
+    if (error == 0)
+    {
+      RCLCPP_ERROR(
+        std::make_shared<NUSim>()->get_logger(),
+        "Failed: Different number of obstacle x-coordinates than obstacle y-coordinates.");
+    }
+    else if (error == 1)
+    {
+      RCLCPP_ERROR(
+        std::make_shared<NUSim>()->get_logger(),
+        "Error: Necessary parameters not defined.");
+    }
   }
   rclcpp::shutdown();
   return 0;
