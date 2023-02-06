@@ -211,13 +211,18 @@ private:
     wheel_cmds.right_encoder = msg.right_velocity;
 
     turtlelib::WheelPosn wheels;
-    wheels.left = msg.left_velocity / encoder_ticks;
-    wheels.right = msg.right_velocity / encoder_ticks;
-    dd.ForwardKinematics(wheels);
+    wheels.left = (double)msg.left_velocity / encoder_ticks;
+    wheels.right = (double)msg.right_velocity / encoder_ticks;
+    RCLCPP_INFO_STREAM(get_logger(), "wheels: " << wheels.left << " " << wheels.right);
+    turtlelib::Twist2D Vb = dd.ForwardKinematics(wheels);
     turtlelib::RobotConfig q = dd.getConfig();
     theta = q.theta;
     x = q.x;
     y = q.y;
+
+    // RCLCPP_INFO_STREAM(get_logger(), "q: " << q.theta << " " << q.x << " " << q.y);
+    // RCLCPP_INFO_STREAM(get_logger(), "Vb: " << Vb.w << " " << Vb.x << " " << Vb.y);
+    RCLCPP_INFO_STREAM(get_logger(), "t x y: " << theta << " " << x << " " << y);
 
     red_sensor_pub_->publish(wheel_cmds);
   }
