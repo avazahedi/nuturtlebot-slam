@@ -88,6 +88,10 @@ namespace turtlelib
         /// @param config - configuration to set to
         void setConfig(RobotConfig config);
 
+        /// @brief Given wheel positions, return the twist from the first part of FK
+        /// @return - the twist used in FK calculations
+        Twist2D getTwist(WheelPosn new_posns) const;
+
         /// @brief Compute inverse kinematics given a body twist
         /// @param Vb - the body twist to compute wheel positions from
         /// @return wheel positions
@@ -96,7 +100,7 @@ namespace turtlelib
         /// @brief Given new wheel positions, update the robot configuration q
         /// @param new_posns - new wheel positions
         /// @return a 2D twist
-        Twist2D ForwardKinematics(WheelPosn new_posns);
+        void ForwardKinematics(WheelPosn new_posns);
 
     };
 }

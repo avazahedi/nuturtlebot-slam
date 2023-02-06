@@ -80,6 +80,7 @@ private:
     const std::shared_ptr<nuturtle_control::srv::Control::Request> request,
     std::shared_ptr<nuturtle_control::srv::Control::Response>)
   {
+    stop_flag = 0;
     vel_msg.angular.z = request->velocity;
     vel_msg.linear.x = request->radius * request->velocity;
   }

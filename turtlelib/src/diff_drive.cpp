@@ -42,6 +42,20 @@ namespace turtlelib{
         q = config;
     }
 
+    Twist2D DiffDrive::getTwist(WheelPosn new_posns) const
+    {
+        WheelPosn dphi {new_posns.left-wheels.left, new_posns.right-wheels.right};
+        Twist2D Vb;
+        double D = track/2;
+
+        // eqn 2.1
+        Vb.w = (r/2)*(dphi.right-dphi.left)/D;
+        Vb.x = (r/2)*(dphi.left+dphi.right);
+        Vb.y = 0;
+
+        return Vb;
+    }
+
     WheelPosn DiffDrive::InverseKinematics(Twist2D Vb)
     {
         WheelPosn ik;
@@ -61,7 +75,7 @@ namespace turtlelib{
     }        
 
 
-    Twist2D DiffDrive::ForwardKinematics(WheelPosn new_posns)
+    void DiffDrive::ForwardKinematics(WheelPosn new_posns)
     {
         // need the difference in wheel positions
         WheelPosn dphi {new_posns.left-wheels.left, new_posns.right-wheels.right};
@@ -85,8 +99,6 @@ namespace turtlelib{
         new_q.y = q.y + dvec.x*sin(q.theta) + dvec.y*cos(q.theta);
 
         q = new_q;
-
-        return Vb;
     }
 
         

@@ -130,7 +130,8 @@ private:
     turtlelib::WheelPosn wheels;
     wheels.left = msg.position[0];
     wheels.right = msg.position[1];
-    turtlelib::Twist2D Vb = dd.ForwardKinematics(wheels);
+    turtlelib::Twist2D Vb = dd.getTwist(wheels);
+    dd.ForwardKinematics(wheels);
     turtlelib::RobotConfig q = dd.getConfig();
 
     // odom_msg
