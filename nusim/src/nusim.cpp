@@ -103,7 +103,16 @@ public:
         throw(error);
     }
 
+    // arena size parameters
+    declare_parameter("arena.x_length", 2.0);
+    declare_parameter("arena.y_length", 2.0);
+    arena_x = get_parameter("arena.x_length").get_parameter_value().get<double>();
+    arena_y = get_parameter("arena.y_length").get_parameter_value().get<double>();
+
     turtlelib::DiffDrive dd {track, radius};
+
+    // walls publisher
+    walls_pub_ = create_publisher<visualization_msgs::msg::MarkerArray>("~/walls", 10);
 
     // obstacles publisher
     obstacles_pub_ = create_publisher<visualization_msgs::msg::MarkerArray>("~/obstacles", 10);
@@ -140,7 +149,7 @@ public:
       obs.header.frame_id = "nusim/world";
       obs.header.stamp = marker_stamp;
       obs.type = visualization_msgs::msg::Marker::CYLINDER;
-      obs.id = i;
+      obs.id = i+4; // i
       obs.action = visualization_msgs::msg::Marker::ADD;
       obs.scale.x = 2.0 * obstacles_r;
       obs.scale.y = 2.0 * obstacles_r;
@@ -158,6 +167,13 @@ public:
       obs.color.a = 1.0;
       obstacles_mkrs.markers.push_back(obs);
     }
+
+    // walls
+    create_wall(0.0, arena_y/2.0, 0, 0);
+    create_wall(0.0, -arena_y/2.0, 0, 1);
+    create_wall(arena_x/2.0, 0.0, 1.5707, 2);
+    create_wall(-arena_x/2.0, 0.0, 1.5707, 3);
+
 
     // timer
     timer_ = create_wall_timer(
@@ -199,6 +215,9 @@ private:
 
     // Publish to ~/obstacles
     obstacles_pub_->publish(obstacles_mkrs);
+
+    // Publish to ~/walls
+    walls_pub_->publish(wall_mkrs);
 
     // red_sensor_pub_->publish(wheel_cmds);
 
@@ -251,12 +270,42 @@ private:
     theta = request->theta;
   }
 
+  void create_wall(double centerx, double centery, double angle, int i)
+  {
+    visualization_msgs::msg::Marker wall;
+    wall.header.frame_id = "nusim/world";
+    wall.header.stamp = get_clock()->now();
+    wall.type = visualization_msgs::msg::Marker::CUBE;
+    wall.id = i;
+    wall.action = visualization_msgs::msg::Marker::ADD;
+    if (angle == 0)
+    {
+      wall.scale.x = arena_x;
+      wall.scale.y = 0.1;
+    }
+    else
+    {
+      wall.scale.x = 0.1;
+      wall.scale.y = arena_y;
+    }
+    wall.scale.z = 0.25;
+    wall.pose.position.x = centerx;
+    wall.pose.position.y = centery;
+    wall.pose.position.z = 0.25/2.0;
+    wall.color.r = 1.0;
+    wall.color.g = 0.0;
+    wall.color.b = 0.0;
+    wall.color.a = 1.0;
+    wall_mkrs.markers.push_back(wall);
+  }
+
   double x0;
   double y0;
   double theta0;
   unsigned int count_;
   rclcpp::TimerBase::SharedPtr timer_;
   rclcpp::Publisher<std_msgs::msg::UInt64>::SharedPtr timestep_pub_;
+  rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr walls_pub_;
   rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr obstacles_pub_;
   rclcpp::Publisher<nuturtlebot_msgs::msg::SensorData>::SharedPtr red_sensor_pub_;
   rclcpp::Subscription<nuturtlebot_msgs::msg::WheelCommands>::SharedPtr red_wheelcmd_sub_;
@@ -271,6 +320,10 @@ private:
   std::vector<double> obstacles_y;
   double obstacles_r;
   visualization_msgs::msg::MarkerArray obstacles_mkrs;
+  visualization_msgs::msg::MarkerArray wall_mkrs;
+
+  double arena_x;
+  double arena_y;
 
   nuturtlebot_msgs::msg::SensorData wheel_cmds;
   double radius;

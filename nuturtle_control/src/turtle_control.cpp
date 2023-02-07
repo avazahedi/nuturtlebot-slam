@@ -69,7 +69,7 @@ public:
 
     // subscriptions
     twist_sub_ = create_subscription<geometry_msgs::msg::Twist>("/cmd_vel", 10, 
-                 std::bind(&TurtleControl::twist_callback, this, std::placeholders::_1));
+                 std::bind(&TurtleControl::cmdvel_callback, this, std::placeholders::_1));
 
     sensor_sub_ = create_subscription<nuturtlebot_msgs::msg::SensorData>("/sensor_data", 10,
                   std::bind(&TurtleControl::sensor_callback, this, std::placeholders::_1));
@@ -90,7 +90,7 @@ private:
 
   /// @brief Callback for subscription to /cmd_vel
   /// @param msg - Twist from /cmd_vel
-  void twist_callback(const geometry_msgs::msg::Twist & msg)
+  void cmdvel_callback(const geometry_msgs::msg::Twist & msg)
   {
     twist.w = msg.angular.z;
     twist.x = msg.linear.x;
