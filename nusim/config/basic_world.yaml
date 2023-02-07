@@ -9,5 +9,5 @@
         y: [-0.8, -0.7, 0.9]
         r: 0.038
       arena:
-        x_length: 4.0
-        y_length: 4.0
+        x_length: 6.0
+        y_length: 6.0
