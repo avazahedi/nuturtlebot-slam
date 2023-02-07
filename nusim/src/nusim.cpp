@@ -10,7 +10,11 @@
 ///         x: list of x-coordinates of obstacles (m)
 ///         y: list of y-coordinates of obstacles (m)
 ///         r: radius of obstacles (m)
+///     arena
+///         x_length: length of the arena in the world x direction
+///         y_length: length of the arena in the world y direction
 /// PUBLISHES:
+///     walls (visualization_msgs/MarkerArray): publishes the marker array of the arena walls
 ///     obstacles (visualization_msgs/MarkerArray): publishes the marker array of all current
 ///                                                 obstacles every iteration
 ///     timestep (std_msgs/UInt64): publishes the current timestep every iteration
@@ -270,6 +274,11 @@ private:
     theta = request->theta;
   }
 
+  /// @brief Function for creating the arena walls
+  /// @param centerx - center of wall x-coordinate
+  /// @param centery - center of wall y-coordinate
+  /// @param angle - orientation
+  /// @param i - wall ID
   void create_wall(double centerx, double centery, double angle, int i)
   {
     visualization_msgs::msg::Marker wall;
