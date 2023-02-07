@@ -128,15 +128,15 @@ private:
   void js_callback(const sensor_msgs::msg::JointState & msg)
   {
     turtlelib::WheelPosn wheels;
-    wheels.left = msg.position[0];
-    wheels.right = msg.position[1];
+    wheels.left = msg.position.at(0);
+    wheels.right = msg.position.at(1);
     turtlelib::Twist2D Vb = dd.getTwist(wheels);
     dd.ForwardKinematics(wheels);
     turtlelib::RobotConfig q = dd.getConfig();
 
     // odom_msg
-    // odom_msg.header.stamp = get_clock()->now();
-    odom_msg.header.stamp = msg.header.stamp;
+    odom_msg.header.stamp = get_clock()->now();
+    // odom_msg.header.stamp = msg.header.stamp;
     odom_msg.pose.pose.position.x = q.x;
     odom_msg.pose.pose.position.y = q.y;
     tf2::Quaternion quat;
@@ -148,7 +148,31 @@ private:
     odom_msg.twist.twist.angular.z = Vb.w;
     odom_msg.twist.twist.linear.x = Vb.x;
     odom_msg.twist.twist.linear.y = Vb.y;
-    // }  
+
+    // publish odom
+    odom_pub_->publish(odom_msg);
+
+
+    // update the transform
+    geometry_msgs::msg::TransformStamped t;
+
+    // Read message content and assign it to
+    // corresponding tf variables
+    t.header.stamp = get_clock()->now();
+    t.header.frame_id = odom_id;
+    t.child_frame_id = body_id;
+
+    // Set transform 
+    t.transform.translation.x = q.x;
+    t.transform.translation.y = q.y;
+    t.transform.translation.z = 0.0;
+    t.transform.rotation.x = quat.x();
+    t.transform.rotation.y = quat.y();
+    t.transform.rotation.z = quat.z();
+    t.transform.rotation.w = quat.w();
+
+    // Send the transformation
+    tf_broadcaster_->sendTransform(t);
   }
 
   /// \brief Callback for initial_pose service, which resets the location of the odometry

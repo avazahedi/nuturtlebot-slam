@@ -2,8 +2,6 @@
 /// \brief The circle node publishes cmd_vel commands to cause the robot to drive in a circle.
 ///
 /// PARAMETERS:
-///     wheel_radius (double): wheel radius
-///     track_width (double): track width (distance between the wheels)
 ///     frequency (int): frequency of publishing cmd_vel commands
 /// PUBLISHES:
 ///     cmd_vel (geometry_msgs::msg::Twist): publishes cmd_vel commands

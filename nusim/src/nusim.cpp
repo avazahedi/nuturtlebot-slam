@@ -14,8 +14,10 @@
 ///     obstacles (visualization_msgs/MarkerArray): publishes the marker array of all current
 ///                                                 obstacles every iteration
 ///     timestep (std_msgs/UInt64): publishes the current timestep every iteration
+///     red/sensor_data (nuturtlebot_msgs/SensorData): publishes sensor data for the red turtlebot
 /// SUBSCRIBES:
-///     No subscriptions
+///     red/wheel_cmd (nuturtlebot_msgs/WheelCommands): subscribes to wheel positions for the 
+///                                                     red turtlebot
 /// SERVERS:
 ///     reset (Empty): resets the timestep to 0 and teleports the robot back to its
 ///                    initial configuration
