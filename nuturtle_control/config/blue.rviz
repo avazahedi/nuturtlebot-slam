@@ -192,7 +192,7 @@ Visualization Manager:
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
-    Fixed Frame: nusim/world
+    Fixed Frame: blue/base_link
     Frame Rate: 30
   Name: root
   Tools:
@@ -235,7 +235,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz_default_plugins/Orbit
-      Distance: 4.240172863006592
+      Distance: 3.953031063079834
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -250,10 +250,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.7153980731964111
+      Pitch: 0.6503978967666626
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 0.9053975343704224
+      Yaw: 0.6203954219818115
     Saved: ~
 Window Geometry:
   Displays:
