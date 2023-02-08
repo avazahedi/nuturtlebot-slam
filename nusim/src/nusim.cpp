@@ -26,8 +26,6 @@
 ///     reset (Empty): resets the timestep to 0 and teleports the robot back to its
 ///                    initial configuration
 ///     Teleport (nusim/srv/Teleport.srv): teleports the robot to the specified x, y, theta
-/// CLIENTS:
-///     No clients
 
 #include <chrono>
 #include <functional>
@@ -119,8 +117,6 @@ public:
 
     prev_wheel_pos.left = 0.0;
     prev_wheel_pos.right = 0.0;
-
-    time0 = -1.0;
 
     dt = 1/(static_cast<double>(rate));
 
@@ -359,7 +355,6 @@ private:
   double encoder_ticks;
   turtlelib::DiffDrive dd;
   turtlelib::WheelPosn prev_wheel_pos;
-  double time0;
   turtlelib::WheelPosn vels;
   double dt;
 

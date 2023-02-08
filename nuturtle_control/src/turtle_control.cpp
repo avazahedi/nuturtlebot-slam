@@ -58,12 +58,11 @@ public:
         int error = 0;
         throw(error);
     }
-
-    // time0 = -1.0;
-
+    
     // initialize positions and velocities to 0
     joint_state.position = {0.0, 0.0};
     joint_state.velocity = {0.0, 0.0};
+    time0 = 0.0;
 
     // subscriptions
     twist_sub_ = create_subscription<geometry_msgs::msg::Twist>("/cmd_vel", 10, 
@@ -122,20 +121,11 @@ private:
     joint_state.name = {"wheel_left_joint", "wheel_right_joint"};
     joint_state.header.stamp = msg.stamp;
 
-    if (time0 == -1)
-    {
-      // initialize positions and velocities to 0
-      joint_state.position = {0.0, 0.0};
-      joint_state.velocity = {0.0, 0.0};
-    }
-    else{
-      // compute dphi
-      double dt = msg.stamp.sec + 1e-9*msg.stamp.nanosec - time0;
-      double dphi_l = static_cast<double>(msg.left_encoder)/encoder_ticks;
-      double dphi_r = static_cast<double>(msg.right_encoder)/encoder_ticks;
-      joint_state.position = {dphi_l, dphi_r};
-      joint_state.velocity = {dphi_l/dt, dphi_r/dt};
-    }
+    double dt = msg.stamp.sec + 1e-9*msg.stamp.nanosec - time0;
+    double dphi_l = static_cast<double>(msg.left_encoder)/encoder_ticks;
+    double dphi_r = static_cast<double>(msg.right_encoder)/encoder_ticks;
+    joint_state.position = {dphi_l, dphi_r};
+    joint_state.velocity = {dphi_l/dt, dphi_r/dt};
     
     // update "previous" time stamp
     time0 = msg.stamp.sec + 1e-9*msg.stamp.nanosec;
