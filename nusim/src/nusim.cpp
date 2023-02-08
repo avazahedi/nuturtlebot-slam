@@ -97,11 +97,13 @@ public:
     // diff drive parameters
     declare_parameter("wheel_radius", -1.0);
     declare_parameter("track_width", -1.0);
-    declare_parameter("encoder_ticks_per_rad", -1);
+    declare_parameter("motor_cmd_per_rad_sec", -1.0);
+    declare_parameter("encoder_ticks_per_rad", -1.0);
     radius = get_parameter("wheel_radius").get_parameter_value().get<double>();
     track = get_parameter("track_width").get_parameter_value().get<double>();
-    encoder_ticks = get_parameter("encoder_ticks_per_rad").get_parameter_value().get<int>();
-    if (radius==-1 || track==-1 || encoder_ticks==-1)
+    motor_cmd_prs = get_parameter("motor_cmd_per_rad_sec").get_parameter_value().get<double>();
+    encoder_ticks = get_parameter("encoder_ticks_per_rad").get_parameter_value().get<double>();
+    if (radius==-1 || track==-1 || motor_cmd_prs==-1 || encoder_ticks==-1)
     {
         int error = 1;
         throw(error);
@@ -115,6 +117,13 @@ public:
 
     turtlelib::DiffDrive dd {track, radius};
 
+    prev_wheel_pos.left = 0.0;
+    prev_wheel_pos.right = 0.0;
+
+    time0 = -1.0;
+
+    dt = 1/(static_cast<double>(rate));
+
     // walls publisher
     walls_pub_ = create_publisher<visualization_msgs::msg::MarkerArray>("~/walls", 10);
 
@@ -125,11 +134,11 @@ public:
     timestep_pub_ = create_publisher<std_msgs::msg::UInt64>("~/timestep", 10);
 
     // red/sensor_data publisher
-    red_sensor_pub_ = create_publisher<nuturtlebot_msgs::msg::SensorData>("red/sensor_data", 10);
+    sensor_pub_ = create_publisher<nuturtlebot_msgs::msg::SensorData>("red/sensor_data", 10);
 
     // red/wheel_cmd subscriber
-    red_wheelcmd_sub_ = create_subscription<nuturtlebot_msgs::msg::WheelCommands>("red/wheel_cmd", 
-                        10, std::bind(&NUSim::red_wc_callback, this, std::placeholders::_1));
+    wheelcmd_sub_ = create_subscription<nuturtlebot_msgs::msg::WheelCommands>("red/wheel_cmd", 
+                        10, std::bind(&NUSim::wheelcmd_callback, this, std::placeholders::_1));
 
     // reset service
     reset_srv_ = create_service<std_srvs::srv::Empty>(
@@ -193,6 +202,28 @@ private:
     timestep_pub_->publish(message);
     count_++;
 
+    //// SENSOR_DATA ////
+    sensor_data.stamp = get_clock()->now();
+    turtlelib::WheelPosn new_wheel_pos;
+    turtlelib::WheelPosn wheel_diff;
+    wheel_diff.left = vels.left*dt;
+    wheel_diff.right = vels.right*dt;
+    new_wheel_pos.left = prev_wheel_pos.left + (vels.left*dt);
+    new_wheel_pos.right = prev_wheel_pos.right + (vels.right*dt);
+    dd.ForwardKinematics(wheel_diff);
+    sensor_data.left_encoder = new_wheel_pos.left*encoder_ticks;
+    sensor_data.right_encoder = new_wheel_pos.right*encoder_ticks;
+    turtlelib::RobotConfig q = dd.getConfig();
+    theta = q.theta;
+    x = q.x;
+    y = q.y;
+    // publish /sensor_data
+    sensor_pub_->publish(sensor_data);
+    // update prev
+    prev_wheel_pos = new_wheel_pos;
+
+
+    //// TRANSFORM ////
     geometry_msgs::msg::TransformStamped t;
 
     // Read message content and assign it to
@@ -223,26 +254,17 @@ private:
     // Publish to ~/walls
     walls_pub_->publish(wall_mkrs);
 
+    // // publish /sensor_data
+    // sensor_pub_->publish(sensor_data);
+
   }
 
   /// @brief Callback for red/wheel_cmd subscription to receive motion commands
   /// @param msg - wheel commands
-  void red_wc_callback(const nuturtlebot_msgs::msg::WheelCommands & msg)
+  void wheelcmd_callback(const nuturtlebot_msgs::msg::WheelCommands & msg)
   {
-    wheel_cmds.stamp = get_clock()->now();
-    wheel_cmds.left_encoder = msg.left_velocity;
-    wheel_cmds.right_encoder = msg.right_velocity;
-
-    turtlelib::WheelPosn wheels;
-    wheels.left = (double)msg.left_velocity / encoder_ticks;
-    wheels.right = (double)msg.right_velocity / encoder_ticks;
-    dd.ForwardKinematics(wheels);
-    turtlelib::RobotConfig q = dd.getConfig();
-    theta = q.theta;
-    x = q.x;
-    y = q.y;
-
-    red_sensor_pub_->publish(wheel_cmds);
+    vels.left = static_cast<double>(msg.left_velocity) * motor_cmd_prs;
+    vels.right = static_cast<double>(msg.right_velocity) * motor_cmd_prs;
   }
 
   /// \brief Callback for reset service, which resets the timestep count and robot pose
@@ -312,8 +334,8 @@ private:
   rclcpp::Publisher<std_msgs::msg::UInt64>::SharedPtr timestep_pub_;
   rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr walls_pub_;
   rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr obstacles_pub_;
-  rclcpp::Publisher<nuturtlebot_msgs::msg::SensorData>::SharedPtr red_sensor_pub_;
-  rclcpp::Subscription<nuturtlebot_msgs::msg::WheelCommands>::SharedPtr red_wheelcmd_sub_;
+  rclcpp::Publisher<nuturtlebot_msgs::msg::SensorData>::SharedPtr sensor_pub_;
+  rclcpp::Subscription<nuturtlebot_msgs::msg::WheelCommands>::SharedPtr wheelcmd_sub_;
   rclcpp::Service<std_srvs::srv::Empty>::SharedPtr reset_srv_;
   rclcpp::Service<nusim::srv::Teleport>::SharedPtr teleport_srv_;
   std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
@@ -330,11 +352,16 @@ private:
   double arena_x;
   double arena_y;
 
-  nuturtlebot_msgs::msg::SensorData wheel_cmds;
+  nuturtlebot_msgs::msg::SensorData sensor_data;
   double radius;
   double track;
-  int encoder_ticks;
+  double motor_cmd_prs;
+  double encoder_ticks;
   turtlelib::DiffDrive dd;
+  turtlelib::WheelPosn prev_wheel_pos;
+  double time0;
+  turtlelib::WheelPosn vels;
+  double dt;
 
 };
 

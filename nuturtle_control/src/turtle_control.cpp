@@ -6,7 +6,7 @@
 ///     track_width (double): track width (distance between the wheels)
 ///     motor_cmd_max (int): maximum ticks for motor commands
 ///     motor_cmd_per_rad_sec (double): number of rad/s equivalent to 1 motor command tick
-///     encoder_ticks_per_rad (int): number of encoder ticks per radian
+///     encoder_ticks_per_rad (double): number of encoder ticks per radian
 ///     collision_radius (double): radius for collision detection
 /// PUBLISHES:
 ///     wheel_cmd (nuturtlebot_msgs::msg::WheelCommands): publishes left and right wheel velocities
@@ -42,14 +42,14 @@ public:
     declare_parameter("track_width", -1.0);
     declare_parameter("motor_cmd_max", -1);
     declare_parameter("motor_cmd_per_rad_sec", -1.0);
-    declare_parameter("encoder_ticks_per_rad", -1);
+    declare_parameter("encoder_ticks_per_rad", -1.0);
     declare_parameter("collision_radius", -1.0);
 
     radius = get_parameter("wheel_radius").get_parameter_value().get<double>();
     track = get_parameter("track_width").get_parameter_value().get<double>();
     motor_cmd_max = get_parameter("motor_cmd_max").get_parameter_value().get<int>();
     motor_cmd_prs = get_parameter("motor_cmd_per_rad_sec").get_parameter_value().get<double>();
-    encoder_ticks = get_parameter("encoder_ticks_per_rad").get_parameter_value().get<int>();
+    encoder_ticks = get_parameter("encoder_ticks_per_rad").get_parameter_value().get<double>();
     collision_rad = get_parameter("collision_radius").get_parameter_value().get<double>();
 
     if (radius==-1 || track==-1 || motor_cmd_max==-1 || motor_cmd_prs==-1 || encoder_ticks==-1 
@@ -77,15 +77,9 @@ public:
 
     joint_states_pub_ = create_publisher<sensor_msgs::msg::JointState>("/joint_states", 10);
 
-    // timer
-    timer_ = create_wall_timer(
-      std::chrono::milliseconds(500), std::bind(&TurtleControl::timer_callback, this));
   }
 
 private:
-  /// \brief Timer callback that runs continuously on the provided frequency
-  void timer_callback(){}
-
   /// @brief Callback for subscription to /cmd_vel
   /// @param msg - Twist from /cmd_vel
   void cmdvel_callback(const geometry_msgs::msg::Twist & msg)
@@ -137,14 +131,16 @@ private:
     else{
       // compute dphi
       double dt = msg.stamp.sec + 1e-9*msg.stamp.nanosec - time0;
-      double dphi_l = (double)msg.left_encoder/encoder_ticks;
-      double dphi_r = (double)msg.right_encoder/encoder_ticks;
-      joint_state.position = {dphi_l,
-                              dphi_r};
+      double dphi_l = static_cast<double>(msg.left_encoder)/encoder_ticks;
+      double dphi_r = static_cast<double>(msg.right_encoder)/encoder_ticks;
+      joint_state.position = {dphi_l, dphi_r};
       joint_state.velocity = {dphi_l/dt, dphi_r/dt};
     }
+    
     // update "previous" time stamp
     time0 = msg.stamp.sec + 1e-9*msg.stamp.nanosec;
+    
+    // publish joint_states
     joint_states_pub_->publish(joint_state);
   }
 
@@ -152,7 +148,7 @@ private:
   double track;
   int motor_cmd_max;
   double motor_cmd_prs;
-  int encoder_ticks;
+  double encoder_ticks;
   double collision_rad;
   double time0;
 
@@ -161,7 +157,6 @@ private:
   nuturtlebot_msgs::msg::WheelCommands wheel_msg;
   sensor_msgs::msg::JointState joint_state;
   
-  rclcpp::TimerBase::SharedPtr timer_;
   rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr twist_sub_;
   rclcpp::Subscription<nuturtlebot_msgs::msg::SensorData>::SharedPtr sensor_sub_;
   rclcpp::Publisher<nuturtlebot_msgs::msg::WheelCommands>::SharedPtr wheel_cmd_pub_;

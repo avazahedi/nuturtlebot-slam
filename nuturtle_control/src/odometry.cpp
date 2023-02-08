@@ -63,6 +63,9 @@ public:
 
     turtlelib::DiffDrive dd {track, radius};
 
+    prev_wheel_pos.left = 0.0;
+    prev_wheel_pos.right = 0.0;
+
     odom_msg.header.frame_id = odom_id;
     odom_msg.child_frame_id = body_id;
 
@@ -82,54 +85,20 @@ public:
     // transform broadcaster
     tf_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
 
-
-    // timer
-    timer_ = create_wall_timer(
-      std::chrono::milliseconds(500), std::bind(&Odometry::timer_callback, this));
   }
 
 private:
-  /// \brief Timer callback that runs continuously on the provided frequency
-  void timer_callback()
-  {
-
-    geometry_msgs::msg::TransformStamped t;
-
-    // Read message content and assign it to
-    // corresponding tf variables
-    t.header.stamp = get_clock()->now();
-    t.header.frame_id = odom_id;
-    t.child_frame_id = body_id;
-
-    // Set transform translation
-    turtlelib::RobotConfig q = dd.getConfig();
-    t.transform.translation.x = q.x;
-    t.transform.translation.y = q.y;
-    t.transform.translation.z = 0.0;
-
-    // Set transform rotation in quaternion
-    tf2::Quaternion quat;
-    quat.setRPY(0, 0, q.theta);
-    t.transform.rotation.x = quat.x();
-    t.transform.rotation.y = quat.y();
-    t.transform.rotation.z = quat.z();
-    t.transform.rotation.w = quat.w();
-
-    // Send the transformation
-    tf_broadcaster_->sendTransform(t);
-
-    // publishers
-    odom_pub_->publish(odom_msg);
-
-  }
-
   /// @brief Callback for joint_state subscription
   /// @param msg - joint state data
   void js_callback(const sensor_msgs::msg::JointState & msg)
   {
+    // new wheel posns
     turtlelib::WheelPosn wheels;
-    wheels.left = msg.position.at(0);
-    wheels.right = msg.position.at(1);
+    wheels.left = msg.position.at(0) - prev_wheel_pos.left;
+    wheels.right = msg.position.at(1) - prev_wheel_pos.right;
+    // update previous wheel posns
+    prev_wheel_pos = {msg.position.at(0), msg.position.at(1)};
+    // calculate twist and FK
     turtlelib::Twist2D Vb = dd.getTwist(wheels);
     dd.ForwardKinematics(wheels);
     turtlelib::RobotConfig q = dd.getConfig();
@@ -148,9 +117,6 @@ private:
     odom_msg.twist.twist.angular.z = Vb.w;
     odom_msg.twist.twist.linear.x = Vb.x;
     odom_msg.twist.twist.linear.y = Vb.y;
-
-    // publish odom
-    odom_pub_->publish(odom_msg);
 
 
     // update the transform
@@ -173,6 +139,9 @@ private:
 
     // Send the transformation
     tf_broadcaster_->sendTransform(t);
+
+    // publish odom
+    odom_pub_->publish(odom_msg);
   }
 
   /// \brief Callback for initial_pose service, which resets the location of the odometry
@@ -197,10 +166,10 @@ private:
   double radius;
   double track;
   turtlelib::DiffDrive dd;
+  turtlelib::WheelPosn prev_wheel_pos;
 
   nav_msgs::msg::Odometry odom_msg;
 
-  rclcpp::TimerBase::SharedPtr timer_;
   rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odom_pub_;
   rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr js_sub_;
   

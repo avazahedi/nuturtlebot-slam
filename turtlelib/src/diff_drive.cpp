@@ -51,7 +51,7 @@ namespace turtlelib{
         // eqn 2.1
         Vb.w = (r/2)*(dphi.right-dphi.left)/D;
         Vb.x = (r/2)*(dphi.left+dphi.right);
-        Vb.y = 0;
+        Vb.y = 0.0;
 
         return Vb;
     }
@@ -85,7 +85,7 @@ namespace turtlelib{
         // eqn 2.1
         Vb.w = (r/2)*(dphi.right-dphi.left)/D;
         Vb.x = (r/2)*(dphi.left+dphi.right);
-        Vb.y = 0;
+        Vb.y = 0.0;
 
         // eqn 2.2
         Transform2D Tbbp = integrate_twist(Vb);
