@@ -5,6 +5,7 @@
 This repository consists of several ROS packages
 - nuturtle_description - This package contains urdf files and basic debugging, testing, and visualization code for the WI2023 ME 495 robots.
 - nusim - This package provides a simulated robot environment and uses rviz2 for visualization for a red NU turtlebot.
+- nuturtle_control - This package enables control of the turtlebot via messages on the cmd_vel topic.
 
 This repository also contains a custom C++ library
 -  turtlelib - A library for handling transformations in SE(2) and other turtlebot-related math.

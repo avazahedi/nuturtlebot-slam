@@ -14,5 +14,8 @@ A simulator and visualizer for a red NU turtlebot. This node provides a simulate
         - x: list of x-coordinates of obstacles (m)
         - y: list of y-coordinates of obstacles (m)
         - r: radius of obstacles (m)
+    - arena
+        - x_length: length of the arena in the world x direction (m)
+        - y_length: length of the arena in the world y direction (m)
 
 Worked With: Meg Sindelar, Katie Hughes, Rintaroh Shima, Ritika Ghosh, Allan Garcia, Shantao Cao, Nick Morales, Liz Metzger

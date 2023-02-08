@@ -5,15 +5,13 @@ Nodes for controlling the robot that are useful in both simulation and on the re
 
 # Launch File Details
 * `ros2 launch nuturtle_control start_robot.launch.xml`
-    <!-- Parameters, which can be changed in config/basic_world.yaml:
-    - rate: frequency of timer callback (defaults to 200 Hz)
-    - x0: initial x-coordinate of the robot (m)
-    - y0: initial y-coordinate of the robot (m)
-    - theta0: initial rotation of the robot (rad)
-    - obstacles
-        - x: list of x-coordinates of obstacles (m)
-        - y: list of y-coordinates of obstacles (m)
-        - r: radius of obstacles (m) -->
+    Command line arguments:
+    - cmd_src - source of cmd_vel messages
+      - Options are [teleop, circle, none], defaults to "none" 
+    - robot - choice of robot
+      - Options are [nusim, localhost, none], defaults to "nusim"
+    - use_rviz - whether or not rviz launches
+      - Options are [true, false], defaults to "true"
 
 Final location of the turtlebot according to odometry:
 `header:

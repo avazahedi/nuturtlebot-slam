@@ -223,8 +223,6 @@ private:
     // Publish to ~/walls
     walls_pub_->publish(wall_mkrs);
 
-    // red_sensor_pub_->publish(wheel_cmds);
-
   }
 
   /// @brief Callback for red/wheel_cmd subscription to receive motion commands
@@ -248,7 +246,6 @@ private:
   }
 
   /// \brief Callback for reset service, which resets the timestep count and robot pose
-  ///
   /// \param request - unused service request
   /// \param response - unused service response
   void reset_callback(
@@ -262,7 +259,6 @@ private:
   }
 
   /// \brief Callback for teleport service, which teleports the robot to the specified pose
-  ///
   /// \param request - service request specifying what x, y, and theta to teleport to
   /// \param response - unused
   void teleport_callback(

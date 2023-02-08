@@ -10,11 +10,9 @@
 ///     collision_radius (double): radius for collision detection
 /// PUBLISHES:
 ///     wheel_cmd (nuturtlebot_msgs::msg::WheelCommands): publishes left and right wheel velocities
-///
-///     joint_state (sensor_msgs::msg::JointState): publishes robot joint states
+///     joint_states (sensor_msgs::msg::JointState): publishes robot joint states
 /// SUBSCRIBES:
 ///     cmd_vel (geometry_msgs/Twist): velocity commands for the body of the robot
-///
 ///     sensor_data (nuturtlebot_msgs::msg::SensorData): velocity of each wheel (ticks)
 
 #include <chrono>
@@ -129,7 +127,6 @@ private:
   {
     joint_state.name = {"wheel_left_joint", "wheel_right_joint"};
     joint_state.header.stamp = msg.stamp;
-    // joint_state.header.frame_id = '';
 
     if (time0 == -1)
     {
@@ -140,17 +137,14 @@ private:
     else{
       // compute dphi
       double dt = msg.stamp.sec + 1e-9*msg.stamp.nanosec - time0;
-      // RCLCPP_INFO_STREAM(get_logger(), "dt: " << dt);
       double dphi_l = (double)msg.left_encoder/encoder_ticks;
       double dphi_r = (double)msg.right_encoder/encoder_ticks;
-      // RCLCPP_INFO_STREAM(get_logger(), "sensor data: " << dphi_l << " " << dphi_r);
       joint_state.position = {dphi_l,
                               dphi_r};
       joint_state.velocity = {dphi_l/dt, dphi_r/dt};
     }
     // update "previous" time stamp
     time0 = msg.stamp.sec + 1e-9*msg.stamp.nanosec;
-    // RCLCPP_INFO_STREAM(get_logger(), "joint states: " << joint_state.position.at(0) << " " << joint_state.velocity.at(0));
     joint_states_pub_->publish(joint_state);
   }
 

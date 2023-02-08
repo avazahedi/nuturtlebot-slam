@@ -11,7 +11,7 @@
 /// PUBLISHES:
 ///     odom (nav_msgs::msg::Odometry): publishes odometry
 /// SUBSCRIBES:
-///     joint_state (sensor_msgs/JointState): joint states of the robot
+///     joint_states (sensor_msgs/JointState): joint states of the robot
 /// SERVICES:
 ///     initial_pose (nuturtle_control/InitialPose.srv): resets the location of the odometry
 
