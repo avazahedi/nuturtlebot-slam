@@ -20,13 +20,13 @@ find_package(nav_msgs REQUIRED)
 
 find_package(rosidl_default_generators REQUIRED)
 
-rosidl_generate_interfaces(${PROJECT_NAME}_srv 
-                           "srv/InitialPose.srv" 
-                           "srv/Control.srv"
-                           LIBRARY_NAME ${PROJECT_NAME})
-rosidl_get_typesupport_target(cpp_typesupport_target 
-                              ${PROJECT_NAME}_srv 
-                              "rosidl_typesupport_cpp")
+rosidl_generate_interfaces(${PROJECT_NAME}_srv
+  "srv/InitialPose.srv"
+  "srv/Control.srv"
+  LIBRARY_NAME ${PROJECT_NAME})
+rosidl_get_typesupport_target(cpp_typesupport_target
+  ${PROJECT_NAME}_srv
+  "rosidl_typesupport_cpp")
 
 add_executable(turtle_control src/turtle_control.cpp)
 add_executable(odometry src/odometry.cpp)

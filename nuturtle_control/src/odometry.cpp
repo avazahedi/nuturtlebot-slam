@@ -32,7 +32,7 @@
 
 using namespace std::chrono_literals;
 
-/// \brief The Odometry class inherits the Node class and publishes odometry messages and 
+/// \brief The Odometry class inherits the Node class and publishes odometry messages and
 ///        the odometry transform.
 class Odometry : public rclcpp::Node
 {
@@ -55,10 +55,9 @@ public:
     wheel_left = get_parameter("wheel_left").get_parameter_value().get<std::string>();
     wheel_right = get_parameter("wheel_right").get_parameter_value().get<std::string>();
 
-    if (wheel_left == "" || wheel_right == "" || body_id == "" || radius == -1 || track == -1)
-    {
-        int error = 0;
-        throw(error);
+    if (wheel_left == "" || wheel_right == "" || body_id == "" || radius == -1 || track == -1) {
+      int error = 0;
+      throw(error);
     }
 
     turtlelib::DiffDrive dd {track, radius};
@@ -73,8 +72,9 @@ public:
     odom_pub_ = create_publisher<nav_msgs::msg::Odometry>("/odom", 10);
 
     // subscriber
-    js_sub_ = create_subscription<sensor_msgs::msg::JointState>("/joint_states", 10,
-                  std::bind(&Odometry::js_callback, this, std::placeholders::_1));
+    js_sub_ = create_subscription<sensor_msgs::msg::JointState>(
+      "/joint_states", 10,
+      std::bind(&Odometry::js_callback, this, std::placeholders::_1));
 
     // initial pose service
     initial_pose_srv_ = create_service<nuturtle_control::srv::InitialPose>(
@@ -128,7 +128,7 @@ private:
     t.header.frame_id = odom_id;
     t.child_frame_id = body_id;
 
-    // Set transform 
+    // Set transform
     t.transform.translation.x = q.x;
     t.transform.translation.y = q.y;
     t.transform.translation.z = 0.0;
@@ -172,7 +172,7 @@ private:
 
   rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odom_pub_;
   rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr js_sub_;
-  
+
   rclcpp::Service<nuturtle_control::srv::InitialPose>::SharedPtr initial_pose_srv_;
   std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
 
@@ -184,11 +184,10 @@ int main(int argc, char * argv[])
   try {
     rclcpp::spin(std::make_shared<Odometry>());
   } catch (int error) {
-    if (error==0)
-    {
-        RCLCPP_ERROR(
-            std::make_shared<Odometry>()->get_logger(),
-            "Error: Required parameters not specified.");
+    if (error == 0) {
+      RCLCPP_ERROR(
+        std::make_shared<Odometry>()->get_logger(),
+        "Error: Required parameters not specified.");
     }
   }
   rclcpp::shutdown();

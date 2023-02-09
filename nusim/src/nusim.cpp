@@ -20,7 +20,7 @@
 ///     timestep (std_msgs/UInt64): publishes the current timestep every iteration
 ///     red/sensor_data (nuturtlebot_msgs/SensorData): publishes sensor data for the red turtlebot
 /// SUBSCRIBES:
-///     red/wheel_cmd (nuturtlebot_msgs/WheelCommands): subscribes to wheel positions for the 
+///     red/wheel_cmd (nuturtlebot_msgs/WheelCommands): subscribes to wheel positions for the
 ///                                                     red turtlebot
 /// SERVERS:
 ///     reset (Empty): resets the timestep to 0 and teleports the robot back to its
@@ -101,10 +101,9 @@ public:
     track = get_parameter("track_width").get_parameter_value().get<double>();
     motor_cmd_prs = get_parameter("motor_cmd_per_rad_sec").get_parameter_value().get<double>();
     encoder_ticks = get_parameter("encoder_ticks_per_rad").get_parameter_value().get<double>();
-    if (radius==-1 || track==-1 || motor_cmd_prs==-1 || encoder_ticks==-1)
-    {
-        int error = 1;
-        throw(error);
+    if (radius == -1 || track == -1 || motor_cmd_prs == -1 || encoder_ticks == -1) {
+      int error = 1;
+      throw(error);
     }
 
     // arena size parameters
@@ -118,7 +117,7 @@ public:
     prev_wheel_pos.left = 0.0;
     prev_wheel_pos.right = 0.0;
 
-    dt = 1/(static_cast<double>(rate));
+    dt = 1 / (static_cast<double>(rate));
 
     // walls publisher
     walls_pub_ = create_publisher<visualization_msgs::msg::MarkerArray>("~/walls", 10);
@@ -133,8 +132,9 @@ public:
     sensor_pub_ = create_publisher<nuturtlebot_msgs::msg::SensorData>("red/sensor_data", 10);
 
     // red/wheel_cmd subscriber
-    wheelcmd_sub_ = create_subscription<nuturtlebot_msgs::msg::WheelCommands>("red/wheel_cmd", 
-                        10, std::bind(&NUSim::wheelcmd_callback, this, std::placeholders::_1));
+    wheelcmd_sub_ = create_subscription<nuturtlebot_msgs::msg::WheelCommands>(
+      "red/wheel_cmd",
+      10, std::bind(&NUSim::wheelcmd_callback, this, std::placeholders::_1));
 
     // reset service
     reset_srv_ = create_service<std_srvs::srv::Empty>(
@@ -158,7 +158,7 @@ public:
       obs.header.frame_id = "nusim/world";
       obs.header.stamp = marker_stamp;
       obs.type = visualization_msgs::msg::Marker::CYLINDER;
-      obs.id = i+4; // i
+      obs.id = i + 4; // i
       obs.action = visualization_msgs::msg::Marker::ADD;
       obs.scale.x = 2.0 * obstacles_r;
       obs.scale.y = 2.0 * obstacles_r;
@@ -178,10 +178,10 @@ public:
     }
 
     // walls
-    create_wall(0.0, arena_y/2.0, 0, 0);
-    create_wall(0.0, -arena_y/2.0, 0, 1);
-    create_wall(arena_x/2.0, 0.0, 1.5707, 2);
-    create_wall(-arena_x/2.0, 0.0, 1.5707, 3);
+    create_wall(0.0, arena_y / 2.0, 0, 0);
+    create_wall(0.0, -arena_y / 2.0, 0, 1);
+    create_wall(arena_x / 2.0, 0.0, 1.5707, 2);
+    create_wall(-arena_x / 2.0, 0.0, 1.5707, 3);
 
 
     // timer
@@ -202,13 +202,13 @@ private:
     sensor_data.stamp = get_clock()->now();
     turtlelib::WheelPosn new_wheel_pos;
     turtlelib::WheelPosn wheel_diff;
-    wheel_diff.left = vels.left*dt;
-    wheel_diff.right = vels.right*dt;
-    new_wheel_pos.left = prev_wheel_pos.left + (vels.left*dt);
-    new_wheel_pos.right = prev_wheel_pos.right + (vels.right*dt);
+    wheel_diff.left = vels.left * dt;
+    wheel_diff.right = vels.right * dt;
+    new_wheel_pos.left = prev_wheel_pos.left + (vels.left * dt);
+    new_wheel_pos.right = prev_wheel_pos.right + (vels.right * dt);
     dd.ForwardKinematics(wheel_diff);
-    sensor_data.left_encoder = new_wheel_pos.left*encoder_ticks;
-    sensor_data.right_encoder = new_wheel_pos.right*encoder_ticks;
+    sensor_data.left_encoder = new_wheel_pos.left * encoder_ticks;
+    sensor_data.right_encoder = new_wheel_pos.right * encoder_ticks;
     turtlelib::RobotConfig q = dd.getConfig();
     theta = q.theta;
     x = q.x;
@@ -301,20 +301,17 @@ private:
     wall.type = visualization_msgs::msg::Marker::CUBE;
     wall.id = i;
     wall.action = visualization_msgs::msg::Marker::ADD;
-    if (angle == 0)
-    {
+    if (angle == 0) {
       wall.scale.x = arena_x;
       wall.scale.y = 0.1;
-    }
-    else
-    {
+    } else {
       wall.scale.x = 0.1;
       wall.scale.y = arena_y;
     }
     wall.scale.z = 0.25;
     wall.pose.position.x = centerx;
     wall.pose.position.y = centery;
-    wall.pose.position.z = 0.25/2.0;
+    wall.pose.position.z = 0.25 / 2.0;
     wall.color.r = 1.0;
     wall.color.g = 0.0;
     wall.color.b = 0.0;
@@ -366,14 +363,11 @@ int main(int argc, char * argv[])
   try {
     rclcpp::spin(std::make_shared<NUSim>());
   } catch (int error) {
-    if (error == 0)
-    {
+    if (error == 0) {
       RCLCPP_ERROR(
         std::make_shared<NUSim>()->get_logger(),
         "Failed: Different number of obstacle x-coordinates than obstacle y-coordinates.");
-    }
-    else if (error == 1)
-    {
+    } else if (error == 1) {
       RCLCPP_ERROR(
         std::make_shared<NUSim>()->get_logger(),
         "Error: Necessary parameters not defined.");

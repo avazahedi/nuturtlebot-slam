@@ -59,6 +59,8 @@ install(DIRECTORY include/turtlelib DESTINATION include)
 # The targets will be installed to default locations
 install(TARGETS frame_main turtlelib EXPORT turtlelib-targets)
 
+include(CTest)
+
 # The project_name-targets now also needs to be exported.
 # This call will generate a file called project_name-config.cmake
 # That contains the exported targets.

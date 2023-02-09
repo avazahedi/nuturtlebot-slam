@@ -58,16 +58,15 @@ public:
 
     // timer
     timer_ = create_wall_timer(
-      std::chrono::milliseconds(1000/frequency), std::bind(&Circle::timer_callback, this));
+      std::chrono::milliseconds(1000 / frequency), std::bind(&Circle::timer_callback, this));
   }
 
 private:
   /// \brief Timer callback that runs continuously on the provided frequency
   void timer_callback()
   {
-    if (stop_flag == 0)
-    {
-        cmd_vel_pub_->publish(vel_msg);
+    if (stop_flag == 0) {
+      cmd_vel_pub_->publish(vel_msg);
     }
   }
 
@@ -113,7 +112,7 @@ private:
 
   rclcpp::TimerBase::SharedPtr timer_;
   rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr cmd_vel_pub_;
-  
+
   rclcpp::Service<nuturtle_control::srv::Control>::SharedPtr control_srv_;
   rclcpp::Service<std_srvs::srv::Empty>::SharedPtr reverse_srv_;
   rclcpp::Service<std_srvs::srv::Empty>::SharedPtr stop_srv_;
