@@ -28,21 +28,23 @@ https://user-images.githubusercontent.com/39091881/217675003-65603068-d647-48b0-
 
 https://user-images.githubusercontent.com/39091881/217676673-e88fd6c2-ac00-4a10-90e9-774d241c1904.mp4
 
-Final location of the turtlebot according to odometry:
-`header:
-  stamp:
-    sec: 1675895543
-    nanosec: 972643133
-  frame_id: odom
-child_frame_id: blue/base_footprint
-pose:
-  pose:
-    position:
-      x: 0.1413477247789586
-      y: -0.07751904756869547
-      z: 0.0
-    orientation:
-      x: 0.0
-      y: 0.0
-      z: -0.04191423777375463
-      w: 0.9991212122019255`
+Final location of the turtlebot according to odometry:  
+`
+header:  
+&ensp stamp:  
+&emsp sec: 1675895543  
+&emsp nanosec: 972643133  
+&ensp frame_id: odom  
+child_frame_id: blue/base_footprint  
+pose:  
+&ensp pose:  
+&ensp position:  
+&emsp x: 0.1413477247789586  
+&emsp y: -0.07751904756869547  
+&emsp z: 0.0  
+&ensp orientation:  
+&emsp x: 0.0  
+&emsp y: 0.0  
+&emsp z: -0.04191423777375463  
+&emsp w: 0.9991212122019255  
+`

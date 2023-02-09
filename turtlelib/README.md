@@ -44,5 +44,5 @@ A library for handling transformations in SE(2) and other turtlebot-related math
     C++ core guideline C.46 states that single-argument constructors should be declared explicit to avoid unintended conversions.  
 
 5. Why is Transform2D::inv() declared const while Transform2D::operator*=() is not?
-   - Refer to [[https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#con-constants-and-immutability][C++ Core Guidelines (Constants and Immutability)]] in your answer  
+   - Refer to C++ Core Guidelines (Constants and Immutability) in your answer  
     C++ code guideline Con.2 states that by default we should make member functions const. This is because we don't want to change the object itself when we call the member function, in the case of Transform2D::inv(). When overwriting the \*= operator for Transform2D objects, however, we want to change the object itself as a result of calling this function. T \*= T1 is the same as T = T\*T1, so we are overwriting T here. Therefore the result of calling \*= does not keep the object constant, so we should not declare it as such.
