@@ -13,7 +13,7 @@ This repository also contains a custom C++ library
     * diff_drive - kinematics for a differential drive robot in 2D
 
 # Launch File Details
-* `ros2 launch nuturtle_control start_robot.launch.xml`
+* `ros2 launch nuturtle_control start_robot.launch.xml`  
     Command line arguments:
     - cmd_src - source of cmd_vel messages
       - Options are [teleop, circle, none], defaults to "none" 
