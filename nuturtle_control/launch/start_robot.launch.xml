@@ -59,6 +59,13 @@
   <node name="numsr_turtlebot" pkg="numsr_turtlebot" exec="numsr_turtlebot" if="$(eval '\'$(var robot)\' == \'localhost\'')" >
   </node>
 
+  <!-- laser scanner -->
+  <!-- <node name="hlds laser scanner" pkg="hls_lfcd_lds_driver" exec="hlds_laser_publisher" if="$(eval '\'$(var robot)\' == \'localhost\'')" >
+  </node> -->
+  <include file="$(find-pkg-share hls_lfcd_lds_driver)/launch/hlds_laser.launch.py" 
+           if="$(eval '\'$(var robot)\' == \'localhost\'')" >
+  </include>
+
   <!-- identity transform between nusim/world and odom -->
   <node pkg="tf2_ros" exec="static_transform_publisher" name="world_to_odom_tf" args="0 0 0 0 0 0 nusim/world odom" />
 
