@@ -29,6 +29,8 @@
 #include "tf2/LinearMath/Quaternion.h"
 #include "tf2_ros/transform_broadcaster.h"
 #include "nuturtle_control/srv/initial_pose.hpp"
+#include "nav_msgs/msg/path.hpp"
+#include "geometry_msgs/msg/pose_stamped.hpp"
 
 using namespace std::chrono_literals;
 
@@ -68,8 +70,11 @@ public:
     odom_msg.header.frame_id = odom_id;
     odom_msg.child_frame_id = body_id;
 
-    // publisher
+    // odom publisher
     odom_pub_ = create_publisher<nav_msgs::msg::Odometry>("/odom", 10);
+
+    // odom path publisher
+    odom_path_pub_ = create_publisher<nav_msgs::msg::Path>("blue/path", 10);
 
     // subscriber
     js_sub_ = create_subscription<sensor_msgs::msg::JointState>(
@@ -137,6 +142,23 @@ private:
     t.transform.rotation.z = quat.z();
     t.transform.rotation.w = quat.w();
 
+    // Add to odom path
+    odom_path.header.stamp = get_clock()->now();
+    odom_path.header.frame_id = "nusim/world";
+    rp_pose.header.stamp = get_clock()->now();
+    rp_pose.header.frame_id = "nusim/world";
+    rp_pose.pose.position.x = q.x;
+    rp_pose.pose.position.y = q.y;
+    rp_pose.pose.position.z = 0.0;
+    rp_pose.pose.orientation.x = quat.x();
+    rp_pose.pose.orientation.y = quat.y();
+    rp_pose.pose.orientation.z = quat.z();
+    rp_pose.pose.orientation.w = quat.w();
+    odom_path.poses.push_back(rp_pose);
+
+    // publish odom path
+    odom_path_pub_->publish(odom_path);
+
     // Send the transformation
     tf_broadcaster_->sendTransform(t);
 
@@ -169,9 +191,12 @@ private:
   turtlelib::WheelPosn prev_wheel_pos;
 
   nav_msgs::msg::Odometry odom_msg;
+  nav_msgs::msg::Path odom_path;
+  geometry_msgs::msg::PoseStamped rp_pose;
 
   rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odom_pub_;
   rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr js_sub_;
+  rclcpp::Publisher<nav_msgs::msg::Path>::SharedPtr odom_path_pub_;
 
   rclcpp::Service<nuturtle_control::srv::InitialPose>::SharedPtr initial_pose_srv_;
   std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
