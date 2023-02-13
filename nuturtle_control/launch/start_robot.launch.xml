@@ -60,8 +60,6 @@
   </node>
 
   <!-- laser scanner -->
-  <!-- <node name="hlds laser scanner" pkg="hls_lfcd_lds_driver" exec="hlds_laser_publisher" if="$(eval '\'$(var robot)\' == \'localhost\'')" >
-  </node> -->
   <include file="$(find-pkg-share hls_lfcd_lds_driver)/launch/hlds_laser.launch.py" 
            if="$(eval '\'$(var robot)\' == \'localhost\'')" >
   </include>
