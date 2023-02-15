@@ -144,9 +144,9 @@ private:
 
     // Add to odom path
     odom_path.header.stamp = get_clock()->now();
-    odom_path.header.frame_id = "nusim/world";
+    odom_path.header.frame_id = odom_id;  // "nusim/world"
     rp_pose.header.stamp = get_clock()->now();
-    rp_pose.header.frame_id = "nusim/world";
+    rp_pose.header.frame_id = odom_id;
     rp_pose.pose.position.x = q.x;
     rp_pose.pose.position.y = q.y;
     rp_pose.pose.position.z = 0.0;

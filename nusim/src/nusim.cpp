@@ -13,6 +13,8 @@
 ///     arena
 ///         x_length: length of the arena in the world x direction
 ///         y_length: length of the arena in the world y direction
+///     input_noise (double): variance for the zero mean Gaussian noise
+///     slip_fraction (double): wheel slippage
 /// PUBLISHES:
 ///     walls (visualization_msgs/MarkerArray): publishes the marker array of the arena walls
 ///     obstacles (visualization_msgs/MarkerArray): publishes the marker array of all current
@@ -32,6 +34,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <random>
 
 #include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/u_int64.hpp"
@@ -63,6 +66,14 @@ public:
 
     int rate =
       get_parameter("rate").get_parameter_value().get<int>();
+
+    
+    // noise parameters
+    declare_parameter("input_noise", 0.0);
+    declare_parameter("slip_fraction", 0.0);
+
+    input_noise = get_parameter("input_noise").get_parameter_value().get<double>();
+    slip_fraction = get_parameter("slip_fraction").get_parameter_value().get<double>();
 
     // initial pose
     declare_parameter("x0", 0.0);
@@ -114,6 +125,7 @@ public:
     arena_x = get_parameter("arena.x_length").get_parameter_value().get<double>();
     arena_y = get_parameter("arena.y_length").get_parameter_value().get<double>();
 
+    // diff drive
     turtlelib::DiffDrive dd {track, radius};
 
     prev_wheel_pos.left = 0.0;
@@ -281,8 +293,29 @@ private:
   /// @param msg - wheel commands
   void wheelcmd_callback(const nuturtlebot_msgs::msg::WheelCommands & msg)
   {
-    vels.left = static_cast<double>(msg.left_velocity) * motor_cmd_prs;
-    vels.right = static_cast<double>(msg.right_velocity) * motor_cmd_prs;
+    // normal distribution Gaussian variable
+    std::normal_distribution<> ndist(0.0, input_noise);
+    // uniform distribution
+    std::uniform_real_distribution<> udist(-slip_fraction, slip_fraction);
+
+    double sfl = udist(get_random());
+    double sfr = udist(get_random());
+    // RCLCPP_INFO_STREAM(get_logger(), "sfl: " << sfl << " sfr: " << sfr);
+
+    double wl = 0.0, wr = 0.0;
+
+    if (msg.left_velocity != 0)
+    {
+      wl = ndist(get_random());
+    }
+
+    if (msg.right_velocity != 0)
+    {
+      wr = ndist(get_random());
+    }
+
+    vels.left = static_cast<double>(msg.left_velocity) * motor_cmd_prs * (1.0+sfl) + wl;
+    vels.right = static_cast<double>(msg.right_velocity) * motor_cmd_prs * (1.0+sfr) + wr;
   }
 
   /// \brief Callback for reset service, which resets the timestep count and robot pose
@@ -376,7 +409,7 @@ private:
   double arena_x;
   double arena_y;
 
-  // 
+  // robot
   nuturtlebot_msgs::msg::SensorData sensor_data;
   double radius;
   double track;
@@ -387,8 +420,24 @@ private:
   turtlelib::WheelPosn vels;
   double dt;
 
+  // noise
+  double input_noise;
+  double slip_fraction;
+
+  // path
   nav_msgs::msg::Path robot_path;
   geometry_msgs::msg::PoseStamped rp_pose;
+
+  // random number generation (from Jointly Gaussian Distributions notes)
+  std::mt19937 & get_random()
+  {
+      // static variables inside a function are created once and persist for the remainder of the program
+      static std::random_device rd{}; 
+      static std::mt19937 mt{rd()};
+      // we return a reference to the pseudo-random number genrator object. This is always the
+      // same object every time get_random is called
+      return mt;
+  }
 
 };
 
