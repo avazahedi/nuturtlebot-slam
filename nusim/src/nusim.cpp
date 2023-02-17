@@ -147,16 +147,10 @@ public:
     dt = 1 / (static_cast<double>(rate));
 
     // normal distribution Gaussian variable
-    std::normal_distribution<> tmp_ndist_pos(0.0, pow(input_noise, 0.5));
-    ndist_pos = tmp_ndist_pos;
-    std::normal_distribution<> tmp_ndist_fs(0.0, pow(basic_sensor_variance, 0.5));
-    ndist_fs = tmp_ndist_fs;
+    ndist_pos = std::normal_distribution<>(0.0, pow(input_noise, 0.5));
+    ndist_fs = std::normal_distribution<>(0.0, pow(basic_sensor_variance, 0.5));;
     // uniform distribution
-    std::uniform_real_distribution<> tmp_udist_pos(-slip_fraction, slip_fraction);
-    udist_pos = tmp_udist_pos;
-
-    // RCLCPP_INFO_STREAM(get_logger(), "input noise: " << input_noise << " slip fraction: " << slip_fraction);
-    // RCLCPP_INFO_STREAM(get_logger(), "ndist_pos: " << ndist_pos.mean() << " stddev: " << ndist_pos.stddev());
+    udist_pos = std::uniform_real_distribution<>(-slip_fraction, slip_fraction);
 
     // walls publisher
     walls_pub_ = create_publisher<visualization_msgs::msg::MarkerArray>("~/walls", 10);
@@ -259,7 +253,6 @@ private:
       sfl = udist_pos(get_random());
       sfr = udist_pos(get_random());
     }
-    // RCLCPP_INFO_STREAM(get_logger(), "sfl: " << sfl << " sfr: " << sfr);
 
     wheel_diff.left = vels.left * dt * (1.0+sfl);
     wheel_diff.right = vels.right * dt * (1.0+sfr);
@@ -382,13 +375,6 @@ private:
   /// @param msg - wheel commands
   void wheelcmd_callback(const nuturtlebot_msgs::msg::WheelCommands & msg)
   {
-    // // normal distribution Gaussian variable
-    // std::normal_distribution<> ndist_pos(0.0, input_noise);
-    // // uniform distribution
-    // std::uniform_real_distribution<> udist_pos(-slip_fraction, slip_fraction);
-
-    // RCLCPP_INFO_STREAM(get_logger(), "ndist_pos: " << ndist_pos.mean() << " stddev: " << ndist_pos.stddev());
-
     double wl = 0.0, wr = 0.0;
 
     if (msg.left_velocity != 0 && input_noise != 0)
@@ -400,8 +386,6 @@ private:
     {
       wr = ndist_pos(get_random());
     }
-
-    // RCLCPP_INFO_STREAM(get_logger(), "wl: " << wl << " wr: " << wr);
 
     vels.left = static_cast<double>(msg.left_velocity) * motor_cmd_prs + wl;
     vels.right = static_cast<double>(msg.right_velocity) * motor_cmd_prs + wr;
