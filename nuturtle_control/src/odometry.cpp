@@ -97,6 +97,8 @@ private:
   /// @param msg - joint state data
   void js_callback(const sensor_msgs::msg::JointState & msg)
   {
+    count_++;
+
     // new wheel posns
     turtlelib::WheelPosn wheels;
     wheels.left = msg.position.at(0) - prev_wheel_pos.left;
@@ -142,19 +144,22 @@ private:
     t.transform.rotation.z = quat.z();
     t.transform.rotation.w = quat.w();
 
-    // Add to odom path
-    odom_path.header.stamp = get_clock()->now();
-    odom_path.header.frame_id = odom_id;  // "nusim/world"
-    rp_pose.header.stamp = get_clock()->now();
-    rp_pose.header.frame_id = odom_id;
-    rp_pose.pose.position.x = q.x;
-    rp_pose.pose.position.y = q.y;
-    rp_pose.pose.position.z = 0.0;
-    rp_pose.pose.orientation.x = quat.x();
-    rp_pose.pose.orientation.y = quat.y();
-    rp_pose.pose.orientation.z = quat.z();
-    rp_pose.pose.orientation.w = quat.w();
-    odom_path.poses.push_back(rp_pose);
+    if (count_%100 == 0)
+    {
+      // Add to odom path
+      odom_path.header.stamp = get_clock()->now();
+      odom_path.header.frame_id = odom_id;  // "nusim/world"
+      rp_pose.header.stamp = get_clock()->now();
+      rp_pose.header.frame_id = odom_id;
+      rp_pose.pose.position.x = q.x;
+      rp_pose.pose.position.y = q.y;
+      rp_pose.pose.position.z = 0.0;
+      rp_pose.pose.orientation.x = quat.x();
+      rp_pose.pose.orientation.y = quat.y();
+      rp_pose.pose.orientation.z = quat.z();
+      rp_pose.pose.orientation.w = quat.w();
+      odom_path.poses.push_back(rp_pose);
+    }
 
     // publish odom path
     odom_path_pub_->publish(odom_path);
@@ -180,6 +185,8 @@ private:
 
     dd.setConfig(cfg);
   }
+
+  unsigned int count_ = 0;
 
   std::string body_id;
   std::string odom_id;

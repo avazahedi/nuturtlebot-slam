@@ -35,6 +35,7 @@
 #include <string>
 #include <vector>
 #include <random>
+#include <cmath>
 
 #include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/u_int64.hpp"
@@ -76,7 +77,6 @@ public:
 
     int rate =
       get_parameter("rate").get_parameter_value().get<int>();
-
     
     // noise parameters
     declare_parameter("input_noise", 0.0);
@@ -123,11 +123,15 @@ public:
     declare_parameter("track_width", -1.0);
     declare_parameter("motor_cmd_per_rad_sec", -1.0);
     declare_parameter("encoder_ticks_per_rad", -1.0);
+    declare_parameter("collision_radius", -1.0);
     radius = get_parameter("wheel_radius").get_parameter_value().get<double>();
     track = get_parameter("track_width").get_parameter_value().get<double>();
     motor_cmd_prs = get_parameter("motor_cmd_per_rad_sec").get_parameter_value().get<double>();
     encoder_ticks = get_parameter("encoder_ticks_per_rad").get_parameter_value().get<double>();
-    if (radius == -1 || track == -1 || motor_cmd_prs == -1 || encoder_ticks == -1) {
+    collision_rad = get_parameter("collision_radius").get_parameter_value().get<double>();
+    if (radius == -1 || track == -1 || motor_cmd_prs == -1 || encoder_ticks == -1 
+        || collision_rad == -1)
+    {
       int error = 1;
       throw(error);
     }
@@ -190,14 +194,14 @@ public:
     // transform broadcaster
     tf_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
 
-    // populate obstacles MarkerArray
+    // populate obstacles MarkerArray and vectors
     auto marker_stamp = get_clock()->now();
     for (unsigned int i = 0; i < obstacles_x.size(); i++) {
       visualization_msgs::msg::Marker obs;
       obs.header.frame_id = "nusim/world";
       obs.header.stamp = marker_stamp;
       obs.type = visualization_msgs::msg::Marker::CYLINDER;
-      obs.id = i + 4; // i
+      obs.id = i + 4; // ids 4-7
       obs.action = visualization_msgs::msg::Marker::ADD;
       obs.scale.x = 2.0 * obstacles_r;
       obs.scale.y = 2.0 * obstacles_r;
@@ -214,6 +218,9 @@ public:
       obs.color.b = 0.0;
       obs.color.a = 1.0;
       obstacles_mkrs.markers.push_back(obs);
+
+      turtlelib::Vector2D vec {obstacles_x.at(i), obstacles_y.at(i)};
+      obs_vecs.push_back(vec);
     }
 
     // walls
@@ -259,17 +266,20 @@ private:
     new_wheel_pos.left = prev_wheel_pos.left + (vels.left * dt);
     new_wheel_pos.right = prev_wheel_pos.right + (vels.right * dt);
     dd.ForwardKinematics(wheel_diff);
-    sensor_data.left_encoder = new_wheel_pos.left * encoder_ticks;
-    sensor_data.right_encoder = new_wheel_pos.right * encoder_ticks;
+    // Collision detection
+    collision_detect();
+    // update config
     turtlelib::RobotConfig q = dd.getConfig();
     theta = q.theta;
     x = q.x;
     y = q.y;
+    // update sensor data
+    sensor_data.left_encoder = new_wheel_pos.left * encoder_ticks;
+    sensor_data.right_encoder = new_wheel_pos.right * encoder_ticks;
     // publish /sensor_data
     sensor_pub_->publish(sensor_data);
     // update prev
     prev_wheel_pos = new_wheel_pos;
-
 
     //// TRANSFORM ////
     geometry_msgs::msg::TransformStamped t;
@@ -294,18 +304,21 @@ private:
     t.transform.rotation.w = quat.w();
 
     // Add to robot path
-    robot_path.header.stamp = get_clock()->now();
-    robot_path.header.frame_id = "nusim/world";
-    rp_pose.header.stamp = get_clock()->now();
-    rp_pose.header.frame_id = "nusim/world";
-    rp_pose.pose.position.x = x;
-    rp_pose.pose.position.y = y;
-    rp_pose.pose.position.z = 0.0;
-    rp_pose.pose.orientation.x = quat.x();
-    rp_pose.pose.orientation.y = quat.y();
-    rp_pose.pose.orientation.z = quat.z();
-    rp_pose.pose.orientation.w = quat.w();
-    robot_path.poses.push_back(rp_pose);
+    if (count_%100 == 0)
+    {
+      robot_path.header.stamp = get_clock()->now();
+      robot_path.header.frame_id = "nusim/world";
+      rp_pose.header.stamp = get_clock()->now();
+      rp_pose.header.frame_id = "nusim/world";
+      rp_pose.pose.position.x = x;
+      rp_pose.pose.position.y = y;
+      rp_pose.pose.position.z = 0.0;
+      rp_pose.pose.orientation.x = quat.x();
+      rp_pose.pose.orientation.y = quat.y();
+      rp_pose.pose.orientation.z = quat.z();
+      rp_pose.pose.orientation.w = quat.w();
+      robot_path.poses.push_back(rp_pose);
+    }
 
     // Send the transformation
     tf_broadcaster_->sendTransform(t);
@@ -340,7 +353,7 @@ private:
       fake_obs.header.frame_id = "red/base_footprint";
       fake_obs.header.stamp = marker_stamp;
       fake_obs.type = visualization_msgs::msg::Marker::CYLINDER;
-      fake_obs.id = i + 8;
+      fake_obs.id = i + 8; // ids 8-11
       if (pow(pow(rel_obs.x,2) + pow(rel_obs.y,2),0.5) > max_range)
       {
         fake_obs.action = visualization_msgs::msg::Marker::DELETE;
@@ -352,8 +365,6 @@ private:
       fake_obs.scale.x = 2.0 * obstacles_r;
       fake_obs.scale.y = 2.0 * obstacles_r;
       fake_obs.scale.z = obstacles_z;
-      // fake_obs.pose.position.x = rel_obs.x + ndist_fs(get_random());
-      // fake_obs.pose.position.y = rel_obs.y + ndist_fs(get_random());
       fake_obs.pose.position.x = rel_obs.x;
       fake_obs.pose.position.y = rel_obs.y;
       fake_obs.pose.position.z = obstacles_z / 2.0;
@@ -369,6 +380,29 @@ private:
     }
 
     fake_sensor_pub_->publish(fake_sensor_data);
+  }
+
+  /// @brief Check for a collision with obstacles
+  void collision_detect()
+  {
+    turtlelib::Vector2D rb_pos {dd.getConfig().x, dd.getConfig().y};
+    double ctheta = dd.getConfig().theta;
+    for (unsigned int i = 0; i < obs_vecs.size(); i++)
+    {
+      auto current = obs_vecs.at(i);
+      double dist_or = std::sqrt(pow((current.x-rb_pos.x), 2)+pow((current.y-rb_pos.y),2));
+      if (dist_or < (obstacles_r + collision_rad))
+      {
+        turtlelib::Vector2D obs_robot = current - rb_pos;
+        turtlelib::Vector2D unit_vec = turtlelib::normalize(obs_robot);
+        double dist_to_move = obstacles_r + collision_rad - dist_or;
+        rb_pos.x -= dist_to_move*unit_vec.x;
+        rb_pos.y -= dist_to_move*unit_vec.y;
+        turtlelib::RobotConfig new_q {ctheta, rb_pos.x, rb_pos.y};
+        dd.setConfig(new_q);
+        break; // assuming we are only colliding with one obstacle
+      }
+    }
   }
 
   /// @brief Callback for red/wheel_cmd subscription to receive motion commands
@@ -427,7 +461,7 @@ private:
     wall.header.frame_id = "nusim/world";
     wall.header.stamp = get_clock()->now();
     wall.type = visualization_msgs::msg::Marker::CUBE;
-    wall.id = i;
+    wall.id = i;  // ids 0-3
     wall.action = visualization_msgs::msg::Marker::ADD;
     if (angle == 0) {
       wall.scale.x = arena_x;
@@ -480,6 +514,7 @@ private:
   double obstacles_z = 0.25;  // const auto obstacles_z = 0.25;
   visualization_msgs::msg::MarkerArray obstacles_mkrs;
   visualization_msgs::msg::MarkerArray wall_mkrs;
+  std::vector<turtlelib::Vector2D> obs_vecs;
 
   // arena walls
   double arena_x;
@@ -491,6 +526,7 @@ private:
   double track;
   double motor_cmd_prs;
   double encoder_ticks;
+  double collision_rad;
   turtlelib::DiffDrive dd;
   turtlelib::WheelPosn prev_wheel_pos;
   turtlelib::WheelPosn vels;
