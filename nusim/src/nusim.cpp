@@ -50,9 +50,19 @@
 #include "nuturtlebot_msgs/msg/sensor_data.hpp"
 #include "nav_msgs/msg/path.hpp"
 #include "geometry_msgs/msg/pose_stamped.hpp"
-// #include "geometry_msgs/msg/pose.hpp"
 
 using namespace std::chrono_literals;
+
+// random number generation (from Jointly Gaussian Distributions notes)
+std::mt19937 & get_random()
+{
+    // static variables inside a function are created once and persist for the remainder of the program
+    static std::random_device rd{}; 
+    static std::mt19937 mt{rd()};
+    // we return a reference to the pseudo-random number genrator object. This is always the
+    // same object every time get_random is called
+    return mt;
+}
 
 /// \brief The NUSim class inherits the Node class and creates a simulated robot environment.
 class NUSim : public rclcpp::Node
@@ -71,9 +81,13 @@ public:
     // noise parameters
     declare_parameter("input_noise", 0.0);
     declare_parameter("slip_fraction", 0.0);
+    declare_parameter("basic_sensor_variance", 0.0);
+    declare_parameter("max_range", 5.0);
 
     input_noise = get_parameter("input_noise").get_parameter_value().get<double>();
     slip_fraction = get_parameter("slip_fraction").get_parameter_value().get<double>();
+    basic_sensor_variance = get_parameter("basic_sensor_variance").get_parameter_value().get<double>();
+    max_range = get_parameter("max_range").get_parameter_value().get<double>();
 
     // initial pose
     declare_parameter("x0", 0.0);
@@ -102,8 +116,7 @@ public:
     }
 
     obstacles_r = get_parameter("obstacles.r").get_parameter_value().get<double>();
-
-    const auto obstacles_z = 0.25;
+    obstacles_z = 0.25;
 
     // diff drive parameters
     declare_parameter("wheel_radius", -1.0);
@@ -133,6 +146,18 @@ public:
 
     dt = 1 / (static_cast<double>(rate));
 
+    // normal distribution Gaussian variable
+    std::normal_distribution<> tmp_ndist_pos(0.0, pow(input_noise, 0.5));
+    ndist_pos = tmp_ndist_pos;
+    std::normal_distribution<> tmp_ndist_fs(0.0, pow(basic_sensor_variance, 0.5));
+    ndist_fs = tmp_ndist_fs;
+    // uniform distribution
+    std::uniform_real_distribution<> tmp_udist_pos(-slip_fraction, slip_fraction);
+    udist_pos = tmp_udist_pos;
+
+    // RCLCPP_INFO_STREAM(get_logger(), "input noise: " << input_noise << " slip fraction: " << slip_fraction);
+    // RCLCPP_INFO_STREAM(get_logger(), "ndist_pos: " << ndist_pos.mean() << " stddev: " << ndist_pos.stddev());
+
     // walls publisher
     walls_pub_ = create_publisher<visualization_msgs::msg::MarkerArray>("~/walls", 10);
 
@@ -148,8 +173,8 @@ public:
     // robot path publisher
     robot_path_pub_ = create_publisher<nav_msgs::msg::Path>("red/path", 10);
 
-    // // yellow relative markers publisher (V.1)
-    // relative_markers_pub_ = create_publisher<visualization_msgs::msg::MarkerArray>("~/obstacles", 10);
+    // fake sensor publisher
+    fake_sensor_pub_ = create_publisher<visualization_msgs::msg::MarkerArray>("fake_sensor", 10);
 
     // red/wheel_cmd subscriber
     wheelcmd_sub_ = create_subscription<nuturtlebot_msgs::msg::WheelCommands>(
@@ -207,6 +232,10 @@ public:
     // timer
     timer_ = create_wall_timer(
       std::chrono::milliseconds(1000 / rate), std::bind(&NUSim::timer_callback, this));
+
+    // fake sensor timer
+    fs_timer_ = create_wall_timer(
+      std::chrono::milliseconds(1000 / 5), std::bind(&NUSim::fstimer_callback, this));
   }
 
 private:
@@ -222,8 +251,18 @@ private:
     sensor_data.stamp = get_clock()->now();
     turtlelib::WheelPosn new_wheel_pos;
     turtlelib::WheelPosn wheel_diff;
-    wheel_diff.left = vels.left * dt;
-    wheel_diff.right = vels.right * dt;
+
+    double sfl = 0.0;
+    double sfr = 0.0;
+    if (slip_fraction != 0) 
+    {
+      sfl = udist_pos(get_random());
+      sfr = udist_pos(get_random());
+    }
+    // RCLCPP_INFO_STREAM(get_logger(), "sfl: " << sfl << " sfr: " << sfr);
+
+    wheel_diff.left = vels.left * dt * (1.0+sfl);
+    wheel_diff.right = vels.right * dt * (1.0+sfr);
     new_wheel_pos.left = prev_wheel_pos.left + (vels.left * dt);
     new_wheel_pos.right = prev_wheel_pos.right + (vels.right * dt);
     dd.ForwardKinematics(wheel_diff);
@@ -289,33 +328,83 @@ private:
 
   }
 
+  void fstimer_callback()
+  {
+    // publish to /fake_sensor at a frequency of 5 Hz
+    visualization_msgs::msg::MarkerArray fake_sensor_data;
+
+    turtlelib::Vector2D robot_pos {dd.getConfig().x, dd.getConfig().y};
+    double robot_phi = dd.getConfig().theta;
+    turtlelib::Transform2D tf_world_robot {robot_pos, robot_phi};
+    turtlelib::Transform2D tf_robot_world = tf_world_robot.inv();
+
+    auto marker_stamp = get_clock()->now();
+    for (unsigned int i = 0; i < obstacles_x.size(); i++) {
+      turtlelib::Vector2D obs_vec = {obstacles_x.at(i), obstacles_y.at(i)};
+      turtlelib::Vector2D rel_obs = tf_robot_world(obs_vec);
+
+      visualization_msgs::msg::Marker fake_obs;
+      fake_obs.header.frame_id = "red/base_footprint";
+      fake_obs.header.stamp = marker_stamp;
+      fake_obs.type = visualization_msgs::msg::Marker::CYLINDER;
+      fake_obs.id = i + 8;
+      if (pow(pow(rel_obs.x,2) + pow(rel_obs.y,2),0.5) > max_range)
+      {
+        fake_obs.action = visualization_msgs::msg::Marker::DELETE;
+      }
+      else
+      {
+        fake_obs.action = visualization_msgs::msg::Marker::ADD;
+      }
+      fake_obs.scale.x = 2.0 * obstacles_r;
+      fake_obs.scale.y = 2.0 * obstacles_r;
+      fake_obs.scale.z = obstacles_z;
+      // fake_obs.pose.position.x = rel_obs.x + ndist_fs(get_random());
+      // fake_obs.pose.position.y = rel_obs.y + ndist_fs(get_random());
+      fake_obs.pose.position.x = rel_obs.x;
+      fake_obs.pose.position.y = rel_obs.y;
+      fake_obs.pose.position.z = obstacles_z / 2.0;
+      fake_obs.pose.orientation.x = 0.0;
+      fake_obs.pose.orientation.y = 0.0;
+      fake_obs.pose.orientation.z = 0.0;
+      fake_obs.pose.orientation.w = 1.0;
+      fake_obs.color.r = 1.0;
+      fake_obs.color.g = 1.0;
+      fake_obs.color.b = 0.0;
+      fake_obs.color.a = 1.0;
+      fake_sensor_data.markers.push_back(fake_obs);
+    }
+
+    fake_sensor_pub_->publish(fake_sensor_data);
+  }
+
   /// @brief Callback for red/wheel_cmd subscription to receive motion commands
   /// @param msg - wheel commands
   void wheelcmd_callback(const nuturtlebot_msgs::msg::WheelCommands & msg)
   {
-    // normal distribution Gaussian variable
-    std::normal_distribution<> ndist(0.0, input_noise);
-    // uniform distribution
-    std::uniform_real_distribution<> udist(-slip_fraction, slip_fraction);
+    // // normal distribution Gaussian variable
+    // std::normal_distribution<> ndist_pos(0.0, input_noise);
+    // // uniform distribution
+    // std::uniform_real_distribution<> udist_pos(-slip_fraction, slip_fraction);
 
-    double sfl = udist(get_random());
-    double sfr = udist(get_random());
-    // RCLCPP_INFO_STREAM(get_logger(), "sfl: " << sfl << " sfr: " << sfr);
+    // RCLCPP_INFO_STREAM(get_logger(), "ndist_pos: " << ndist_pos.mean() << " stddev: " << ndist_pos.stddev());
 
     double wl = 0.0, wr = 0.0;
 
-    if (msg.left_velocity != 0)
+    if (msg.left_velocity != 0 && input_noise != 0)
     {
-      wl = ndist(get_random());
+      wl = ndist_pos(get_random());
     }
 
-    if (msg.right_velocity != 0)
+    if (msg.right_velocity != 0 && input_noise != 0)
     {
-      wr = ndist(get_random());
+      wr = ndist_pos(get_random());
     }
 
-    vels.left = static_cast<double>(msg.left_velocity) * motor_cmd_prs * (1.0+sfl) + wl;
-    vels.right = static_cast<double>(msg.right_velocity) * motor_cmd_prs * (1.0+sfr) + wr;
+    // RCLCPP_INFO_STREAM(get_logger(), "wl: " << wl << " wr: " << wr);
+
+    vels.left = static_cast<double>(msg.left_velocity) * motor_cmd_prs + wl;
+    vels.right = static_cast<double>(msg.right_velocity) * motor_cmd_prs + wr;
   }
 
   /// \brief Callback for reset service, which resets the timestep count and robot pose
@@ -380,12 +469,14 @@ private:
   unsigned int count_;
 
   rclcpp::TimerBase::SharedPtr timer_;
+  rclcpp::TimerBase::SharedPtr fs_timer_;
 
   rclcpp::Publisher<std_msgs::msg::UInt64>::SharedPtr timestep_pub_;
   rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr walls_pub_;
   rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr obstacles_pub_;
   rclcpp::Publisher<nuturtlebot_msgs::msg::SensorData>::SharedPtr sensor_pub_;
   rclcpp::Publisher<nav_msgs::msg::Path>::SharedPtr robot_path_pub_;
+  rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr fake_sensor_pub_;
 
   rclcpp::Subscription<nuturtlebot_msgs::msg::WheelCommands>::SharedPtr wheelcmd_sub_;
 
@@ -402,6 +493,7 @@ private:
   std::vector<double> obstacles_x;
   std::vector<double> obstacles_y;
   double obstacles_r;
+  double obstacles_z = 0.25;  // const auto obstacles_z = 0.25;
   visualization_msgs::msg::MarkerArray obstacles_mkrs;
   visualization_msgs::msg::MarkerArray wall_mkrs;
 
@@ -423,21 +515,17 @@ private:
   // noise
   double input_noise;
   double slip_fraction;
+  double basic_sensor_variance;
+  double max_range;
 
   // path
   nav_msgs::msg::Path robot_path;
   geometry_msgs::msg::PoseStamped rp_pose;
 
-  // random number generation (from Jointly Gaussian Distributions notes)
-  std::mt19937 & get_random()
-  {
-      // static variables inside a function are created once and persist for the remainder of the program
-      static std::random_device rd{}; 
-      static std::mt19937 mt{rd()};
-      // we return a reference to the pseudo-random number genrator object. This is always the
-      // same object every time get_random is called
-      return mt;
-  }
+  // distributions
+  std::normal_distribution<> ndist_pos;
+  std::uniform_real_distribution<> udist_pos;
+  std::normal_distribution<> ndist_fs;  // normal dist for fake_sensor
 
 };
 
