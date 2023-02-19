@@ -64,6 +64,17 @@ namespace turtlelib
         return normalized;
     }
 
+    /// @brief Calculate the distance between two points
+    /// @param x1 - x-coordinate of first point 
+    /// @param y1 - y-coordinate of first point
+    /// @param x2 - x-coordinate of second point
+    /// @param y2 - y-coordinate of second point
+    /// @return the distance between the two points
+    constexpr double distance_btw(double x1, double y1, double x2, double y2)
+    {
+        return (std::sqrt(pow(x1-x2,2) + pow(y1-y2,2)));
+    }
+
     /// static_assertions test compile time assumptions.
     /// You should write at least one more test for each function
     /// You should also purposely (and temporarily) make one of these tests fail

@@ -17,6 +17,7 @@ find_package(visualization_msgs REQUIRED)
 find_package(nuturtlebot_msgs REQUIRED)
 find_package(turtlelib REQUIRED)
 find_package(nav_msgs REQUIRED)
+find_package(sensor_msgs REQUIRED)
 
 find_package(rosidl_default_generators REQUIRED)
 
@@ -35,6 +36,7 @@ ament_target_dependencies(
   visualization_msgs
   nuturtlebot_msgs
   nav_msgs
+  sensor_msgs
 )
 
 target_link_libraries(nusim turtlelib::turtlelib "${cpp_typesupport_target}")

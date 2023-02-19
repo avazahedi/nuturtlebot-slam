@@ -51,6 +51,7 @@
 #include "nuturtlebot_msgs/msg/sensor_data.hpp"
 #include "nav_msgs/msg/path.hpp"
 #include "geometry_msgs/msg/pose_stamped.hpp"
+#include "sensor_msgs/msg/laser_scan.hpp"
 
 using namespace std::chrono_literals;
 
@@ -82,12 +83,26 @@ public:
     declare_parameter("input_noise", 0.0);
     declare_parameter("slip_fraction", 0.0);
     declare_parameter("basic_sensor_variance", 0.0);
-    declare_parameter("max_range", 5.0);
+    declare_parameter("max_range", 3.0);  // max range for detecting obstacles
 
     input_noise = get_parameter("input_noise").get_parameter_value().get<double>();
     slip_fraction = get_parameter("slip_fraction").get_parameter_value().get<double>();
     basic_sensor_variance = get_parameter("basic_sensor_variance").get_parameter_value().get<double>();
     max_range = get_parameter("max_range").get_parameter_value().get<double>();
+
+    // lidar parameters
+    declare_parameter("range_min", 0.120);
+    declare_parameter("range_max", 3.5);
+    declare_parameter("angle_increment", 0.0174533);
+    declare_parameter("num_samples", 360);
+    declare_parameter("resolution", 1.0);
+    declare_parameter("noise_level", 0.01); // stddev = 0.01
+    lidar_range_min = get_parameter("range_min").get_parameter_value().get<double>();
+    lidar_range_max = get_parameter("range_max").get_parameter_value().get<double>();
+    angle_incr = get_parameter("angle_increment").get_parameter_value().get<double>();
+    num_samples = get_parameter("num_samples").get_parameter_value().get<int>();
+    resolution = get_parameter("resolution").get_parameter_value().get<double>();
+    noise_level = get_parameter("noise_level").get_parameter_value().get<double>();
 
     // initial pose
     declare_parameter("x0", 0.0);
@@ -173,6 +188,9 @@ public:
 
     // fake sensor publisher
     fake_sensor_pub_ = create_publisher<visualization_msgs::msg::MarkerArray>("fake_sensor", 10);
+
+    // simulated lidar publisher
+    lidar_sim_pub_ = create_publisher<sensor_msgs::msg::LaserScan>("lidar_sim", 10);
 
     // red/wheel_cmd subscriber
     wheelcmd_sub_ = create_subscription<nuturtlebot_msgs::msg::WheelCommands>(
@@ -354,7 +372,8 @@ private:
       fake_obs.header.stamp = marker_stamp;
       fake_obs.type = visualization_msgs::msg::Marker::CYLINDER;
       fake_obs.id = i + 8; // ids 8-11
-      if (pow(pow(rel_obs.x,2) + pow(rel_obs.y,2),0.5) > max_range)
+      auto dist = pow(pow(rel_obs.x,2) + pow(rel_obs.y,2),0.5);
+      if (dist > max_range)
       {
         fake_obs.action = visualization_msgs::msg::Marker::DELETE;
       }
@@ -379,7 +398,86 @@ private:
       fake_sensor_data.markers.push_back(fake_obs);
     }
 
+    // simulated lidar data
+    sim_lidar();
+
+    // publish simulated data
     fake_sensor_pub_->publish(fake_sensor_data);
+
+    lidar_sim_pub_->publish(lidar_sim_data);
+  }
+
+  /// @brief Simulate lidar data
+  void sim_lidar()
+  {
+    std::vector<float> ranges(num_samples); // ranges for LaserScan msg
+    turtlelib::RobotConfig q = dd.getConfig();
+
+    for (unsigned int t=0; t<num_samples; t++)  // each angle increment
+    {
+      double max_x = q.x + cos(t*angle_incr+q.theta)*max_range;
+      double max_y = q.y + sin(t*angle_incr+q.theta)*max_range;
+      double m = (max_y-q.y)/(max_x-q.x);
+      double min_dist = max_range+1.0;
+      for (unsigned int i=0; i<obstacles_x.size(); i++) // each obstacle
+      {
+        double alpha = q.y-m*q.x-obstacles_y.at(i);
+        double a = 1.0 + pow(m,2);
+        double b = 2.0*(alpha*m - obstacles_x.at(i));
+        double c = pow(obstacles_x.at(i),2) + pow(alpha,2) - pow(obstacles_r,2);
+
+        double det = pow(b,2)-4*a*c;
+        if (det == 0)
+        {
+          double x = -b/(2*a);  // x soln
+          double y = m*(x-q.x)+q.y; // y soln
+          double dist = turtlelib::distance_btw(x, y, q.x, q.y);
+          if (dist < min_dist)
+          {
+            if ((x-q.x)/(max_x-q.x) > 0 && (y-q.y)/(max_y-q.y) > 0)
+            {
+              ranges.at(t) = dist;
+              min_dist = dist;
+            }
+          }
+        }
+        else if (det > 0)
+        {
+          double x1 = (-b+std::sqrt(det)) / (2*a);
+          double x2 = (-b-std::sqrt(det)) / (2*a);
+          double y1 = m*(x1-q.x)+q.y;
+          double y2 = m*(x2-q.x)+q.y;
+          double dist1 = turtlelib::distance_btw(x1, y1, q.x, q.y);
+          double dist2 = turtlelib::distance_btw(x2, y2, q.x, q.y);
+          double dist = std::min(dist1, dist2);
+          if (dist < min_dist)
+          {
+            if (dist == dist1 && (x1-q.x)/(max_x-q.x) > 0 && (y1-q.y)/(max_y-q.y) > 0)
+            {
+              ranges.at(t) = dist;
+              min_dist = dist;
+            }
+            else if ((x2-q.x)/(max_x-q.x) > 0 && (y2-q.y)/(max_y-q.y) > 0)  // dist = dist2
+            {
+              ranges.at(t) = dist;
+              min_dist = dist;
+            }
+          }
+        }
+      }
+    }
+
+    lidar_sim_data.header.stamp = get_clock()->now();
+    lidar_sim_data.header.stamp.nanosec -= 2e8;
+    lidar_sim_data.header.frame_id = "red/base_scan";
+    lidar_sim_data.angle_min = 0.0;
+    lidar_sim_data.angle_max = 2*turtlelib::PI;
+    lidar_sim_data.angle_increment = angle_incr;
+    lidar_sim_data.time_increment = 0.000558;
+    lidar_sim_data.scan_time = 0.2;
+    lidar_sim_data.range_min = lidar_range_min;
+    lidar_sim_data.range_max = lidar_range_max;
+    lidar_sim_data.ranges = ranges;
   }
 
   /// @brief Check for a collision with obstacles
@@ -495,6 +593,7 @@ private:
   rclcpp::Publisher<nuturtlebot_msgs::msg::SensorData>::SharedPtr sensor_pub_;
   rclcpp::Publisher<nav_msgs::msg::Path>::SharedPtr robot_path_pub_;
   rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr fake_sensor_pub_;
+  rclcpp::Publisher<sensor_msgs::msg::LaserScan>::SharedPtr lidar_sim_pub_;
 
   rclcpp::Subscription<nuturtlebot_msgs::msg::WheelCommands>::SharedPtr wheelcmd_sub_;
 
@@ -547,6 +646,14 @@ private:
   std::uniform_real_distribution<> udist_pos;
   std::normal_distribution<> ndist_fs;  // normal dist for fake_sensor
 
+  // lidar parameters
+  double lidar_range_min;
+  double lidar_range_max;
+  double angle_incr;
+  unsigned int num_samples;
+  double resolution;
+  double noise_level;
+  sensor_msgs::msg::LaserScan lidar_sim_data;
 };
 
 int main(int argc, char * argv[])
