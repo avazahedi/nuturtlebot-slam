@@ -414,6 +414,7 @@ private:
     std::vector<float> ranges(num_samples); // ranges for LaserScan msg
     turtlelib::RobotConfig q = dd.getConfig();
 
+    // scan for obstacles
     for (unsigned int t=0; t<num_samples; t++)  // each angle increment
     {
       double max_x = q.x + cos(t*angle_incr+q.theta)*max_range;
@@ -464,6 +465,45 @@ private:
               min_dist = dist;
             }
           }
+        }
+      }
+
+      // scan for walls
+      double w1x = arena_x/2;
+      double w1y = m*(w1x-q.x)+q.y;
+      double w1_dist = turtlelib::distance_btw(w1x, w1y, q.x, q.y);
+      double w2x = -arena_x/2;
+      double w2y = m*(w2x-q.x)+q.y;
+      double w2_dist = turtlelib::distance_btw(w2x, w2y, q.x, q.y);
+      double w3y = arena_y/2;
+      double w3x = (w3y-q.y)/m + q.x;
+      double w3_dist = turtlelib::distance_btw(w3x, w3y, q.x, q.y);
+      double w4y = -arena_y/2;
+      double w4x = (w4y-q.y)/m + q.x;
+      double w4_dist = turtlelib::distance_btw(w4x, w4y, q.x, q.y);
+
+      double dist = std::min({w1_dist, w2_dist, w3_dist, w4_dist});
+      if (dist < min_dist)
+      {
+        if (dist == w1_dist && (w1x-q.x)/(max_x-q.x) > 0 && (w1y-q.y)/(max_y-q.y) > 0)
+        {
+          ranges.at(t) = dist + ndist_lidar(get_random());
+          min_dist = dist;
+        }
+        else if (dist == w2_dist && (w2x-q.x)/(max_x-q.x) > 0 && (w2y-q.y)/(max_y-q.y) > 0)
+        {
+          ranges.at(t) = dist + ndist_lidar(get_random());
+          min_dist = dist;
+        }
+        else if (dist == w3_dist && (w3x-q.x)/(max_x-q.x) > 0 && (w3y-q.y)/(max_y-q.y) > 0)
+        {
+          ranges.at(t) = dist + ndist_lidar(get_random());
+          min_dist = dist;
+        }
+        else if (dist == w4_dist && (w4x-q.x)/(max_x-q.x) > 0 && (w4y-q.y)/(max_y-q.y) > 0)
+        {
+          ranges.at(t) = dist + ndist_lidar(get_random());
+          min_dist = dist;
         }
       }
     }
