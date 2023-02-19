@@ -167,7 +167,8 @@ public:
 
     // normal distribution Gaussian variable
     ndist_pos = std::normal_distribution<>(0.0, pow(input_noise, 0.5));
-    ndist_fs = std::normal_distribution<>(0.0, pow(basic_sensor_variance, 0.5));;
+    ndist_fs = std::normal_distribution<>(0.0, pow(basic_sensor_variance, 0.5));
+    ndist_lidar = std::normal_distribution<>(0.0, pow(noise_level, 0.5));
     // uniform distribution
     udist_pos = std::uniform_real_distribution<>(-slip_fraction, slip_fraction);
 
@@ -384,8 +385,8 @@ private:
       fake_obs.scale.x = 2.0 * obstacles_r;
       fake_obs.scale.y = 2.0 * obstacles_r;
       fake_obs.scale.z = obstacles_z;
-      fake_obs.pose.position.x = rel_obs.x;
-      fake_obs.pose.position.y = rel_obs.y;
+      fake_obs.pose.position.x = rel_obs.x + ndist_fs(get_random());
+      fake_obs.pose.position.y = rel_obs.y + ndist_fs(get_random());
       fake_obs.pose.position.z = obstacles_z / 2.0;
       fake_obs.pose.orientation.x = 0.0;
       fake_obs.pose.orientation.y = 0.0;
@@ -454,12 +455,12 @@ private:
           {
             if (dist == dist1 && (x1-q.x)/(max_x-q.x) > 0 && (y1-q.y)/(max_y-q.y) > 0)
             {
-              ranges.at(t) = dist;
+              ranges.at(t) = dist + ndist_lidar(get_random());
               min_dist = dist;
             }
             else if ((x2-q.x)/(max_x-q.x) > 0 && (y2-q.y)/(max_y-q.y) > 0)  // dist = dist2
             {
-              ranges.at(t) = dist;
+              ranges.at(t) = dist + ndist_lidar(get_random());
               min_dist = dist;
             }
           }
@@ -645,6 +646,7 @@ private:
   std::normal_distribution<> ndist_pos;
   std::uniform_real_distribution<> udist_pos;
   std::normal_distribution<> ndist_fs;  // normal dist for fake_sensor
+  std::normal_distribution<> ndist_lidar;  // normal dist for simulated lidar
 
   // lidar parameters
   double lidar_range_min;

@@ -6,7 +6,7 @@
       motor_cmd_per_rad_sec: 0.024
       encoder_ticks_per_rad: 651.81
       collision_radius: 0.11
-      input_noise: 0.05
+      input_noise: 0.01
       slip_fraction: 0.01
-      basic_sensor_variance: 0.05
+      basic_sensor_variance: 0.0005
       max_range: 1.0
