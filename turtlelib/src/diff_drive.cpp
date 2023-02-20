@@ -59,9 +59,9 @@ namespace turtlelib{
     WheelPosn DiffDrive::InverseKinematics(Twist2D Vb)
     {
         WheelPosn ik;
-        double D = track/2;
+        double D = track/2.0;
 
-        if (Vb.y != 0)
+        if (Vb.y != 0.0)
         {
             throw std::logic_error(
               std::string("Failed: Wheels slipping: y-velocity not equal to 0."));

@@ -4,7 +4,7 @@
       track_width: 0.160
       motor_cmd_max: 265
       motor_cmd_per_rad_sec: 0.024
-      encoder_ticks_per_rad: 651.81
+      encoder_ticks_per_rad: 651.89816
       collision_radius: 0.11
       input_noise: 0.01
       slip_fraction: 0.01

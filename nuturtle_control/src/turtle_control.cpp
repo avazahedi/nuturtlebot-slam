@@ -95,8 +95,8 @@ private:
     wheels = dd.InverseKinematics(twist);
 
     // convert to motor ticks
-    wheel_msg.left_velocity = (int32_t)wheels.left / motor_cmd_prs;
-    wheel_msg.right_velocity = (int32_t)wheels.right / motor_cmd_prs;
+    wheel_msg.left_velocity = (int32_t)(wheels.left / motor_cmd_prs);
+    wheel_msg.right_velocity = (int32_t)(wheels.right / motor_cmd_prs);
     if (wheel_msg.left_velocity > motor_cmd_max) {
       wheel_msg.left_velocity = motor_cmd_max;
     } else if (wheel_msg.left_velocity < -motor_cmd_max) {
