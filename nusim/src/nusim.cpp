@@ -485,22 +485,12 @@ private:
       double dist = std::min({w1_dist, w2_dist, w3_dist, w4_dist});
       if (dist < min_dist)
       {
-        if (dist == w1_dist && (w1x-q.x)/(max_x-q.x) > 0 && (w1y-q.y)/(max_y-q.y) > 0)
-        {
-          ranges.at(t) = dist + ndist_lidar(get_random());
-          min_dist = dist;
-        }
-        else if (dist == w2_dist && (w2x-q.x)/(max_x-q.x) > 0 && (w2y-q.y)/(max_y-q.y) > 0)
-        {
-          ranges.at(t) = dist + ndist_lidar(get_random());
-          min_dist = dist;
-        }
-        else if (dist == w3_dist && (w3x-q.x)/(max_x-q.x) > 0 && (w3y-q.y)/(max_y-q.y) > 0)
-        {
-          ranges.at(t) = dist + ndist_lidar(get_random());
-          min_dist = dist;
-        }
-        else if (dist == w4_dist && (w4x-q.x)/(max_x-q.x) > 0 && (w4y-q.y)/(max_y-q.y) > 0)
+        double wx = 0.0, wy = 0.0;
+        if (dist == w1_dist) {wx = w1x; wy = w1y;}
+        else if (dist == w2_dist) {wx = w2x; wy = w2y;}
+        else if (dist == w3_dist) {wx = w3x; wy = w3y;}
+        else if (dist == w4_dist) {wx = w4x; wy = w4y;}
+        if ((wx-q.x)/(max_x-q.x) > 0 && (wy-q.y)/(max_y-q.y) > 0)
         {
           ranges.at(t) = dist + ndist_lidar(get_random());
           min_dist = dist;
