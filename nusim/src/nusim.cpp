@@ -178,6 +178,7 @@ public:
     declare_parameter("arena.y_length", 2.0);
     arena_x = get_parameter("arena.x_length").get_parameter_value().get<double>();
     arena_y = get_parameter("arena.y_length").get_parameter_value().get<double>();
+    wall_thickness = 0.1;
 
     // diff drive
     turtlelib::DiffDrive dd {track, radius};
@@ -492,16 +493,16 @@ private:
       }
 
       // scan for walls
-      double w1x = arena_x/2;
+      double w1x = arena_x/2.0 - wall_thickness/2.0;
       double w1y = m*(w1x-q.x)+q.y;
       double w1_dist = turtlelib::distance_btw(w1x, w1y, q.x, q.y);
-      double w2x = -arena_x/2;
+      double w2x = -arena_x/2.0 + wall_thickness/2.0;
       double w2y = m*(w2x-q.x)+q.y;
       double w2_dist = turtlelib::distance_btw(w2x, w2y, q.x, q.y);
-      double w3y = arena_y/2;
+      double w3y = arena_y/2.0 - wall_thickness/2.0;
       double w3x = (w3y-q.y)/m + q.x;
       double w3_dist = turtlelib::distance_btw(w3x, w3y, q.x, q.y);
-      double w4y = -arena_y/2;
+      double w4y = -arena_y/2.0 + wall_thickness/2.0;
       double w4x = (w4y-q.y)/m + q.x;
       double w4_dist = turtlelib::distance_btw(w4x, w4y, q.x, q.y);
 
@@ -617,9 +618,9 @@ private:
     wall.action = visualization_msgs::msg::Marker::ADD;
     if (angle == 0) {
       wall.scale.x = arena_x;
-      wall.scale.y = 0.1;
+      wall.scale.y = wall_thickness;
     } else {
-      wall.scale.x = 0.1;
+      wall.scale.x = wall_thickness;
       wall.scale.y = arena_y;
     }
     wall.scale.z = 0.25;
@@ -672,6 +673,7 @@ private:
   // arena walls
   double arena_x;
   double arena_y;
+  double wall_thickness;
 
   // robot
   nuturtlebot_msgs::msg::SensorData sensor_data;
