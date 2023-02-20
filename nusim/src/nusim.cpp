@@ -15,12 +15,34 @@
 ///         y_length: length of the arena in the world y direction
 ///     input_noise (double): variance for the zero mean Gaussian noise
 ///     slip_fraction (double): wheel slippage
+///     basic_sensor_variance (double): sensor variance
+///     max_range (double): max range for detecting obstacles
+///     
+///     Lidar parameters:
+///     range_min (double): lidar range minimum
+///     range_max (double): lidar range maximum
+///     angle_increment (double): lidar angle increment
+///     num_samples (int): number of samples collected by the lidar per timer iteration
+///     resolution (double): resolution of lidar sensor measurements
+///     noise_level (double): lidar sensor noise
+///
+///     DiffDrive parameters:
+///     wheel_radius (double): wheel radius
+///     track_width (double): track width (distance between the wheels)
+///     motor_cmd_max (int): maximum ticks for motor commands
+///     motor_cmd_per_rad_sec (double): number of rad/s equivalent to 1 motor command tick
+///     encoder_ticks_per_rad (double): number of encoder ticks per radian
+///     collision_radius (double): radius for collision detection
 /// PUBLISHES:
 ///     walls (visualization_msgs/MarkerArray): publishes the marker array of the arena walls
 ///     obstacles (visualization_msgs/MarkerArray): publishes the marker array of all current
 ///                                                 obstacles every iteration
 ///     timestep (std_msgs/UInt64): publishes the current timestep every iteration
 ///     red/sensor_data (nuturtlebot_msgs/SensorData): publishes sensor data for the red turtlebot
+///     red/path (nav_msgs/Path): publishes the path of the red (simulated) turtlebot
+///     fake_sensor (visualization_msgs/MarkerArray): publishes the simulated sensor data of 
+///                                                   the obstacles
+///     lidar_sim (sensor_msgs/LaserScan): publishes the simulated lidar data
 /// SUBSCRIBES:
 ///     red/wheel_cmd (nuturtlebot_msgs/WheelCommands): subscribes to wheel positions for the
 ///                                                     red turtlebot
@@ -242,13 +264,13 @@ public:
       obs_vecs.push_back(vec);
     }
 
-    // walls
+    // create walls
     create_wall(0.0, arena_y / 2.0, 0, 0);
     create_wall(0.0, -arena_y / 2.0, 0, 1);
     create_wall(arena_x / 2.0, 0.0, 1.5707, 2);
     create_wall(-arena_x / 2.0, 0.0, 1.5707, 3);
 
-
+    //// TIMERS ////
     // timer
     timer_ = create_wall_timer(
       std::chrono::milliseconds(1000 / rate), std::bind(&NUSim::timer_callback, this));
@@ -353,6 +375,7 @@ private:
 
   }
 
+  /// @brief 5Hz timer callback for simulation data
   void fstimer_callback()
   {
     // publish to /fake_sensor at a frequency of 5 Hz
