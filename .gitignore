@@ -3,7 +3,7 @@ pycache/
 .vscode
 *.so
 
-turtlelib/rigid2d
+turtlelib/src/rigid2d
 turtlelib/frame_main
 turtlelib/src/frame_main
 turtlelib/build
