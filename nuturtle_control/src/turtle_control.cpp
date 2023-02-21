@@ -56,7 +56,7 @@ public:
       encoder_ticks == -1 ||
       collision_rad == -1)
     {
-      int error = 0;
+        int error = 0; //! Don't throw integers, throw objects derived  std::exception instead as these are proper exception objects
       throw(error);
     }
 
@@ -118,7 +118,9 @@ private:
     joint_state.name = {"wheel_left_joint", "wheel_right_joint"};
     joint_state.header.stamp = msg.stamp;
 
+    //! const auto dt
     double dt = msg.stamp.sec + 1e-9 * msg.stamp.nanosec - time0;
+    //! const auto dphi_l
     double dphi_l = static_cast<double>(msg.left_encoder) / encoder_ticks;
     double dphi_r = static_cast<double>(msg.right_encoder) / encoder_ticks;
     joint_state.position = {dphi_l, dphi_r};

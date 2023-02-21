@@ -10,7 +10,7 @@ namespace turtlelib {
 
     Vector2D & Vector2D::operator+=(const Vector2D & rhs)
     {
-        x = x + rhs.x;
+        x = x + rhs.x; //! x += rhs.x
         y = y + rhs.y;
         return *this;
     }

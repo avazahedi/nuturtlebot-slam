@@ -1,0 +1,8 @@
+Videos are not displaying in the README.md
+
+nusim works well and the code is clean.
+But reported x position results seem a bit innacurate but it depends on how aggressive you were with driving the robot
+
+turtlelib/src/rigid2d has this binary in the repository that should be removed
+
+
