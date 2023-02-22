@@ -332,6 +332,8 @@ private:
     t.header.frame_id = "nusim/world";
     t.child_frame_id = "red/base_footprint";
 
+    // RCLCPP_INFO_STREAM(get_logger(), "transform timestamp " << t.header.stamp.sec << "." << t.header.stamp.nanosec);
+
     // Set transform translation
     t.transform.translation.x = x;
     t.transform.translation.y = y;
@@ -524,6 +526,7 @@ private:
 
     lidar_sim_data.header.stamp = get_clock()->now();
     lidar_sim_data.header.stamp.nanosec -= 2e8;
+    // RCLCPP_INFO_STREAM(get_logger(), "lidar timestamp " << lidar_sim_data.header.stamp.sec << "." << lidar_sim_data.header.stamp.nanosec);
     lidar_sim_data.header.frame_id = "red/base_scan";
     lidar_sim_data.angle_min = 0.0;
     lidar_sim_data.angle_max = 2*turtlelib::PI;
