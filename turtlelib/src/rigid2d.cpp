@@ -10,22 +10,22 @@ namespace turtlelib {
 
     Vector2D & Vector2D::operator+=(const Vector2D & rhs)
     {
-        x = x + rhs.x;
-        y = y + rhs.y;
+        x += rhs.x;
+        y += rhs.y;
         return *this;
     }
 
     Vector2D & Vector2D::operator-=(const Vector2D & rhs)
     {
-        x = x - rhs.x;
-        y = y - rhs.y;
+        x -= rhs.x;
+        y -= rhs.y;
         return *this;
     }
 
     Vector2D & Vector2D::operator*=(const double & scalar)
     {
-        x = x * scalar;
-        y = y * scalar;
+        x *= scalar;
+        y *= scalar;
         return *this;
     }
 
