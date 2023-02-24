@@ -7,9 +7,43 @@ endif()
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
-# uncomment the following section in order to fill in
-# further dependencies manually.
-# find_package(<dependency> REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(std_msgs REQUIRED)
+find_package(std_srvs REQUIRED)
+find_package(geometry_msgs REQUIRED)
+find_package(nuturtlebot_msgs REQUIRED)
+find_package(sensor_msgs REQUIRED)
+find_package(turtlelib REQUIRED)
+find_package(tf2 REQUIRED)
+find_package(tf2_ros REQUIRED)
+find_package(nav_msgs REQUIRED)
+
+add_executable(slam src/slam.cpp)
+
+ament_target_dependencies(
+  slam
+  rclcpp
+  std_msgs
+  geometry_msgs
+  nuturtlebot_msgs
+  sensor_msgs
+  tf2
+  tf2_ros
+  nav_msgs
+)
+
+target_link_libraries(slam turtlelib::turtlelib)
+
+install(TARGETS
+  slam
+  DESTINATION lib/${PROJECT_NAME})
+
+# Install launch files
+install(DIRECTORY
+  launch
+  config
+  DESTINATION share/nuturtle_control/
+)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
