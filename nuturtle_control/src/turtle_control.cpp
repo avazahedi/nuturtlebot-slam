@@ -20,6 +20,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <exception>
 
 #include "rclcpp/rclcpp.hpp"
 #include "geometry_msgs/msg/twist.hpp"
@@ -56,7 +57,7 @@ public:
       encoder_ticks == -1 ||
       collision_rad == -1)
     {
-      int error = 0;
+      auto error = std::invalid_argument("Required parameters not set.");
       throw(error);
     }
 
@@ -118,9 +119,9 @@ private:
     joint_state.name = {"wheel_left_joint", "wheel_right_joint"};
     joint_state.header.stamp = msg.stamp;
 
-    double dt = msg.stamp.sec + 1e-9 * msg.stamp.nanosec - time0;
-    double dphi_l = static_cast<double>(msg.left_encoder) / encoder_ticks;
-    double dphi_r = static_cast<double>(msg.right_encoder) / encoder_ticks;
+    const auto dt = msg.stamp.sec + 1e-9 * msg.stamp.nanosec - time0;
+    const auto dphi_l = static_cast<double>(msg.left_encoder) / encoder_ticks;
+    const auto dphi_r = static_cast<double>(msg.right_encoder) / encoder_ticks;
     joint_state.position = {dphi_l, dphi_r};
     joint_state.velocity = {dphi_l / dt, dphi_r / dt};
 
@@ -155,12 +156,9 @@ int main(int argc, char * argv[])
   rclcpp::init(argc, argv);
   try {
     rclcpp::spin(std::make_shared<TurtleControl>());
-  } catch (int error) {
-    if (error == 0) {
-      RCLCPP_ERROR(
-        std::make_shared<TurtleControl>()->get_logger(),
-        "Error: Not all necessary parameters are defined.");
-    }
+  } catch (std::exception &e) {
+    RCLCPP_ERROR(std::make_shared<TurtleControl>()->get_logger(),
+    "Error: Not all necessary parameters are defined.");
   }
   rclcpp::shutdown();
   return 0;

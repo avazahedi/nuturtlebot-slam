@@ -395,6 +395,7 @@ private:
       visualization_msgs::msg::Marker fake_obs;
       fake_obs.header.frame_id = "red/base_footprint";
       fake_obs.header.stamp = marker_stamp;
+      fake_obs.header.stamp.nanosec -= 2e5;
       fake_obs.type = visualization_msgs::msg::Marker::CYLINDER;
       fake_obs.id = i + 8; // ids 8-11
       auto dist = pow(pow(rel_obs.x,2) + pow(rel_obs.y,2),0.5);
@@ -523,12 +524,11 @@ private:
     }
 
     lidar_sim_data.header.stamp = get_clock()->now();
-    lidar_sim_data.header.stamp.nanosec -= 2e8;
     lidar_sim_data.header.frame_id = "red/base_scan";
     lidar_sim_data.angle_min = 0.0;
     lidar_sim_data.angle_max = 2*turtlelib::PI;
     lidar_sim_data.angle_increment = angle_incr;
-    lidar_sim_data.time_increment = 0.000558;
+    lidar_sim_data.time_increment = 0.0; //0.000558;
     lidar_sim_data.scan_time = 0.2;
     lidar_sim_data.range_min = lidar_range_min;
     lidar_sim_data.range_max = lidar_range_max;
