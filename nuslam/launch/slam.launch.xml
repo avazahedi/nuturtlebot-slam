@@ -6,11 +6,18 @@
 
   <!-- start_robot -->
   <include file="$(find-pkg-share nuturtle_control)/launch/start_robot.launch.xml" >
+    <arg name="use_rviz" value="false" />
+    <arg name="nusim_rviz_config" value="$(find-pkg-share nuslam)/config/slam.rviz" />
   </include>
 
   <!-- slam -->
   <node name="slam" pkg="nuslam" exec="slam" if="$(eval '\'$(var robot)\' == \'nusim\'')">
     <param from="$(find-pkg-share nuturtle_description)/config/diff_params.yaml"/>
+    <param name="body_id" value="green/base_footprint"/>
+    <param name="odom_id" value="green/odom"/>
+    <param name="wheel_left" value="wheel_left_joint"/>
+    <param name="wheel_right" value="wheel_right_joint"/>
+    <remap from="/joint_states" to="blue/joint_states" />
   </node>
 
   <!-- green robot -->
@@ -27,5 +34,8 @@
 
   <!-- identity transform between nusim/world and map -->
   <node pkg="tf2_ros" exec="static_transform_publisher" name="world_to_map_tf" args="0 0 0 0 0 0 nusim/world map" />
+
+  <!-- TEMPORARY identity transform between map and green/odom -->
+  <node pkg="tf2_ros" exec="static_transform_publisher" name="map_to_greenodom_tf" args="0 0 0 0 0 0 map green/odom" />
 
 </launch>

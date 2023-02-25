@@ -3,6 +3,7 @@
   <arg name="cmd_src" default="none"/>
   <arg name="robot" default="nusim"/>
   <arg name="use_rviz" default="true"/>
+  <arg name="nusim_rviz_config" default="$(find-pkg-share nuturtle_control)/config/blue_red.rviz"/>
 
   <!-- start turtle_control and odometry nodes -->
   <node name="turtle_control" pkg="nuturtle_control" exec="turtle_control" if="$(eval '\'$(var robot)\' != \'localhost\'')">
@@ -39,7 +40,8 @@
   <!-- nusim -->
   <include file="$(find-pkg-share nusim)/launch/nusim.launch.xml" 
            if="$(eval '\'$(var robot)\' == \'nusim\'')" >
-    <arg name="rviz_config" value="$(find-pkg-share nuturtle_control)/config/blue_red.rviz" />
+    <arg name="rviz_config" value="$(var nusim_rviz_config)" />
+    <!-- <arg name="use_rviz" value="false" /> -->
   </include>
 
   <!-- rviz options -->

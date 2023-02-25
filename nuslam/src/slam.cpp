@@ -34,8 +34,7 @@
 
 using namespace std::chrono_literals;
 
-/// \brief The Odometry class inherits the Node class and publishes odometry messages and
-///        the odometry transform.
+/// \brief The Slam class inherits the Node class and publishes the map to green/odom transform.
 class Slam : public rclcpp::Node
 {
 public:
@@ -58,7 +57,7 @@ public:
     wheel_right = get_parameter("wheel_right").get_parameter_value().get<std::string>();
 
     if (wheel_left == "" || wheel_right == "" || body_id == "" || radius == -1 || track == -1) {
-      int error = 0;
+      auto error = std::invalid_argument("Required parameters not set.");
       throw(error);
     }
 
@@ -71,10 +70,10 @@ public:
     odom_msg.child_frame_id = body_id;
 
     // odom publisher
-    odom_pub_ = create_publisher<nav_msgs::msg::Odometry>("/odom", 10);
+    odom_pub_ = create_publisher<nav_msgs::msg::Odometry>("green/odom", 10);
 
     // odom path publisher
-    odom_path_pub_ = create_publisher<nav_msgs::msg::Path>("blue/path", 10);
+    odom_path_pub_ = create_publisher<nav_msgs::msg::Path>("green/path", 10);
 
     // subscriber
     js_sub_ = create_subscription<sensor_msgs::msg::JointState>(
@@ -148,7 +147,7 @@ private:
     {
       // Add to odom path
       odom_path.header.stamp = get_clock()->now();
-      odom_path.header.frame_id = odom_id;  // "nusim/world"
+      odom_path.header.frame_id = odom_id;
       rp_pose.header.stamp = get_clock()->now();
       rp_pose.header.frame_id = odom_id;
       rp_pose.pose.position.x = q.x;
@@ -206,6 +205,7 @@ private:
   rclcpp::Publisher<nav_msgs::msg::Path>::SharedPtr odom_path_pub_;
 
   rclcpp::Service<nuturtle_control::srv::InitialPose>::SharedPtr initial_pose_srv_;
+
   std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
 
 };
@@ -215,12 +215,9 @@ int main(int argc, char * argv[])
   rclcpp::init(argc, argv);
   try {
     rclcpp::spin(std::make_shared<Slam>());
-  } catch (int error) {
-    if (error == 0) {
-      RCLCPP_ERROR(
-        std::make_shared<Slam>()->get_logger(),
-        "Error: Required parameters not specified.");
-    }
+  } catch (std::exception &e) {
+    RCLCPP_ERROR(std::make_shared<Slam>()->get_logger(),
+    "Error: Not all necessary parameters are defined.");
   }
   rclcpp::shutdown();
   return 0;
