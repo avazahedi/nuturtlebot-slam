@@ -23,6 +23,8 @@
   <depend>tf2_ros</depend>
   <depend>nav_msgs</depend>
   <depend>nuturtle_control</depend>
+  <depend>visualization_msgs</depend>
+  <depend>Armadillo</depend>
 
   <exec_depend>ros2launch</exec_depend>
 

@@ -31,6 +31,8 @@
 #include "nuturtle_control/srv/initial_pose.hpp"
 #include "nav_msgs/msg/path.hpp"
 #include "geometry_msgs/msg/pose_stamped.hpp"
+#include "visualization_msgs/msg/marker_array.hpp"
+#include <armadillo>
 
 using namespace std::chrono_literals;
 
@@ -75,10 +77,15 @@ public:
     // odom path publisher
     odom_path_pub_ = create_publisher<nav_msgs::msg::Path>("green/path", 10);
 
-    // subscriber
+    // joint_states subscriber
     js_sub_ = create_subscription<sensor_msgs::msg::JointState>(
       "/joint_states", 10,
       std::bind(&Slam::js_callback, this, std::placeholders::_1));
+
+    // fake_sensor subscriber
+    fs_sub_ = create_subscription<visualization_msgs::msg::MarkerArray>(
+      "/fake_sensor", 10,
+      std::bind(&Slam::fs_callback, this, std::placeholders::_1));
 
     // initial pose service
     initial_pose_srv_ = create_service<nuturtle_control::srv::InitialPose>(
@@ -92,6 +99,25 @@ public:
   }
 
 private:
+  /// @brief Callback for fake_sensor subscription
+  /// @param msg - fake sensor MarkerArray
+  void fs_callback(const visualization_msgs::msg::MarkerArray & msg)
+  {
+    auto obstacles = msg.markers;
+
+    auto q = dd.getConfig();
+    turtlelib::RobotConfig dq;
+    dq.x = q.x - q_prev.x;
+    dq.y = q.y - q_prev.y;
+    auto At = arma::Mat<double>(2*obstacles.size()+3, 2*obstacles.size()+3).eye();    // A_t matrix
+    At(1,0) += -dq.y;
+    At(2,0) += dq.x;
+
+    RCLCPP_INFO_STREAM(get_logger(), "At\n" << At);
+
+    q_prev = q;
+  }
+
   /// @brief Callback for joint_state subscription
   /// @param msg - joint state data
   void js_callback(const sensor_msgs::msg::JointState & msg)
@@ -196,12 +222,16 @@ private:
   turtlelib::DiffDrive dd;
   turtlelib::WheelPosn prev_wheel_pos;
 
+  // SLAM
+  turtlelib::RobotConfig q_prev;
+
   nav_msgs::msg::Odometry odom_msg;
   nav_msgs::msg::Path odom_path;
   geometry_msgs::msg::PoseStamped rp_pose;
 
   rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odom_pub_;
   rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr js_sub_;
+  rclcpp::Subscription<visualization_msgs::msg::MarkerArray>::SharedPtr fs_sub_;
   rclcpp::Publisher<nav_msgs::msg::Path>::SharedPtr odom_path_pub_;
 
   rclcpp::Service<nuturtle_control::srv::InitialPose>::SharedPtr initial_pose_srv_;
