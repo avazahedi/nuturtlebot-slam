@@ -23,7 +23,7 @@
 
 #include "rclcpp/rclcpp.hpp"
 #include "sensor_msgs/msg/joint_state.hpp"
-#include "turtlelib/diff_drive.hpp"
+// #include "turtlelib/diff_drive.hpp"
 #include "nav_msgs/msg/odometry.hpp"
 #include "geometry_msgs/msg/transform_stamped.hpp"
 #include "tf2/LinearMath/Quaternion.h"
@@ -32,6 +32,7 @@
 #include "nav_msgs/msg/path.hpp"
 #include "geometry_msgs/msg/pose_stamped.hpp"
 #include "visualization_msgs/msg/marker_array.hpp"
+#include "turtlelib/kalman.hpp"
 #include <armadillo>
 
 using namespace std::chrono_literals;
@@ -71,6 +72,12 @@ public:
     odom_msg.header.frame_id = odom_id;
     odom_msg.child_frame_id = body_id;
 
+    // turtlelib::RobotConfig q0 = dd.getConfig();
+    // turtlelib::EKF ekf {dd.getConfig()};
+    // ekf.setConfig(dd.getConfig());
+    // ekf = turtlelib::EKF(dd.getConfig());
+    // turtlelib::EKF ekf {q0};
+
     // odom publisher
     odom_pub_ = create_publisher<nav_msgs::msg::Odometry>("green/odom", 10);
 
@@ -106,16 +113,17 @@ private:
     auto obstacles = msg.markers;
 
     auto q = dd.getConfig();
-    turtlelib::RobotConfig dq;
-    dq.x = q.x - q_prev.x;
-    dq.y = q.y - q_prev.y;
-    auto At = arma::Mat<double>(2*obstacles.size()+3, 2*obstacles.size()+3).eye();    // A_t matrix
-    At(1,0) += -dq.y;
-    At(2,0) += dq.x;
+    ekf.setConfig(q);
+    ekf.predict();
 
-    RCLCPP_INFO_STREAM(get_logger(), "At\n" << At);
+    // for (unsigned int j=0; j<obstacles.size(); j++)
+    // {
+    //     if (obstacles[j].action == 0)   // 0 = add, 2 = delete
+    //     {
+    //         ekf.update(obstacles[j].pose.position.x, obstacles[j].pose.position.y, j);
+    //     }
+    // }
 
-    q_prev = q;
   }
 
   /// @brief Callback for joint_state subscription
@@ -223,7 +231,7 @@ private:
   turtlelib::WheelPosn prev_wheel_pos;
 
   // SLAM
-  turtlelib::RobotConfig q_prev;
+  turtlelib::EKF ekf;
 
   nav_msgs::msg::Odometry odom_msg;
   nav_msgs::msg::Path odom_path;

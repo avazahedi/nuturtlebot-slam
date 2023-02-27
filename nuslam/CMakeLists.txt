@@ -23,6 +23,10 @@ find_package(Armadillo REQUIRED)
 
 add_executable(slam src/slam.cpp)
 
+include_directories(
+  ${ARMADILLO_INCLUDE_DIRS}
+)
+
 ament_target_dependencies(
   slam
   rclcpp
@@ -39,10 +43,6 @@ ament_target_dependencies(
 )
 
 target_link_libraries(slam turtlelib::turtlelib ${ARMADILLO_LIBRARIES})
-
-include_directories(
-  ${ARMADILLO_INCLUDE_DIRS}
-)
 
 install(TARGETS
   slam
