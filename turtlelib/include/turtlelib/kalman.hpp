@@ -6,11 +6,12 @@
 #include "turtlelib/diff_drive.hpp"
 #include <vector>
 #include <armadillo>
+#include <unordered_set>
 
 namespace turtlelib
 {
     /// @brief number of obstacles
-    constexpr int N = 20;
+    constexpr int N = 3;
 
     /// \brief Modeling the kinematics of a differential drive robot with a given 
     /// wheel track and wheel radius.
@@ -20,12 +21,11 @@ namespace turtlelib
         RobotConfig q_prev;     // previous robot_config
         arma::vec xi;           // combined state vector xi_t
         arma::vec xi_pred;      // predicted state vector xi_t_hat_minus
-        arma::vec xi_prev;      // previous state vector xi_t-1_hat
         arma::mat covariance;   // covariance matrix sigma
         arma::mat covar_pred;   // covariance prediction sigma_t_hat_minus  
-        arma::mat covar_prev;   // previous covariance sigma_t-1_hat
         double Q_val;           // basic sensor noise (from get_random() from zero mean Gaussian dist w/variance)
         double R_val;           // noise for 2nx2n covariance matrix
+        std::unordered_set<unsigned int> measure_set{}; // set of measurements to keep track of what landmarks we've seen before
 
     public:
         /// @brief Default EKF constructor.
@@ -38,6 +38,10 @@ namespace turtlelib
         /// @brief Set robot config variable q
         /// @param new_config 
         void setConfig(RobotConfig new_config);
+
+        /// @brief Get state estimate xi_pred
+        /// @return state estimate xi_pred
+        arma::vec getStateEst();
 
         /// @brief Calculate A_t matrix
         /// @param dq - change in robot state 
@@ -54,7 +58,10 @@ namespace turtlelib
         /// @param obs_x - sensed obstacle x-coordinate
         /// @param obs_y - sensed obstacle y-coordinate
         /// @param j - sensed obstacle index
-        void update(double obs_x, double obs_y, unsigned int j);
+        /// @return xi - the corrected state prediction
+        arma::vec update(double obs_x, double obs_y, unsigned int j);
+
+        // arma::mat update(double obs_x, double obs_y, unsigned int j);
 
     };
 

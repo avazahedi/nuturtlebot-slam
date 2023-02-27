@@ -72,12 +72,6 @@ public:
     odom_msg.header.frame_id = odom_id;
     odom_msg.child_frame_id = body_id;
 
-    // turtlelib::RobotConfig q0 = dd.getConfig();
-    // turtlelib::EKF ekf {dd.getConfig()};
-    // ekf.setConfig(dd.getConfig());
-    // ekf = turtlelib::EKF(dd.getConfig());
-    // turtlelib::EKF ekf {q0};
-
     // odom publisher
     odom_pub_ = create_publisher<nav_msgs::msg::Odometry>("green/odom", 10);
 
@@ -103,6 +97,9 @@ public:
     // transform broadcaster
     tf_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
 
+    // tf broadcaster between map and odom
+    tfmo_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
+
   }
 
 private:
@@ -116,13 +113,51 @@ private:
     ekf.setConfig(q);
     ekf.predict();
 
-    // for (unsigned int j=0; j<obstacles.size(); j++)
-    // {
-    //     if (obstacles[j].action == 0)   // 0 = add, 2 = delete
-    //     {
-    //         ekf.update(obstacles[j].pose.position.x, obstacles[j].pose.position.y, j);
-    //     }
-    // }
+    for (unsigned int j=0; j<obstacles.size(); j++)
+    {
+        if (obstacles[j].action == 0)   // 0 = add, 2 = delete
+        {
+            // arma::vec xi = 
+            // // arma::mat covar = 
+            //     ekf.update(obstacles[j].pose.position.x, obstacles[j].pose.position.y, j);
+
+            // RCLCPP_INFO_STREAM(get_logger(), "xi size " << xi.n_rows << ", " << xi.n_cols);
+            // RCLCPP_INFO_STREAM(get_logger(), "xi:\n" << xi);
+            // RCLCPP_INFO_STREAM(get_logger(), "covar size " << covar.n_rows << ", " << covar.n_cols);
+            // RCLCPP_INFO_STREAM(get_logger(), "covar:\n" << covar);
+
+            arma::vec xi = ekf.getStateEst();
+            RCLCPP_INFO_STREAM(get_logger(), "xi_pred:\n" << xi);
+            turtlelib::Vector2D trans{xi(1), xi(2)};
+            turtlelib::Transform2D Tmr(trans,xi(0));
+            turtlelib::Transform2D Tmo = Tmr*Tor.inv();
+
+
+            // update the transform
+            geometry_msgs::msg::TransformStamped t;
+
+            // Read message content and assign it to
+            // corresponding tf variables
+            t.header.stamp = get_clock()->now();
+            t.header.frame_id = "map";
+            t.child_frame_id = odom_id;
+
+            // Set transform
+            t.transform.translation.x = Tmo.translation().x;
+            t.transform.translation.y = Tmo.translation().y;
+            t.transform.translation.z = 0.0;
+
+            tf2::Quaternion quat;
+            quat.setRPY(0, 0, Tmo.rotation());
+            t.transform.rotation.x = quat.x();
+            t.transform.rotation.y = quat.y();
+            t.transform.rotation.z = quat.z();
+            t.transform.rotation.w = quat.w();
+
+            // Send the transformation
+            tfmo_broadcaster_->sendTransform(t);
+        }
+    }
 
   }
 
@@ -176,6 +211,9 @@ private:
     t.transform.rotation.y = quat.y();
     t.transform.rotation.z = quat.z();
     t.transform.rotation.w = quat.w();
+
+    // update transformation matrix
+    Tor = turtlelib::Transform2D( turtlelib::Vector2D{q.x,q.y}, q.theta );
 
     if (count_%100 == 0)
     {
@@ -232,6 +270,7 @@ private:
 
   // SLAM
   turtlelib::EKF ekf;
+  turtlelib::Transform2D Tor;
 
   nav_msgs::msg::Odometry odom_msg;
   nav_msgs::msg::Path odom_path;
@@ -245,6 +284,7 @@ private:
   rclcpp::Service<nuturtle_control::srv::InitialPose>::SharedPtr initial_pose_srv_;
 
   std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
+  std::unique_ptr<tf2_ros::TransformBroadcaster> tfmo_broadcaster_;
 
 };
 
