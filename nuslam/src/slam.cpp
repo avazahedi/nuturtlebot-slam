@@ -111,50 +111,23 @@ private:
 
     auto q = dd.getConfig();
     ekf.setConfig(q);
+    // RCLCPP_INFO_STREAM(get_logger(), "xi_est BEFORE PREDICT:\n" << ekf.getStateEst());
     ekf.predict();
 
     for (unsigned int j=0; j<obstacles.size(); j++)
     {
         if (obstacles[j].action == 0)   // 0 = add, 2 = delete
         {
+            // RCLCPP_INFO_STREAM(get_logger(), "xi_est AFTER PREDICT:\n" << ekf.getStateEst());
             arma::vec xi =
                 ekf.update(obstacles[j].pose.position.x, obstacles[j].pose.position.y, j);
 
-            RCLCPP_INFO_STREAM(get_logger(), "xi:\n" << xi);
+            // RCLCPP_INFO_STREAM(get_logger(), "xi AFTER UPDATE:\n" << xi);
+
+            // RCLCPP_INFO_STREAM(get_logger(), "covar:\n" << ekf.getCovar());
 
             turtlelib::Vector2D trans{xi(1), xi(2)};
-            turtlelib::Transform2D Tmr(trans,xi(0));
-            turtlelib::Transform2D Tmo = Tmr*(Tor.inv());
-
-            RCLCPP_INFO_STREAM(get_logger(), "Tmr " << Tmr.translation() << " " << Tmr.rotation());
-            RCLCPP_INFO_STREAM(get_logger(), "Tmo " << Tmo.translation() << " " << Tmo.rotation());
-
-            RCLCPP_INFO_STREAM(get_logger(), "Tor " << Tor.translation() << " " << Tor.rotation());
-            RCLCPP_INFO_STREAM(get_logger(), "Tor.inv " << Tor.inv().translation() << " " << Tor.inv().rotation());
-
-            // update the transform
-            geometry_msgs::msg::TransformStamped t2;
-
-            // Read message content and assign it to
-            // corresponding tf variables
-            t2.header.stamp = get_clock()->now();
-            t2.header.frame_id = "map";
-            t2.child_frame_id = odom_id;
-
-            // Set transform
-            t2.transform.translation.x = Tmo.translation().x;
-            t2.transform.translation.y = Tmo.translation().y;
-            t2.transform.translation.z = 0.0;
-
-            tf2::Quaternion quat;
-            quat.setRPY(0, 0, Tmo.rotation());
-            t2.transform.rotation.x = quat.x();
-            t2.transform.rotation.y = quat.y();
-            t2.transform.rotation.z = quat.z();
-            t2.transform.rotation.w = quat.w();
-
-            // Send the transformation
-            tfmo_broadcaster_->sendTransform(t2);
+            Tmr = turtlelib::Transform2D(trans,turtlelib::normalize_angle(xi(0)));
         }
     }
 
@@ -214,6 +187,25 @@ private:
     // update transformation matrix
     Tor = turtlelib::Transform2D( turtlelib::Vector2D{q.x,q.y}, q.theta );
 
+    // tf between map and green/odom //
+    t2.header.stamp = get_clock()->now();
+    t2.header.frame_id = "map";
+    t2.child_frame_id = odom_id;
+
+    t2.transform.translation.x = Tmo.translation().x;
+    t2.transform.translation.y = Tmo.translation().y;
+    t2.transform.translation.z = 0.0;
+
+    tf2::Quaternion quat2;
+    quat2.setRPY(0, 0, Tmo.rotation());
+    t2.transform.rotation.x = quat2.x();
+    t2.transform.rotation.y = quat2.y();
+    t2.transform.rotation.z = quat2.z();
+    t2.transform.rotation.w = quat2.w();
+
+    Tmo = Tmr*(Tor.inv());
+
+
     if (count_%100 == 0)
     {
       // Add to odom path
@@ -239,6 +231,9 @@ private:
 
     // publish odom
     odom_pub_->publish(odom_msg);
+
+    // tf between map and green/odom
+    tfmo_broadcaster_->sendTransform(t2);
   }
 
   /// \brief Callback for initial_pose service, which resets the location of the odometry
@@ -270,6 +265,10 @@ private:
   // SLAM
   turtlelib::EKF ekf;
   turtlelib::Transform2D Tor;
+  geometry_msgs::msg::TransformStamped t2;
+  turtlelib::Transform2D Tmr;
+  turtlelib::Transform2D Tmo;
+
 
   nav_msgs::msg::Odometry odom_msg;
   nav_msgs::msg::Path odom_path;

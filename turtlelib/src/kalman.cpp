@@ -9,8 +9,8 @@ namespace turtlelib{
         q_prev{RobotConfig {0.0, 0.0, 0.0}},
         xi{arma::vec(2*N+3, arma::fill::zeros)},
         xi_pred{arma::vec(2*N+3, arma::fill::zeros)},
-        Q_val{0.0},
-        R_val{0.0}
+        Q_val{1.0},
+        R_val{1.0}
     {
         init_covariance();
     }
@@ -20,8 +20,8 @@ namespace turtlelib{
         q_prev{rq},
         xi{arma::vec(2*N+3, arma::fill::zeros)},
         xi_pred{arma::vec(2*N+3, arma::fill::zeros)},
-        Q_val{0.0},
-        R_val{0.0}
+        Q_val{1.0},
+        R_val{1.0}
     {
         xi(0) = q.theta;
         xi(1) = q.x;
@@ -40,6 +40,16 @@ namespace turtlelib{
     arma::vec EKF::getStateEst()
     {
         return xi_pred;
+    }
+    
+    arma::mat EKF::getCovar()
+    {
+        return covariance;
+    }
+
+    arma::mat EKF::getH()
+    {
+        return H;
     }
 
     arma::Mat<double> EKF::A_mat(arma::vec dq)
@@ -71,12 +81,12 @@ namespace turtlelib{
 
         // state prediction
         arma::vec dq_term = arma::join_cols(dq, arma::vec(2*N, arma::fill::zeros));
-        // xi_pred += dq_term;
-        xi_pred = dq_term;
+        xi_pred += dq_term;
+        q_prev = q;
 
         // covariance prediction
         arma::mat At = A_mat(dq);
-        Q_val = 0.0; // 1.0, Nick says identity matrix is a good starting point I_3x3 
+        Q_val = 1.0; // 1.0, Nick says identity matrix is a good starting point I_3x3 
         // in reality make Q a zero mean gaussian variable
         arma::mat Q_bar(2*N+3, 2*N+3, arma::fill::zeros);
         Q_bar.submat(0, 0, 2, 2).eye();
@@ -89,15 +99,19 @@ namespace turtlelib{
     // arma::mat EKF::update(double obs_x, double obs_y, unsigned int j)
     arma::vec EKF::update(double obs_x, double obs_y, unsigned int j)
     {
-        double xbar = obs_x - q.x;
-        double ybar = obs_y - q.y;
+        double xbar = obs_x;    // obstacle measurements wrt robot
+        double ybar = obs_y;
+
         double rj = sqrt(xbar*xbar + ybar*ybar);    // ri,phii = rj, phij because we know which i corresponds to which j
         double phij = atan2(ybar, xbar);
 
+        double obs_est_x = xi_pred(1) + rj*cos(phij+xi_pred(0));    //
+        double obs_est_y = xi_pred(2) + rj*sin(phij+xi_pred(0));
+
         if (measure_set.count(j)==0)   // if count=0, set does not contain this landmark
         {
-            xi_pred(3+2*j) = xi_pred(1) + rj*cos(phij+xi_pred(0));
-            xi_pred(3+2*j+1) = xi_pred(2) + rj*sin(phij+xi_pred(0));
+            xi_pred(3+2*j) = obs_est_x;
+            xi_pred(3+2*j+1) = obs_est_y;
             measure_set.insert(j);
         }
 
@@ -122,32 +136,32 @@ namespace turtlelib{
         Hj1(0,1) = -delta_xj/sqrt(dj);
         Hj1(0,2) = -delta_yj/sqrt(dj);
         Hj1(1,0) = -1.0;
-        Hj1(1,1) = delta_yj/dj;     
-        Hj1(1,2) = -delta_xj/dj;   
+        Hj1(1,1) = delta_yj/dj;
+        Hj1(1,2) = -delta_xj/dj;
 
         Hj3(0,0) = delta_xj/sqrt(dj);
         Hj3(0,1) = delta_yj/sqrt(dj);
         Hj3(1,0) = -delta_yj/dj;
         Hj3(1,1) = delta_xj/dj;
 
-        arma::mat Hj = arma::join_rows(Hj1, Hj2, Hj3, Hj4);
+        arma::mat Hj = arma::join_rows(Hj1,Hj2,Hj3,Hj4);
 
         // calculate Rj matrix
         arma::mat Rj(2,2, arma::fill::eye);
         Rj *= R_val;
 
         // calculate Kalman gain for this landmark
-        arma::mat Kj = covar_pred*Hj.t()*(Hj*covar_pred*Hj.t() + Rj).i();
+        arma::mat Kj = (covar_pred*Hj.t())*((Hj*covar_pred*Hj.t() + Rj).i());
 
         // correct the state prediction
-        // xi_pred = xi_pred + arma::conv_to<arma::colvec>::from(Kj*(zj - zj_hat));
-        xi_pred = xi_pred + Kj*(zj - zj_hat);
-        xi = xi_pred;   // use the corrected prediction for the next step
+        xi = xi_pred + Kj*(zj - zj_hat);
+        xi(0) = turtlelib::normalize_angle(xi(0));
+        xi_pred = xi;   // use the corrected prediction for the next step
 
         // correct the covariance prediction
         arma::mat Ic(3+2*N, 3+2*N, arma::fill::eye);
-        covar_pred = (Ic - Kj*Hj)*covar_pred;
-        covariance = covar_pred;    // use the corrected prediction for the next step
+        covariance = (Ic - Kj*Hj)*covar_pred;
+        covar_pred = covariance;    // use the corrected prediction for the next step
 
         return xi;
     }

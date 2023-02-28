@@ -47,21 +47,24 @@ namespace turtlelib
     /// \returns the angle in degrees
     constexpr double normalize_angle(double rad)
     {
-        double normalized = rad;
+        // double normalized = rad;
         
-        while (!(normalized > -PI && normalized <=PI))
-        {
-            if (normalized > 0)
-            {
-                normalized -= (2*PI);
-            }
-            else if (normalized < 0)
-            {
-                normalized += (2*PI);
-            }
-        }
+        // while (!(normalized > -PI && normalized <=PI))
+        // {
+        //     if (normalized > 0)
+        //     {
+        //         normalized -= (2*PI);
+        //     }
+        //     else if (normalized < 0)
+        //     {
+        //         normalized += (2*PI);
+        //     }
+        // }
 
-        return normalized;
+        // return normalized;
+
+        double deg = rad2deg(rad);
+        return deg2rad(remainder(deg, 360.0));
     }
 
     /// @brief Calculate the distance between two points

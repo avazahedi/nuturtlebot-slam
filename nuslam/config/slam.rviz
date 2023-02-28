@@ -7,7 +7,7 @@ Panels:
         - /Global Options1
         - /Status1
         - /Odometry1/Shape1
-        - /Green Robot1
+        - /TF1/Frames1
       Splitter Ratio: 0.5
     Tree Height: 719
   - Class: rviz_common/Selection
@@ -269,57 +269,57 @@ Visualization Manager:
       Enabled: true
       Frame Timeout: 15
       Frames:
-        All Enabled: true
+        All Enabled: false
         blue/base_footprint:
           Value: true
         blue/base_link:
           Value: true
         blue/base_scan:
-          Value: true
+          Value: false
         blue/caster_back_link:
-          Value: true
+          Value: false
         blue/imu_link:
-          Value: true
+          Value: false
         blue/wheel_left_link:
           Value: true
         blue/wheel_right_link:
           Value: true
         green/base_footprint:
-          Value: true
+          Value: false
         green/base_link:
           Value: true
         green/base_scan:
-          Value: true
+          Value: false
         green/caster_back_link:
-          Value: true
+          Value: false
         green/imu_link:
-          Value: true
+          Value: false
         green/odom:
-          Value: true
+          Value: false
         green/wheel_left_link:
-          Value: true
+          Value: false
         green/wheel_right_link:
-          Value: true
+          Value: false
         map:
-          Value: true
+          Value: false
         nusim/world:
           Value: true
         odom:
-          Value: true
+          Value: false
         red/base_footprint:
           Value: true
         red/base_link:
-          Value: true
+          Value: false
         red/base_scan:
-          Value: true
+          Value: false
         red/caster_back_link:
-          Value: true
+          Value: false
         red/imu_link:
-          Value: true
+          Value: false
         red/wheel_left_link:
-          Value: true
+          Value: false
         red/wheel_right_link:
-          Value: true
+          Value: false
       Marker Scale: 1
       Name: TF
       Show Arrows: true
@@ -328,7 +328,19 @@ Visualization Manager:
       Tree:
         nusim/world:
           map:
-            {}
+            green/odom:
+              green/base_footprint:
+                green/base_link:
+                  green/base_scan:
+                    {}
+                  green/caster_back_link:
+                    {}
+                  green/imu_link:
+                    {}
+                  green/wheel_left_link:
+                    {}
+                  green/wheel_right_link:
+                    {}
           odom:
             blue/base_footprint:
               blue/base_link:
@@ -556,7 +568,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz_default_plugins/Orbit
-      Distance: 6.616714954376221
+      Distance: 7.663964748382568
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -571,10 +583,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 1.245397925376892
+      Pitch: 1.4153977632522583
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 3.130403757095337
+      Yaw: 3.1654052734375
     Saved: ~
 Window Geometry:
   Displays:

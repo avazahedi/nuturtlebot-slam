@@ -26,6 +26,7 @@ namespace turtlelib
         double Q_val;           // basic sensor noise (from get_random() from zero mean Gaussian dist w/variance)
         double R_val;           // noise for 2nx2n covariance matrix
         std::unordered_set<unsigned int> measure_set{}; // set of measurements to keep track of what landmarks we've seen before
+        arma::mat H;
 
     public:
         /// @brief Default EKF constructor.
@@ -42,6 +43,10 @@ namespace turtlelib
         /// @brief Get state estimate xi_pred
         /// @return state estimate xi_pred
         arma::vec getStateEst();
+
+        /// @brief 
+        /// @return covariance matrix 
+        arma::mat getCovar();
 
         /// @brief Calculate A_t matrix
         /// @param dq - change in robot state 
