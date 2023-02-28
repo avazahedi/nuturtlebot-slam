@@ -117,45 +117,44 @@ private:
     {
         if (obstacles[j].action == 0)   // 0 = add, 2 = delete
         {
-            // arma::vec xi = 
-            // // arma::mat covar = 
-            //     ekf.update(obstacles[j].pose.position.x, obstacles[j].pose.position.y, j);
+            arma::vec xi =
+                ekf.update(obstacles[j].pose.position.x, obstacles[j].pose.position.y, j);
 
-            // RCLCPP_INFO_STREAM(get_logger(), "xi size " << xi.n_rows << ", " << xi.n_cols);
-            // RCLCPP_INFO_STREAM(get_logger(), "xi:\n" << xi);
-            // RCLCPP_INFO_STREAM(get_logger(), "covar size " << covar.n_rows << ", " << covar.n_cols);
-            // RCLCPP_INFO_STREAM(get_logger(), "covar:\n" << covar);
+            RCLCPP_INFO_STREAM(get_logger(), "xi:\n" << xi);
 
-            arma::vec xi = ekf.getStateEst();
-            RCLCPP_INFO_STREAM(get_logger(), "xi_pred:\n" << xi);
             turtlelib::Vector2D trans{xi(1), xi(2)};
             turtlelib::Transform2D Tmr(trans,xi(0));
-            turtlelib::Transform2D Tmo = Tmr*Tor.inv();
+            turtlelib::Transform2D Tmo = Tmr*(Tor.inv());
 
+            RCLCPP_INFO_STREAM(get_logger(), "Tmr " << Tmr.translation() << " " << Tmr.rotation());
+            RCLCPP_INFO_STREAM(get_logger(), "Tmo " << Tmo.translation() << " " << Tmo.rotation());
+
+            RCLCPP_INFO_STREAM(get_logger(), "Tor " << Tor.translation() << " " << Tor.rotation());
+            RCLCPP_INFO_STREAM(get_logger(), "Tor.inv " << Tor.inv().translation() << " " << Tor.inv().rotation());
 
             // update the transform
-            geometry_msgs::msg::TransformStamped t;
+            geometry_msgs::msg::TransformStamped t2;
 
             // Read message content and assign it to
             // corresponding tf variables
-            t.header.stamp = get_clock()->now();
-            t.header.frame_id = "map";
-            t.child_frame_id = odom_id;
+            t2.header.stamp = get_clock()->now();
+            t2.header.frame_id = "map";
+            t2.child_frame_id = odom_id;
 
             // Set transform
-            t.transform.translation.x = Tmo.translation().x;
-            t.transform.translation.y = Tmo.translation().y;
-            t.transform.translation.z = 0.0;
+            t2.transform.translation.x = Tmo.translation().x;
+            t2.transform.translation.y = Tmo.translation().y;
+            t2.transform.translation.z = 0.0;
 
             tf2::Quaternion quat;
             quat.setRPY(0, 0, Tmo.rotation());
-            t.transform.rotation.x = quat.x();
-            t.transform.rotation.y = quat.y();
-            t.transform.rotation.z = quat.z();
-            t.transform.rotation.w = quat.w();
+            t2.transform.rotation.x = quat.x();
+            t2.transform.rotation.y = quat.y();
+            t2.transform.rotation.z = quat.z();
+            t2.transform.rotation.w = quat.w();
 
             // Send the transformation
-            tfmo_broadcaster_->sendTransform(t);
+            tfmo_broadcaster_->sendTransform(t2);
         }
     }
 
