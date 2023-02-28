@@ -63,10 +63,7 @@ namespace turtlelib
         /// @param obs_x - sensed obstacle x-coordinate
         /// @param obs_y - sensed obstacle y-coordinate
         /// @param j - sensed obstacle index
-        /// @return xi - the corrected state prediction
-        arma::vec update(double obs_x, double obs_y, unsigned int j);
-
-        // arma::mat update(double obs_x, double obs_y, unsigned int j);
+        void update(double obs_x, double obs_y, unsigned int j);
 
     };
 

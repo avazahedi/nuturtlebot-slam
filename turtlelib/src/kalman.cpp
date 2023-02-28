@@ -81,7 +81,7 @@ namespace turtlelib{
 
         // covariance prediction
         arma::mat At = A_mat(dq);
-        Q_val = 1.0; // 1.0, Nick says identity matrix is a good starting point I_3x3 
+        Q_val = 0.1; // 1.0, Nick says identity matrix is a good starting point I_3x3 
         // in reality make Q a zero mean gaussian variable
         arma::mat Q_bar(2*N+3, 2*N+3, arma::fill::zeros);
         Q_bar.submat(0, 0, 2, 2).eye();
@@ -92,7 +92,7 @@ namespace turtlelib{
     }
 
     // arma::mat EKF::update(double obs_x, double obs_y, unsigned int j)
-    arma::vec EKF::update(double obs_x, double obs_y, unsigned int j)
+    void EKF::update(double obs_x, double obs_y, unsigned int j)
     {
         double xbar = obs_x;    // obstacle measurements wrt robot
         double ybar = obs_y;
@@ -143,13 +143,17 @@ namespace turtlelib{
 
         // calculate Rj matrix
         arma::mat Rj(2,2, arma::fill::eye);
+        R_val = 0.1;
         Rj *= R_val;
 
         // calculate Kalman gain for this landmark
         arma::mat Kj = (covar_pred*Hj.t())*((Hj*covar_pred*Hj.t() + Rj).i());
 
         // correct the state prediction
-        xi = xi_pred + Kj*(zj - zj_hat);
+        arma::mat zterm = zj - zj_hat;
+        zterm(1) = turtlelib::normalize_angle(zterm(1));
+        // xi = xi_pred + Kj*(zj - zj_hat);
+        xi = xi_pred + Kj*zterm;
         xi(0) = turtlelib::normalize_angle(xi(0));
         xi_pred = xi;   // use the corrected prediction for the next step
 
@@ -157,8 +161,6 @@ namespace turtlelib{
         arma::mat Ic(3+2*N, 3+2*N, arma::fill::eye);
         covariance = (Ic - Kj*Hj)*covar_pred;
         covar_pred = covariance;    // use the corrected prediction for the next step
-
-        return xi;
     }
 
         

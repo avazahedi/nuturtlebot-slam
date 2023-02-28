@@ -119,17 +119,13 @@ private:
         if (obstacles[j].action == 0)   // 0 = add, 2 = delete
         {
             // RCLCPP_INFO_STREAM(get_logger(), "xi_est AFTER PREDICT:\n" << ekf.getStateEst());
-            arma::vec xi =
-                ekf.update(obstacles[j].pose.position.x, obstacles[j].pose.position.y, j);
-
-            // RCLCPP_INFO_STREAM(get_logger(), "xi AFTER UPDATE:\n" << xi);
-
-            // RCLCPP_INFO_STREAM(get_logger(), "covar:\n" << ekf.getCovar());
-
-            turtlelib::Vector2D trans{xi(1), xi(2)};
-            Tmr = turtlelib::Transform2D(trans,turtlelib::normalize_angle(xi(0)));
+            ekf.update(obstacles[j].pose.position.x, obstacles[j].pose.position.y, j);
         }
     }
+
+    arma::vec xi = ekf.getStateEst();
+    turtlelib::Vector2D trans{xi(1), xi(2)};
+    Tmr = turtlelib::Transform2D(trans,turtlelib::normalize_angle(xi(0)));
 
   }
 
@@ -187,6 +183,8 @@ private:
     // update transformation matrix
     Tor = turtlelib::Transform2D( turtlelib::Vector2D{q.x,q.y}, q.theta );
 
+    Tmo = Tmr*(Tor.inv());
+
     // tf between map and green/odom //
     t2.header.stamp = get_clock()->now();
     t2.header.frame_id = "map";
@@ -202,8 +200,6 @@ private:
     t2.transform.rotation.y = quat2.y();
     t2.transform.rotation.z = quat2.z();
     t2.transform.rotation.w = quat2.w();
-
-    Tmo = Tmr*(Tor.inv());
 
 
     if (count_%100 == 0)
