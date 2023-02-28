@@ -116,10 +116,10 @@ private:
 
     for (unsigned int j=0; j<obstacles.size(); j++)
     {
-        if (obstacles[j].action == 0)   // 0 = add, 2 = delete
+        if (obstacles.at(j).action == 0)   // 0 = add, 2 = delete
         {
             // RCLCPP_INFO_STREAM(get_logger(), "xi_est AFTER PREDICT:\n" << ekf.getStateEst());
-            ekf.update(obstacles[j].pose.position.x, obstacles[j].pose.position.y, j);
+            ekf.update(obstacles.at(j).pose.position.x, obstacles.at(j).pose.position.y, j);
         }
     }
 
