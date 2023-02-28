@@ -44,7 +44,7 @@ namespace turtlelib
         /// @return state estimate xi_pred
         arma::vec getStateEst();
 
-        /// @brief 
+        /// @brief Get covariance matrix
         /// @return covariance matrix 
         arma::mat getCovar();
 

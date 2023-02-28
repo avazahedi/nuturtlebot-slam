@@ -47,11 +47,6 @@ namespace turtlelib{
         return covariance;
     }
 
-    arma::mat EKF::getH()
-    {
-        return H;
-    }
-
     arma::Mat<double> EKF::A_mat(arma::vec dq)
     {
         auto At = arma::Mat<double>(2*N+3, 2*N+3, arma::fill::eye);    // A_t matrix
