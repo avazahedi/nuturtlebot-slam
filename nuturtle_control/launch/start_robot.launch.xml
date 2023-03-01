@@ -4,9 +4,12 @@
   <arg name="robot" default="nusim"/>
   <arg name="use_rviz" default="true"/>
   <arg name="nusim_rviz_config" default="$(find-pkg-share nuturtle_control)/config/blue_red.rviz"/>
+  <arg name="world_params" default="$(find-pkg-share nusim)/config/basic_world.yaml" />
+  <arg name="diff_params" default="$(find-pkg-share nuturtle_description)/config/diff_params.yaml" />
+  <arg name="lidar_params" default="$(find-pkg-share nuturtle_description)/config/lidar.yaml" />
 
   <!-- start turtle_control and odometry nodes -->
-  <node name="turtle_control" pkg="nuturtle_control" exec="turtle_control" if="$(eval '\'$(var robot)\' != \'localhost\'')">
+  <node name="turtle_control" pkg="nuturtle_control" exec="turtle_control" if="$(eval '\'$(var robot)\' == \'nusim\'')">
     <param from="$(find-pkg-share nuturtle_description)/config/diff_params.yaml"/>
     <remap from="/wheel_cmd" to="red/wheel_cmd" />
     <remap from="/sensor_data" to="red/sensor_data" />
@@ -43,6 +46,13 @@
     <arg name="rviz_config" value="$(var nusim_rviz_config)" />
     <!-- <arg name="use_rviz" value="false" /> -->
   </include>
+
+  <node name="nuwall" pkg="nusim" exec="nusim" if="$(eval '\'$(var robot)\' != \'nusim\'')"> 
+    <param from="$(var world_params)"/>
+    <param from="$(var diff_params)"/>
+    <param from="$(var lidar_params)" />
+    <param name="draw_only" value="true" />
+  </node>
 
   <!-- rviz options -->
   <node name="rviz2" pkg="rviz2" exec="rviz2" args="-d $(find-pkg-share nuturtle_control)/config/blue.rviz" 

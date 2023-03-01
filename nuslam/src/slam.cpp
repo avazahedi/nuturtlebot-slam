@@ -78,6 +78,9 @@ public:
     // odom path publisher
     odom_path_pub_ = create_publisher<nav_msgs::msg::Path>("green/path", 10);
 
+    // odom path publisher
+    slam_obs_pub_ = create_publisher<visualization_msgs::msg::MarkerArray>("/slam_obstacles", 10);
+
     // joint_states subscriber
     js_sub_ = create_subscription<sensor_msgs::msg::JointState>(
       "/joint_states", 10,
@@ -108,24 +111,60 @@ private:
   void fs_callback(const visualization_msgs::msg::MarkerArray & msg)
   {
     auto obstacles = msg.markers;
+    visualization_msgs::msg::MarkerArray slam_obs;
 
     auto q = dd.getConfig();
     ekf.setConfig(q);
     // RCLCPP_INFO_STREAM(get_logger(), "xi_est BEFORE PREDICT:\n" << ekf.getStateEst());
     ekf.predict();
 
+    // populate slam_obs MarkerArray
+    auto marker_stamp = get_clock()->now();
+    
     for (unsigned int j=0; j<obstacles.size(); j++)
     {
         if (obstacles.at(j).action == 0)   // 0 = add, 2 = delete
         {
             // RCLCPP_INFO_STREAM(get_logger(), "xi_est AFTER PREDICT:\n" << ekf.getStateEst());
             ekf.update(obstacles.at(j).pose.position.x, obstacles.at(j).pose.position.y, j);
+            // RCLCPP_INFO_STREAM(get_logger(), "xi_est AFTER UPDATE:\n" << ekf.getStateEst());
         }
+
+        arma::vec xi_temp = ekf.getStateEst();
+        // populate slam_obs MarkerArray
+        auto fs_obs = obstacles.at(j);
+        visualization_msgs::msg::Marker obs;
+        obs.header.frame_id = "nusim/world";
+        obs.header.stamp = marker_stamp;
+        obs.type = fs_obs.type;
+        obs.id = j + 200; // ids 200-103
+        obs.action = visualization_msgs::msg::Marker::ADD;;
+        obs.scale.x = fs_obs.scale.x;
+        obs.scale.y = fs_obs.scale.y;
+        obs.scale.z = fs_obs.scale.z;
+        obs.pose.position.x = xi_temp.at(2*j+3);
+        obs.pose.position.y = xi_temp.at(2*j+3+1);
+        if (obs.pose.position.x == 0.0 && obs.pose.position.y == 0.0)
+        {
+            obs.action = visualization_msgs::msg::Marker::DELETE;
+        }
+        obs.pose.position.z = fs_obs.pose.position.z;
+        obs.pose.orientation.x = 0.0;
+        obs.pose.orientation.y = 0.0;
+        obs.pose.orientation.z = 0.0;
+        obs.pose.orientation.w = 1.0;
+        obs.color.r = 0.0;
+        obs.color.g = 1.0;
+        obs.color.b = 0.0;
+        obs.color.a = 1.0;
+        slam_obs.markers.push_back(obs);
     }
 
     arma::vec xi = ekf.getStateEst();
     turtlelib::Vector2D trans{xi(1), xi(2)};
     Tmr = turtlelib::Transform2D(trans,turtlelib::normalize_angle(xi(0)));
+
+    slam_obs_pub_->publish(slam_obs);
 
   }
 
@@ -274,6 +313,7 @@ private:
   rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr js_sub_;
   rclcpp::Subscription<visualization_msgs::msg::MarkerArray>::SharedPtr fs_sub_;
   rclcpp::Publisher<nav_msgs::msg::Path>::SharedPtr odom_path_pub_;
+  rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr slam_obs_pub_;
 
   rclcpp::Service<nuturtle_control::srv::InitialPose>::SharedPtr initial_pose_srv_;
 

@@ -126,6 +126,10 @@ public:
     resolution = get_parameter("resolution").get_parameter_value().get<double>();
     noise_level = get_parameter("noise_level").get_parameter_value().get<double>();
 
+    // draw_only
+    declare_parameter("draw_only", false);
+    draw_only = get_parameter("draw_only").get_parameter_value().get<bool>();
+
     // initial pose
     declare_parameter("x0", 0.0);
     declare_parameter("y0", 0.0);
@@ -379,58 +383,61 @@ private:
   /// @brief 5Hz timer callback for simulation data
   void fstimer_callback()
   {
-    // publish to /fake_sensor at a frequency of 5 Hz
-    visualization_msgs::msg::MarkerArray fake_sensor_data;
+    if (draw_only == false)
+    {
+      // publish to /fake_sensor at a frequency of 5 Hz
+      visualization_msgs::msg::MarkerArray fake_sensor_data;
 
-    turtlelib::Vector2D robot_pos {dd.getConfig().x, dd.getConfig().y};
-    double robot_phi = dd.getConfig().theta;
-    turtlelib::Transform2D tf_world_robot {robot_pos, robot_phi};
-    turtlelib::Transform2D tf_robot_world = tf_world_robot.inv();
+      turtlelib::Vector2D robot_pos {dd.getConfig().x, dd.getConfig().y};
+      double robot_phi = dd.getConfig().theta;
+      turtlelib::Transform2D tf_world_robot {robot_pos, robot_phi};
+      turtlelib::Transform2D tf_robot_world = tf_world_robot.inv();
 
-    auto marker_stamp = get_clock()->now();
-    for (unsigned int i = 0; i < obstacles_x.size(); i++) {
-      turtlelib::Vector2D obs_vec = {obstacles_x.at(i), obstacles_y.at(i)};
-      turtlelib::Vector2D rel_obs = tf_robot_world(obs_vec);
+      auto marker_stamp = get_clock()->now();
+      for (unsigned int i = 0; i < obstacles_x.size(); i++) {
+        turtlelib::Vector2D obs_vec = {obstacles_x.at(i), obstacles_y.at(i)};
+        turtlelib::Vector2D rel_obs = tf_robot_world(obs_vec);
 
-      visualization_msgs::msg::Marker fake_obs;
-      fake_obs.header.frame_id = "red/base_footprint";
-      fake_obs.header.stamp = marker_stamp;
-      fake_obs.header.stamp.nanosec -= 2e5;
-      fake_obs.type = visualization_msgs::msg::Marker::CYLINDER;
-      fake_obs.id = i + 8; // ids 8-11
-      auto dist = pow(pow(rel_obs.x,2) + pow(rel_obs.y,2),0.5);
-      if (dist > max_range)
-      {
-        fake_obs.action = visualization_msgs::msg::Marker::DELETE;
+        visualization_msgs::msg::Marker fake_obs;
+        fake_obs.header.frame_id = "red/base_footprint";
+        fake_obs.header.stamp = marker_stamp;
+        fake_obs.header.stamp.nanosec -= 2e5;
+        fake_obs.type = visualization_msgs::msg::Marker::CYLINDER;
+        fake_obs.id = i + 8; // ids 8-11
+        auto dist = pow(pow(rel_obs.x,2) + pow(rel_obs.y,2),0.5);
+        if (dist > max_range)
+        {
+          fake_obs.action = visualization_msgs::msg::Marker::DELETE;
+        }
+        else
+        {
+          fake_obs.action = visualization_msgs::msg::Marker::ADD;
+        }
+        fake_obs.scale.x = 2.0 * obstacles_r;
+        fake_obs.scale.y = 2.0 * obstacles_r;
+        fake_obs.scale.z = obstacles_z;
+        fake_obs.pose.position.x = rel_obs.x + ndist_fs(get_random());
+        fake_obs.pose.position.y = rel_obs.y + ndist_fs(get_random());
+        fake_obs.pose.position.z = obstacles_z / 2.0;
+        fake_obs.pose.orientation.x = 0.0;
+        fake_obs.pose.orientation.y = 0.0;
+        fake_obs.pose.orientation.z = 0.0;
+        fake_obs.pose.orientation.w = 1.0;
+        fake_obs.color.r = 1.0;
+        fake_obs.color.g = 1.0;
+        fake_obs.color.b = 0.0;
+        fake_obs.color.a = 1.0;
+        fake_sensor_data.markers.push_back(fake_obs);
       }
-      else
-      {
-        fake_obs.action = visualization_msgs::msg::Marker::ADD;
-      }
-      fake_obs.scale.x = 2.0 * obstacles_r;
-      fake_obs.scale.y = 2.0 * obstacles_r;
-      fake_obs.scale.z = obstacles_z;
-      fake_obs.pose.position.x = rel_obs.x + ndist_fs(get_random());
-      fake_obs.pose.position.y = rel_obs.y + ndist_fs(get_random());
-      fake_obs.pose.position.z = obstacles_z / 2.0;
-      fake_obs.pose.orientation.x = 0.0;
-      fake_obs.pose.orientation.y = 0.0;
-      fake_obs.pose.orientation.z = 0.0;
-      fake_obs.pose.orientation.w = 1.0;
-      fake_obs.color.r = 1.0;
-      fake_obs.color.g = 1.0;
-      fake_obs.color.b = 0.0;
-      fake_obs.color.a = 1.0;
-      fake_sensor_data.markers.push_back(fake_obs);
+
+      // simulated lidar data
+      sim_lidar();
+
+      // publish simulated data
+      fake_sensor_pub_->publish(fake_sensor_data);
+
+      lidar_sim_pub_->publish(lidar_sim_data);
     }
-
-    // simulated lidar data
-    sim_lidar();
-
-    // publish simulated data
-    fake_sensor_pub_->publish(fake_sensor_data);
-
-    lidar_sim_pub_->publish(lidar_sim_data);
   }
 
   /// @brief Simulate lidar data
@@ -692,6 +699,9 @@ private:
   double slip_fraction;
   double basic_sensor_variance;
   double max_range;
+
+  // draw_only
+  bool draw_only;
 
   // path
   nav_msgs::msg::Path robot_path;
