@@ -35,7 +35,4 @@
   <!-- identity transform between nusim/world and map -->
   <node pkg="tf2_ros" exec="static_transform_publisher" name="world_to_map_tf" args="0 0 0 0 0 0 nusim/world map" />
 
-  <!-- TEMPORARY identity transform between map and green/odom -->
-  <!-- <node pkg="tf2_ros" exec="static_transform_publisher" name="map_to_greenodom_tf" args="0 0 0 0 0 0 map green/odom" /> -->
-
 </launch>

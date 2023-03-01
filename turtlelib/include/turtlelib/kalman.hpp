@@ -1,7 +1,7 @@
 #ifndef KALMAN_INCLUDE_GUARD_HPP
 #define KALMAN_INCLUDE_GUARD_HPP
 /// \file
-/// \brief Two-dimensional rigid body transformations.
+/// \brief Extended Kalman Filter calculations.
 
 #include "turtlelib/diff_drive.hpp"
 #include <vector>
@@ -11,10 +11,9 @@
 namespace turtlelib
 {
     /// @brief number of obstacles
-    constexpr int N = 3;
+    constexpr int N = 15;
 
-    /// \brief Modeling the kinematics of a differential drive robot with a given 
-    /// wheel track and wheel radius.
+    /// \brief Extended Kalman Filter implementation.
     class EKF
     { 
         RobotConfig q;          // current robot config
@@ -22,17 +21,14 @@ namespace turtlelib
         arma::vec xi;           // combined state vector xi_t
         arma::vec xi_pred;      // predicted state vector xi_t_hat_minus
         arma::mat covariance;   // covariance matrix sigma
-        arma::mat covar_pred;   // covariance prediction sigma_t_hat_minus  
-        double Q_val;           // basic sensor noise (from get_random() from zero mean Gaussian dist w/variance)
-        double R_val;           // noise for 2nx2n covariance matrix
+        arma::mat covar_pred;   // covariance prediction sigma_t_hat_minus
         std::unordered_set<unsigned int> measure_set{}; // set of measurements to keep track of what landmarks we've seen before
-        arma::mat H;
 
     public:
         /// @brief Default EKF constructor.
         EKF();
 
-        /// @brief EKF given robot config and obstacles.
+        /// @brief EKF given robot config.
         /// @param rq - robot config
         EKF(RobotConfig rq);
 

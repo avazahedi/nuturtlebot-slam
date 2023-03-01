@@ -17,6 +17,7 @@
 ///     slip_fraction (double): wheel slippage
 ///     basic_sensor_variance (double): sensor variance
 ///     max_range (double): max range for detecting obstacles
+///     draw_only (bool): only draw real obstacles and wall if true, do simulation as well if false
 ///     
 ///     Lidar parameters:
 ///     range_min (double): lidar range minimum

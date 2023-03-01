@@ -9,4 +9,4 @@
       input_noise: 0.01
       slip_fraction: 0.01
       basic_sensor_variance: 0.0001
-      max_range: 1.0
+      max_range: 0.7

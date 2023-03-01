@@ -44,7 +44,6 @@
   <include file="$(find-pkg-share nusim)/launch/nusim.launch.xml" 
            if="$(eval '\'$(var robot)\' == \'nusim\'')" >
     <arg name="rviz_config" value="$(var nusim_rviz_config)" />
-    <!-- <arg name="use_rviz" value="false" /> -->
   </include>
 
   <node name="nuwall" pkg="nusim" exec="nusim" if="$(eval '\'$(var robot)\' != \'nusim\'')"> 

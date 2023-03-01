@@ -1,5 +1,6 @@
 /// \file
-/// \brief The odometry node publishes odometry messages and the odometry transform.
+/// \brief The Slam class inherits the Node class and publishes the map to green/odom transform.
+///        It also performs SLAM using the Extended Kalman Filter and is shown by the green robot.
 ///
 /// PARAMETERS:
 ///     wheel_radius (double): wheel radius
@@ -9,11 +10,18 @@
 ///     wheel_left (string): name of the left wheel joint
 ///     wheel_right (string): name of the right wheel joint
 /// PUBLISHES:
-///     odom (nav_msgs::msg::Odometry): publishes odometry
+///     green/odom (nav_msgs/Odometry): publishes odometry for the green robot
+///     green/path (nav_msgs/Path): publishes path of the green robot
+///     slam_obstacles (visualization_msgs/MarkerArray): publishes the obstacles as detected 
+///                                                      by SLAM
 /// SUBSCRIBES:
 ///     joint_states (sensor_msgs/JointState): joint states of the robot
+///     fake_sensor (visualization_msgs/MarkerArray): obstacles as detected by the simulated sensor
 /// SERVICES:
 ///     initial_pose (nuturtle_control/InitialPose.srv): resets the location of the odometry
+/// BROADCASTERS:
+///     green/odom to green/robot
+///     map to green/odom
 
 #include <chrono>
 #include <functional>
@@ -23,7 +31,6 @@
 
 #include "rclcpp/rclcpp.hpp"
 #include "sensor_msgs/msg/joint_state.hpp"
-// #include "turtlelib/diff_drive.hpp"
 #include "nav_msgs/msg/odometry.hpp"
 #include "geometry_msgs/msg/transform_stamped.hpp"
 #include "tf2/LinearMath/Quaternion.h"
@@ -115,7 +122,6 @@ private:
 
     auto q = dd.getConfig();
     ekf.setConfig(q);
-    // RCLCPP_INFO_STREAM(get_logger(), "xi_est BEFORE PREDICT:\n" << ekf.getStateEst());
     ekf.predict();
 
     // populate slam_obs MarkerArray
@@ -125,9 +131,7 @@ private:
     {
         if (obstacles.at(j).action == 0)   // 0 = add, 2 = delete
         {
-            // RCLCPP_INFO_STREAM(get_logger(), "xi_est AFTER PREDICT:\n" << ekf.getStateEst());
             ekf.update(obstacles.at(j).pose.position.x, obstacles.at(j).pose.position.y, j);
-            // RCLCPP_INFO_STREAM(get_logger(), "xi_est AFTER UPDATE:\n" << ekf.getStateEst());
         }
 
         arma::vec xi_temp = ekf.getStateEst();

@@ -8,9 +8,7 @@ namespace turtlelib{
         q{RobotConfig {0.0, 0.0, 0.0}},
         q_prev{RobotConfig {0.0, 0.0, 0.0}},
         xi{arma::vec(2*N+3, arma::fill::zeros)},
-        xi_pred{arma::vec(2*N+3, arma::fill::zeros)},
-        Q_val{1.0},
-        R_val{1.0}
+        xi_pred{arma::vec(2*N+3, arma::fill::zeros)}
     {
         init_covariance();
     }
@@ -19,9 +17,7 @@ namespace turtlelib{
         q{rq},
         q_prev{rq},
         xi{arma::vec(2*N+3, arma::fill::zeros)},
-        xi_pred{arma::vec(2*N+3, arma::fill::zeros)},
-        Q_val{1.0},
-        R_val{1.0}
+        xi_pred{arma::vec(2*N+3, arma::fill::zeros)}
     {
         xi(0) = q.theta;
         xi(1) = q.x;
@@ -81,8 +77,7 @@ namespace turtlelib{
 
         // covariance prediction
         arma::mat At = A_mat(dq);
-        Q_val = 0.1; // 1.0, Nick says identity matrix is a good starting point I_3x3 
-        // in reality make Q a zero mean gaussian variable
+        double Q_val = 0.1;
         arma::mat Q_bar(2*N+3, 2*N+3, arma::fill::zeros);
         Q_bar.submat(0, 0, 2, 2).eye();
         Q_bar(0,0) *= Q_val;
@@ -91,22 +86,16 @@ namespace turtlelib{
         covar_pred = At*covariance*At.t() + Q_bar;
     }
 
-    // arma::mat EKF::update(double obs_x, double obs_y, unsigned int j)
     void EKF::update(double obs_x, double obs_y, unsigned int j)
     {
-        double xbar = obs_x;    // obstacle measurements wrt robot
-        double ybar = obs_y;
-
-        double rj = sqrt(xbar*xbar + ybar*ybar);    // ri,phii = rj, phij because we know which i corresponds to which j
-        double phij = atan2(ybar, xbar);
-
-        double obs_est_x = xi_pred(1) + rj*cos(phij+xi_pred(0));    //
-        double obs_est_y = xi_pred(2) + rj*sin(phij+xi_pred(0));
+        // ri, phii = rj, phij because we know which i corresponds to which j
+        double rj = sqrt(obs_x*obs_x + obs_y*obs_y);
+        double phij = atan2(obs_y, obs_x);
 
         if (measure_set.count(j)==0)   // if count=0, set does not contain this landmark
         {
-            xi_pred(3+2*j) = obs_est_x;
-            xi_pred(3+2*j+1) = obs_est_y;
+            xi_pred(3+2*j) = xi_pred(1) + rj*cos(phij+xi_pred(0));
+            xi_pred(3+2*j+1) = xi_pred(2) + rj*sin(phij+xi_pred(0));
             measure_set.insert(j);
         }
 
@@ -143,7 +132,7 @@ namespace turtlelib{
 
         // calculate Rj matrix
         arma::mat Rj(2,2, arma::fill::eye);
-        R_val = 0.1;
+        double R_val = 0.1;
         Rj *= R_val;
 
         // calculate Kalman gain for this landmark
