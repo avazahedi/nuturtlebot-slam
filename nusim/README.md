@@ -5,17 +5,15 @@ A simulator and visualizer for a red NU turtlebot. This node provides a simulate
 
 # Launch File Details
 * `ros2 launch nusim nusim.launch.xml`
-    Parameters, which can be changed in config/basic_world.yaml:
-    - rate: frequency of timer callback (defaults to 200 Hz)
-    - x0: initial x-coordinate of the robot (m)
-    - y0: initial y-coordinate of the robot (m)
-    - theta0: initial rotation of the robot (rad)
-    - obstacles
-        - x: list of x-coordinates of obstacles (m)
-        - y: list of y-coordinates of obstacles (m)
-        - r: radius of obstacles (m)
-    - arena
-        - x_length: length of the arena in the world x direction (m)
-        - y_length: length of the arena in the world y direction (m)
 
-Worked With: Meg Sindelar, Katie Hughes, Rintaroh Shima, Ritika Ghosh, Allan Garcia, Shantao Cao, Nick Morales, Liz Metzger
+    Launch file arguments:
+    - world_params: source of world parameters
+        - defaults to nusim/config/basic_world.yaml
+    - diff_params: source of DiffDrive parameters
+        - defaults to nuturtle_description/config/diff_params.yaml
+    - lidar_params: source of lidar parameters
+        - defaults to nuturtle_description/config/lidar.yaml
+    - rviz_config: rviz configuration file
+        - defaults to nusim/config/nusim.rviz
+
+Worked With: Meg Sindelar, Katie Hughes, Rintaroh Shima, Ritika Ghosh, Allan Garcia, Shantao Cao, Nick Morales, Liz Metzger, Marno Nel

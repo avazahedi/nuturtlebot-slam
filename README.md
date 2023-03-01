@@ -6,11 +6,13 @@ This repository consists of several ROS packages
 - nuturtle_description - This package contains urdf files and basic debugging, testing, and visualization code for the WI2023 ME 495 robots.
 - nusim - This package provides a simulated robot environment and uses rviz2 for visualization for a red NU turtlebot.
 - nuturtle_control - This package enables control of the turtlebot via messages on the cmd_vel topic.
+- nuslam - This package allows the turtlebot to perform SLAM with an Extended Kalman Filter implementation.
 
 This repository also contains a custom C++ library
 -  turtlelib - A library for handling transformations in SE(2) and other turtlebot-related math.
     * rigid2d -  vectors, twists, and transformations in 2D
     * diff_drive - kinematics for a differential drive robot in 2D
+    * kalman - Extended Kalman Filter implementation
 
 # Launch File Details
 * `ros2 launch nuturtle_control start_robot.launch.xml`  
