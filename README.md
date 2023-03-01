@@ -15,7 +15,7 @@ This repository also contains a custom C++ library
     * kalman - Extended Kalman Filter implementation
 
 # Launch File Details
-* `ros2 launch nuturtle_control start_robot.launch.xml`  
+* `ros2 launch nuslam slam.launch.xml`  
     Command line arguments:
     - cmd_src - source of cmd_vel messages
       - Options are [teleop, circle, none], defaults to "none" 
@@ -50,3 +50,8 @@ pose:
       z: -0.04191423777375463  
       w: 0.9991212122019255  
 ```
+
+# SLAM in Simulation
+![](nuslam/images/nuslam.png)
+
+https://user-images.githubusercontent.com/39091881/222293875-aa12083c-0d6c-4983-bd7b-4209988d4196.webm

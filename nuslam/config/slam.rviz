@@ -7,7 +7,6 @@ Panels:
         - /Global Options1
         - /Status1
         - /Odometry1/Shape1
-        - /TF1/Frames1
       Splitter Ratio: 0.5
     Tree Height: 719
   - Class: rviz_common/Selection
@@ -273,7 +272,7 @@ Visualization Manager:
         blue/base_footprint:
           Value: true
         blue/base_link:
-          Value: true
+          Value: false
         blue/base_scan:
           Value: false
         blue/caster_back_link:
@@ -285,9 +284,9 @@ Visualization Manager:
         blue/wheel_right_link:
           Value: true
         green/base_footprint:
-          Value: false
-        green/base_link:
           Value: true
+        green/base_link:
+          Value: false
         green/base_scan:
           Value: false
         green/caster_back_link:
@@ -295,17 +294,17 @@ Visualization Manager:
         green/imu_link:
           Value: false
         green/odom:
-          Value: false
+          Value: true
         green/wheel_left_link:
           Value: false
         green/wheel_right_link:
           Value: false
         map:
-          Value: false
+          Value: true
         nusim/world:
           Value: true
         odom:
-          Value: false
+          Value: true
         red/base_footprint:
           Value: true
         red/base_link:
@@ -396,7 +395,7 @@ Visualization Manager:
       Enabled: true
       Name: Fake Sensor Obstacles
       Namespaces:
-        "": true
+        {}
       Topic:
         Depth: 5
         Durability Policy: Volatile
@@ -408,7 +407,7 @@ Visualization Manager:
       Enabled: true
       Name: SLAM Obstacles
       Namespaces:
-        "": true
+        {}
       Topic:
         Depth: 5
         Durability Policy: Volatile
@@ -580,25 +579,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz_default_plugins/Orbit
-      Distance: 7.071112632751465
+      Distance: 5.753237724304199
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: -0.1810021996498108
-        Y: -0.49665769934654236
-        Z: 0.2761249542236328
+        X: 0.0971037894487381
+        Y: 0.04722794517874718
+        Z: -0.3430991470813751
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 1.4153977632522583
+      Pitch: 0.9803975820541382
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 3.1654052734375
+      Yaw: 3.120401382446289
     Saved: ~
 Window Geometry:
   Displays:
