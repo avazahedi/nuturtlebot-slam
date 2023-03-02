@@ -20,14 +20,16 @@ nusim node parameters:
    - slip_fraction (double): wheel slippage
    - basic_sensor_variance (double): sensor variance
    - max_range (double): max range for detecting obstacles
-   - draw_only (bool): only draw real obstacles and wall if true, do simulation as well if false
+   - draw_only (bool): only draw real obstacles and wall if true, do simulation as well if false  
+   
    Lidar parameters:
    - range_min (double): lidar range minimum
    - range_max (double): lidar range maximum
    - angle_increment (double): lidar angle increment
    - num_samples (int): number of samples collected by the lidar per timer iteration
    - resolution (double): resolution of lidar sensor measurements
-   - noise_level (double): lidar sensor noise
+   - noise_level (double): lidar sensor noise  
+
    DiffDrive parameters:
    - wheel_radius (double): wheel radius
    - track_width (double): track width (distance between the wheels)
