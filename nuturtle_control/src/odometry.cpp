@@ -144,8 +144,7 @@ private:
     t.transform.rotation.z = quat.z();
     t.transform.rotation.w = quat.w();
 
-    if (count_%100 == 0)
-    {
+    if (count_ % 100 == 0) {
       // Add to odom path
       odom_path.header.stamp = get_clock()->now();
       odom_path.header.frame_id = odom_id;  // "nusim/world"

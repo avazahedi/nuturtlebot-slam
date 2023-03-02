@@ -12,7 +12,7 @@
 /// PUBLISHES:
 ///     green/odom (nav_msgs/Odometry): publishes odometry for the green robot
 ///     green/path (nav_msgs/Path): publishes path of the green robot
-///     slam_obstacles (visualization_msgs/MarkerArray): publishes the obstacles as detected 
+///     slam_obstacles (visualization_msgs/MarkerArray): publishes the obstacles as detected
 ///                                                      by SLAM
 /// SUBSCRIBES:
 ///     joint_states (sensor_msgs/JointState): joint states of the robot
@@ -126,47 +126,44 @@ private:
 
     // populate slam_obs MarkerArray
     auto marker_stamp = get_clock()->now();
-    
-    for (unsigned int j=0; j<obstacles.size(); j++)
-    {
-        if (obstacles.at(j).action == 0)   // 0 = add, 2 = delete
-        {
-            ekf.update(obstacles.at(j).pose.position.x, obstacles.at(j).pose.position.y, j);
-        }
 
-        arma::vec xi_temp = ekf.getStateEst();
-        // populate slam_obs MarkerArray
-        auto fs_obs = obstacles.at(j);
-        visualization_msgs::msg::Marker obs;
-        obs.header.frame_id = "nusim/world";
-        obs.header.stamp = marker_stamp;
-        obs.type = fs_obs.type;
-        obs.id = j + 200; // ids 200-103
-        obs.action = visualization_msgs::msg::Marker::ADD;;
-        obs.scale.x = fs_obs.scale.x;
-        obs.scale.y = fs_obs.scale.y;
-        obs.scale.z = fs_obs.scale.z;
-        obs.pose.position.x = xi_temp.at(2*j+3);
-        obs.pose.position.y = xi_temp.at(2*j+3+1);
-        if (obs.pose.position.x == 0.0 && obs.pose.position.y == 0.0)
-        {
-            obs.action = visualization_msgs::msg::Marker::DELETE;
-        }
-        obs.pose.position.z = fs_obs.pose.position.z;
-        obs.pose.orientation.x = 0.0;
-        obs.pose.orientation.y = 0.0;
-        obs.pose.orientation.z = 0.0;
-        obs.pose.orientation.w = 1.0;
-        obs.color.r = 0.0;
-        obs.color.g = 1.0;
-        obs.color.b = 0.0;
-        obs.color.a = 1.0;
-        slam_obs.markers.push_back(obs);
+    for (unsigned int j = 0; j < obstacles.size(); j++) {
+      if (obstacles.at(j).action == 0) {   // 0 = add, 2 = delete
+        ekf.update(obstacles.at(j).pose.position.x, obstacles.at(j).pose.position.y, j);
+      }
+
+      arma::vec xi_temp = ekf.getStateEst();
+      // populate slam_obs MarkerArray
+      auto fs_obs = obstacles.at(j);
+      visualization_msgs::msg::Marker obs;
+      obs.header.frame_id = "nusim/world";
+      obs.header.stamp = marker_stamp;
+      obs.type = fs_obs.type;
+      obs.id = j + 200;   // ids 200-103
+      obs.action = visualization_msgs::msg::Marker::ADD;
+      obs.scale.x = fs_obs.scale.x;
+      obs.scale.y = fs_obs.scale.y;
+      obs.scale.z = fs_obs.scale.z;
+      obs.pose.position.x = xi_temp.at(2 * j + 3);
+      obs.pose.position.y = xi_temp.at(2 * j + 3 + 1);
+      if (obs.pose.position.x == 0.0 && obs.pose.position.y == 0.0) {
+        obs.action = visualization_msgs::msg::Marker::DELETE;
+      }
+      obs.pose.position.z = fs_obs.pose.position.z;
+      obs.pose.orientation.x = 0.0;
+      obs.pose.orientation.y = 0.0;
+      obs.pose.orientation.z = 0.0;
+      obs.pose.orientation.w = 1.0;
+      obs.color.r = 0.0;
+      obs.color.g = 1.0;
+      obs.color.b = 0.0;
+      obs.color.a = 1.0;
+      slam_obs.markers.push_back(obs);
     }
 
     arma::vec xi = ekf.getStateEst();
     turtlelib::Vector2D trans{xi(1), xi(2)};
-    Tmr = turtlelib::Transform2D(trans,turtlelib::normalize_angle(xi(0)));
+    Tmr = turtlelib::Transform2D(trans, turtlelib::normalize_angle(xi(0)));
 
     slam_obs_pub_->publish(slam_obs);
 
@@ -224,9 +221,9 @@ private:
     t.transform.rotation.w = quat.w();
 
     // update transformation matrix
-    Tor = turtlelib::Transform2D( turtlelib::Vector2D{q.x,q.y}, q.theta );
+    Tor = turtlelib::Transform2D(turtlelib::Vector2D{q.x, q.y}, q.theta);
 
-    Tmo = Tmr*(Tor.inv());
+    Tmo = Tmr * (Tor.inv());
 
     // tf between map and green/odom //
     t2.header.stamp = get_clock()->now();
@@ -245,8 +242,7 @@ private:
     t2.transform.rotation.w = quat2.w();
 
 
-    if (count_%100 == 0)
-    {
+    if (count_ % 100 == 0) {
       // Add to odom path
       odom_path.header.stamp = get_clock()->now();
       odom_path.header.frame_id = odom_id;
@@ -331,9 +327,10 @@ int main(int argc, char * argv[])
   rclcpp::init(argc, argv);
   try {
     rclcpp::spin(std::make_shared<Slam>());
-  } catch (std::exception &e) {
-    RCLCPP_ERROR(std::make_shared<Slam>()->get_logger(),
-    "Error: Not all necessary parameters are defined.");
+  } catch (std::exception & e) {
+    RCLCPP_ERROR(
+      std::make_shared<Slam>()->get_logger(),
+      "Error: Not all necessary parameters are defined.");
   }
   rclcpp::shutdown();
   return 0;

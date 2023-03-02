@@ -18,7 +18,7 @@
 ///     basic_sensor_variance (double): sensor variance
 ///     max_range (double): max range for detecting obstacles
 ///     draw_only (bool): only draw real obstacles and wall if true, do simulation as well if false
-///     
+///
 ///     Lidar parameters:
 ///     range_min (double): lidar range minimum
 ///     range_max (double): lidar range maximum
@@ -41,7 +41,7 @@
 ///     timestep (std_msgs/UInt64): publishes the current timestep every iteration
 ///     red/sensor_data (nuturtlebot_msgs/SensorData): publishes sensor data for the red turtlebot
 ///     red/path (nav_msgs/Path): publishes the path of the red (simulated) turtlebot
-///     fake_sensor (visualization_msgs/MarkerArray): publishes the simulated sensor data of 
+///     fake_sensor (visualization_msgs/MarkerArray): publishes the simulated sensor data of
 ///                                                   the obstacles
 ///     lidar_sim (sensor_msgs/LaserScan): publishes the simulated lidar data
 /// SUBSCRIBES:
@@ -81,12 +81,12 @@ using namespace std::chrono_literals;
 // random number generation (from Jointly Gaussian Distributions notes)
 std::mt19937 & get_random()
 {
-    // static variables inside a function are created once and persist for the remainder of the program
-    static std::random_device rd{}; 
-    static std::mt19937 mt{rd()};
-    // we return a reference to the pseudo-random number genrator object. This is always the
-    // same object every time get_random is called
-    return mt;
+  // static variables inside a function are created once and persist for the remainder of the program
+  static std::random_device rd{};
+  static std::mt19937 mt{rd()};
+  // we return a reference to the pseudo-random number genrator object. This is always the
+  // same object every time get_random is called
+  return mt;
 }
 
 /// \brief The NUSim class inherits the Node class and creates a simulated robot environment.
@@ -101,7 +101,7 @@ public:
 
     int rate =
       get_parameter("rate").get_parameter_value().get<int>();
-    
+
     // noise parameters
     declare_parameter("input_noise", 0.0);
     declare_parameter("slip_fraction", 0.0);
@@ -110,7 +110,8 @@ public:
 
     input_noise = get_parameter("input_noise").get_parameter_value().get<double>();
     slip_fraction = get_parameter("slip_fraction").get_parameter_value().get<double>();
-    basic_sensor_variance = get_parameter("basic_sensor_variance").get_parameter_value().get<double>();
+    basic_sensor_variance =
+      get_parameter("basic_sensor_variance").get_parameter_value().get<double>();
     max_range = get_parameter("max_range").get_parameter_value().get<double>();
 
     // lidar parameters
@@ -171,8 +172,8 @@ public:
     motor_cmd_prs = get_parameter("motor_cmd_per_rad_sec").get_parameter_value().get<double>();
     encoder_ticks = get_parameter("encoder_ticks_per_rad").get_parameter_value().get<double>();
     collision_rad = get_parameter("collision_radius").get_parameter_value().get<double>();
-    if (radius == -1 || track == -1 || motor_cmd_prs == -1 || encoder_ticks == -1 
-        || collision_rad == -1)
+    if (radius == -1 || track == -1 || motor_cmd_prs == -1 || encoder_ticks == -1 ||
+      collision_rad == -1)
     {
       int error = 1;
       throw(error);
@@ -302,14 +303,13 @@ private:
 
     double sfl = 0.0;
     double sfr = 0.0;
-    if (slip_fraction != 0) 
-    {
+    if (slip_fraction != 0) {
       sfl = udist_pos(get_random());
       sfr = udist_pos(get_random());
     }
 
-    wheel_diff.left = vels.left * dt * (1.0+sfl);
-    wheel_diff.right = vels.right * dt * (1.0+sfr);
+    wheel_diff.left = vels.left * dt * (1.0 + sfl);
+    wheel_diff.right = vels.right * dt * (1.0 + sfr);
     new_wheel_pos.left = prev_wheel_pos.left + (vels.left * dt);
     new_wheel_pos.right = prev_wheel_pos.right + (vels.right * dt);
     dd.ForwardKinematics(wheel_diff);
@@ -351,8 +351,7 @@ private:
     t.transform.rotation.w = quat.w();
 
     // Add to robot path
-    if (count_%100 == 0)
-    {
+    if (count_ % 100 == 0) {
       robot_path.header.stamp = get_clock()->now();
       robot_path.header.frame_id = "nusim/world";
       rp_pose.header.stamp = get_clock()->now();
@@ -384,8 +383,7 @@ private:
   /// @brief 5Hz timer callback for simulation data
   void fstimer_callback()
   {
-    if (draw_only == false)
-    {
+    if (draw_only == false) {
       // publish to /fake_sensor at a frequency of 5 Hz
       visualization_msgs::msg::MarkerArray fake_sensor_data;
 
@@ -405,13 +403,10 @@ private:
         fake_obs.header.stamp.nanosec -= 2e5;
         fake_obs.type = visualization_msgs::msg::Marker::CYLINDER;
         fake_obs.id = i + 8; // ids 8-11
-        auto dist = pow(pow(rel_obs.x,2) + pow(rel_obs.y,2),0.5);
-        if (dist > max_range)
-        {
+        auto dist = pow(pow(rel_obs.x, 2) + pow(rel_obs.y, 2), 0.5);
+        if (dist > max_range) {
           fake_obs.action = visualization_msgs::msg::Marker::DELETE;
-        }
-        else
-        {
+        } else {
           fake_obs.action = visualization_msgs::msg::Marker::ADD;
         }
         fake_obs.scale.x = 2.0 * obstacles_r;
@@ -448,52 +443,41 @@ private:
     turtlelib::RobotConfig q = dd.getConfig();
 
     // scan for obstacles
-    for (unsigned int t=0; t<num_samples; t++)  // each angle increment
-    {
-      double max_x = q.x + cos(t*angle_incr+q.theta)*max_range;
-      double max_y = q.y + sin(t*angle_incr+q.theta)*max_range;
-      double m = (max_y-q.y)/(max_x-q.x);
-      double min_dist = max_range+1.0;
-      for (unsigned int i=0; i<obstacles_x.size(); i++) // each obstacle
-      {
-        double alpha = q.y-m*q.x-obstacles_y.at(i);
-        double a = 1.0 + pow(m,2);
-        double b = 2.0*(alpha*m - obstacles_x.at(i));
-        double c = pow(obstacles_x.at(i),2) + pow(alpha,2) - pow(obstacles_r,2);
+    for (unsigned int t = 0; t < num_samples; t++) { // each angle increment
+      double max_x = q.x + cos(t * angle_incr + q.theta) * max_range;
+      double max_y = q.y + sin(t * angle_incr + q.theta) * max_range;
+      double m = (max_y - q.y) / (max_x - q.x);
+      double min_dist = max_range + 1.0;
+      for (unsigned int i = 0; i < obstacles_x.size(); i++) { // each obstacle
+        double alpha = q.y - m * q.x - obstacles_y.at(i);
+        double a = 1.0 + pow(m, 2);
+        double b = 2.0 * (alpha * m - obstacles_x.at(i));
+        double c = pow(obstacles_x.at(i), 2) + pow(alpha, 2) - pow(obstacles_r, 2);
 
-        double det = pow(b,2)-4*a*c;
-        if (det == 0)
-        {
-          double x = -b/(2*a);  // x soln
-          double y = m*(x-q.x)+q.y; // y soln
+        double det = pow(b, 2) - 4 * a * c;
+        if (det == 0) {
+          double x = -b / (2 * a);  // x soln
+          double y = m * (x - q.x) + q.y; // y soln
           double dist = turtlelib::distance_btw(x, y, q.x, q.y);
-          if (dist < min_dist)
-          {
-            if ((x-q.x)/(max_x-q.x) > 0 && (y-q.y)/(max_y-q.y) > 0)
-            {
+          if (dist < min_dist) {
+            if ((x - q.x) / (max_x - q.x) > 0 && (y - q.y) / (max_y - q.y) > 0) {
               ranges.at(t) = dist;
               min_dist = dist;
             }
           }
-        }
-        else if (det > 0)
-        {
-          double x1 = (-b+std::sqrt(det)) / (2*a);
-          double x2 = (-b-std::sqrt(det)) / (2*a);
-          double y1 = m*(x1-q.x)+q.y;
-          double y2 = m*(x2-q.x)+q.y;
+        } else if (det > 0) {
+          double x1 = (-b + std::sqrt(det)) / (2 * a);
+          double x2 = (-b - std::sqrt(det)) / (2 * a);
+          double y1 = m * (x1 - q.x) + q.y;
+          double y2 = m * (x2 - q.x) + q.y;
           double dist1 = turtlelib::distance_btw(x1, y1, q.x, q.y);
           double dist2 = turtlelib::distance_btw(x2, y2, q.x, q.y);
           double dist = std::min(dist1, dist2);
-          if (dist < min_dist)
-          {
-            if (dist == dist1 && (x1-q.x)/(max_x-q.x) > 0 && (y1-q.y)/(max_y-q.y) > 0)
-            {
+          if (dist < min_dist) {
+            if (dist == dist1 && (x1 - q.x) / (max_x - q.x) > 0 && (y1 - q.y) / (max_y - q.y) > 0) {
               ranges.at(t) = dist + ndist_lidar(get_random());
               min_dist = dist;
-            }
-            else if ((x2-q.x)/(max_x-q.x) > 0 && (y2-q.y)/(max_y-q.y) > 0)  // dist = dist2
-            {
+            } else if ((x2 - q.x) / (max_x - q.x) > 0 && (y2 - q.y) / (max_y - q.y) > 0) { // dist = dist2
               ranges.at(t) = dist + ndist_lidar(get_random());
               min_dist = dist;
             }
@@ -502,29 +486,28 @@ private:
       }
 
       // scan for walls
-      double w1x = arena_x/2.0 - wall_thickness/2.0;
-      double w1y = m*(w1x-q.x)+q.y;
+      double w1x = arena_x / 2.0 - wall_thickness / 2.0;
+      double w1y = m * (w1x - q.x) + q.y;
       double w1_dist = turtlelib::distance_btw(w1x, w1y, q.x, q.y);
-      double w2x = -arena_x/2.0 + wall_thickness/2.0;
-      double w2y = m*(w2x-q.x)+q.y;
+      double w2x = -arena_x / 2.0 + wall_thickness / 2.0;
+      double w2y = m * (w2x - q.x) + q.y;
       double w2_dist = turtlelib::distance_btw(w2x, w2y, q.x, q.y);
-      double w3y = arena_y/2.0 - wall_thickness/2.0;
-      double w3x = (w3y-q.y)/m + q.x;
+      double w3y = arena_y / 2.0 - wall_thickness / 2.0;
+      double w3x = (w3y - q.y) / m + q.x;
       double w3_dist = turtlelib::distance_btw(w3x, w3y, q.x, q.y);
-      double w4y = -arena_y/2.0 + wall_thickness/2.0;
-      double w4x = (w4y-q.y)/m + q.x;
+      double w4y = -arena_y / 2.0 + wall_thickness / 2.0;
+      double w4x = (w4y - q.y) / m + q.x;
       double w4_dist = turtlelib::distance_btw(w4x, w4y, q.x, q.y);
 
       double dist = std::min({w1_dist, w2_dist, w3_dist, w4_dist});
-      if (dist < min_dist)
-      {
+      if (dist < min_dist) {
         double wx = 0.0, wy = 0.0;
-        if (dist == w1_dist) {wx = w1x; wy = w1y;}
-        else if (dist == w2_dist) {wx = w2x; wy = w2y;}
-        else if (dist == w3_dist) {wx = w3x; wy = w3y;}
-        else if (dist == w4_dist) {wx = w4x; wy = w4y;}
-        if ((wx-q.x)/(max_x-q.x) > 0 && (wy-q.y)/(max_y-q.y) > 0)
-        {
+        if (dist == w1_dist) {wx = w1x; wy = w1y;} else if (dist == w2_dist) {
+          wx = w2x; wy = w2y;
+        } else if (dist == w3_dist) {wx = w3x; wy = w3y;} else if (dist == w4_dist) {
+          wx = w4x; wy = w4y;
+        }
+        if ((wx - q.x) / (max_x - q.x) > 0 && (wy - q.y) / (max_y - q.y) > 0) {
           ranges.at(t) = dist + ndist_lidar(get_random());
           min_dist = dist;
         }
@@ -534,7 +517,7 @@ private:
     lidar_sim_data.header.stamp = get_clock()->now();
     lidar_sim_data.header.frame_id = "red/base_scan";
     lidar_sim_data.angle_min = 0.0;
-    lidar_sim_data.angle_max = 2*turtlelib::PI;
+    lidar_sim_data.angle_max = 2 * turtlelib::PI;
     lidar_sim_data.angle_increment = angle_incr;
     lidar_sim_data.time_increment = 0.0; //0.000558;
     lidar_sim_data.scan_time = 0.2;
@@ -548,17 +531,15 @@ private:
   {
     turtlelib::Vector2D rb_pos {dd.getConfig().x, dd.getConfig().y};
     double ctheta = dd.getConfig().theta;
-    for (unsigned int i = 0; i < obs_vecs.size(); i++)
-    {
+    for (unsigned int i = 0; i < obs_vecs.size(); i++) {
       auto current = obs_vecs.at(i);
-      double dist_or = std::sqrt(pow((current.x-rb_pos.x), 2)+pow((current.y-rb_pos.y),2));
-      if (dist_or < (obstacles_r + collision_rad))
-      {
+      double dist_or = std::sqrt(pow((current.x - rb_pos.x), 2) + pow((current.y - rb_pos.y), 2));
+      if (dist_or < (obstacles_r + collision_rad)) {
         turtlelib::Vector2D obs_robot = current - rb_pos;
         turtlelib::Vector2D unit_vec = turtlelib::normalize(obs_robot);
         double dist_to_move = obstacles_r + collision_rad - dist_or;
-        rb_pos.x -= dist_to_move*unit_vec.x;
-        rb_pos.y -= dist_to_move*unit_vec.y;
+        rb_pos.x -= dist_to_move * unit_vec.x;
+        rb_pos.y -= dist_to_move * unit_vec.y;
         turtlelib::RobotConfig new_q {ctheta, rb_pos.x, rb_pos.y};
         dd.setConfig(new_q);
         break; // assuming we are only colliding with one obstacle
@@ -572,13 +553,11 @@ private:
   {
     double wl = 0.0, wr = 0.0;
 
-    if (msg.left_velocity != 0 && input_noise != 0)
-    {
+    if (msg.left_velocity != 0 && input_noise != 0) {
       wl = ndist_pos(get_random());
     }
 
-    if (msg.right_velocity != 0 && input_noise != 0)
-    {
+    if (msg.right_velocity != 0 && input_noise != 0) {
       wr = ndist_pos(get_random());
     }
 

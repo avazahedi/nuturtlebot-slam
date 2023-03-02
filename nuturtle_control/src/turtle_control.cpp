@@ -156,9 +156,10 @@ int main(int argc, char * argv[])
   rclcpp::init(argc, argv);
   try {
     rclcpp::spin(std::make_shared<TurtleControl>());
-  } catch (std::exception &e) {
-    RCLCPP_ERROR(std::make_shared<TurtleControl>()->get_logger(),
-    "Error: Not all necessary parameters are defined.");
+  } catch (std::exception & e) {
+    RCLCPP_ERROR(
+      std::make_shared<TurtleControl>()->get_logger(),
+      "Error: Not all necessary parameters are defined.");
   }
   rclcpp::shutdown();
   return 0;
