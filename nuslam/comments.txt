@@ -1,0 +1,3 @@
+Looks good.
+
+Though it works now, it might be better to have made some indexing functions instead of writing out things like 3*j + 2 to get e.g., the map index for landmark 1
