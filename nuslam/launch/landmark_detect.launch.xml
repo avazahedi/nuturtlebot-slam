@@ -1,0 +1,18 @@
+<launch>
+
+  <arg name="cmd_src" default="none"/>
+  <arg name="robot" default="nusim"/>
+  <arg name="use_rviz" default="true"/>
+
+  <!-- include slam launch -->
+  <include file="$(find-pkg-share nuslam)/launch/slam.launch.xml" >
+  </include>
+
+  <!-- landmarks -->
+  <!-- <node name="landmarks" pkg="nuslam" exec="landmarks" if="$(eval '\'$(var robot)\' == \'nusim\'')">
+  </node> -->
+
+  <node name="landmarks" pkg="nuslam" exec="landmarks">
+  </node>
+
+</launch>

@@ -22,6 +22,7 @@ find_package(visualization_msgs REQUIRED)
 find_package(Armadillo REQUIRED)
 
 add_executable(slam src/slam.cpp)
+add_executable(landmarks src/landmarks.cpp)
 
 include_directories(
   ${ARMADILLO_INCLUDE_DIRS}
@@ -42,10 +43,27 @@ ament_target_dependencies(
   Armadillo
 )
 
+ament_target_dependencies(
+  landmarks
+  rclcpp
+  std_msgs
+  geometry_msgs
+  nuturtlebot_msgs
+  sensor_msgs
+  tf2
+  tf2_ros
+  nav_msgs
+  nuturtle_control
+  visualization_msgs
+  Armadillo
+)
+
 target_link_libraries(slam turtlelib::turtlelib ${ARMADILLO_LIBRARIES})
+target_link_libraries(landmarks turtlelib::turtlelib ${ARMADILLO_LIBRARIES})
 
 install(TARGETS
   slam
+  landmarks
   DESTINATION lib/${PROJECT_NAME})
 
 # Install directories

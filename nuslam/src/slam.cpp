@@ -85,7 +85,7 @@ public:
     // odom path publisher
     odom_path_pub_ = create_publisher<nav_msgs::msg::Path>("green/path", 10);
 
-    // odom path publisher
+    // slam obstacles publisher
     slam_obs_pub_ = create_publisher<visualization_msgs::msg::MarkerArray>("/slam_obstacles", 10);
 
     // joint_states subscriber
