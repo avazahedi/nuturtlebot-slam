@@ -2,6 +2,7 @@
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 #include "turtlelib/rigid2d.hpp"
 #include "turtlelib/diff_drive.hpp"
+#include "turtlelib/circle_fit.hpp"
 #include <iostream>
 #include <sstream>
 
@@ -343,4 +344,38 @@ TEST_CASE("IK - wheels slipping", "[diffdrive]") {
 
     turtlelib::DiffDrive dd {track, radius};
     REQUIRE_THROWS_AS(dd.InverseKinematics(Vb), std::logic_error);
+}
+
+// Circle detection tests
+TEST_CASE("Circle detection test 1", "[circle_fit]") {
+    std::vector<turtlelib::Vector2D> cluster{};
+    cluster.push_back(turtlelib::Vector2D{1,7});
+    cluster.push_back(turtlelib::Vector2D{2,6});
+    cluster.push_back(turtlelib::Vector2D{5,8});
+    cluster.push_back(turtlelib::Vector2D{7,7});
+    cluster.push_back(turtlelib::Vector2D{9,5});
+    cluster.push_back(turtlelib::Vector2D{3,7});
+
+    turtlelib::Vector2D center {4.615482, 2.807354};
+    float radius = 4.8275;
+    turtlelib::Circle circle = turtlelib::circle_fit(cluster);
+
+    REQUIRE_THAT( circle.center.x, Catch::Matchers::WithinAbs(center.x, 1e-4));
+    REQUIRE_THAT( circle.center.y, Catch::Matchers::WithinAbs(center.y, 1e-4));
+    REQUIRE_THAT( circle.radius, Catch::Matchers::WithinAbs(radius, 1e-4));
+}
+
+TEST_CASE("Circle detection test 2", "[circle_fit]") {
+    std::vector<turtlelib::Vector2D> cluster{};
+    cluster.push_back(turtlelib::Vector2D{-1,0});
+    cluster.push_back(turtlelib::Vector2D{-0.3,-0.06});
+    cluster.push_back(turtlelib::Vector2D{0.3,0.1});
+    cluster.push_back(turtlelib::Vector2D{1,0});
+
+    turtlelib::Vector2D center {0.4908357, -22.15212};
+    float radius = 22.17979;
+    turtlelib::Circle circle = turtlelib::circle_fit(cluster);
+    REQUIRE_THAT( circle.center.x, Catch::Matchers::WithinAbs(center.x, 1e-4));
+    REQUIRE_THAT( circle.center.y, Catch::Matchers::WithinAbs(center.y, 1e-4));
+    REQUIRE_THAT( circle.radius, Catch::Matchers::WithinAbs(radius, 1e-4));
 }

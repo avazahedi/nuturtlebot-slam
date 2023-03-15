@@ -108,8 +108,8 @@ private:
             }
             else
             {
-                // only include the current cluster if it has 3+ points
-                if (current_cluster.size() >= 3)
+                // only include the current cluster if it has > 3 points
+                if (current_cluster.size() >= 4)
                 {
                     clusters.push_back(current_cluster);
                 }
@@ -142,15 +142,13 @@ private:
         if (wrap_dist <= thresh)
         {
             RCLCPP_INFO_STREAM(get_logger(), "WRAP AROUND");
+
+            // concatenate the last cluster and first cluster
+            // append the first cluster to the end of the last one
             last_cluster.insert( last_cluster.end(), first_cluster.begin(), first_cluster.end() );
-            RCLCPP_INFO_STREAM(get_logger(), "clusters size: " << clusters.size());
-            clusters.erase( clusters.begin() );
-            RCLCPP_INFO_STREAM(get_logger(), "clusters size: " << clusters.size());
-            if (clusters.size() >= 1)
-            {
-                clusters.erase ( std::prev(clusters.end()) );
-            }
-            clusters.push_back(last_cluster);
+            clusters.erase( clusters.begin() ); // delete the first cluster
+            clusters.erase ( std::prev(clusters.end()) );   // delete the last cluster
+            clusters.push_back(last_cluster);   // add the new combined cluster
         }
     }
 
