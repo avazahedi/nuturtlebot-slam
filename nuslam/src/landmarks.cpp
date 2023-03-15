@@ -52,7 +52,7 @@ public:
   Landmarks()
   : Node("landmarks")
   {
-    thresh = 0.05; // 2cm threshold
+    thresh = 0.03; // 3cm threshold
 
     // landmark locations publisher
     landmarks_pub_ = create_publisher<visualization_msgs::msg::MarkerArray>("/landmarks", 10);
@@ -97,14 +97,6 @@ private:
                 current_cluster.push_back(vec);
                 continue;
             }
-            
-            // add point if beginning of any new cluster
-            if (current_cluster.empty())
-            {
-                turtlelib::Vector2D vec{x,y};
-                current_cluster.push_back(vec);
-                continue;
-            }
 
             double x_prev = msg.ranges.at(i-1)*cos(turtlelib::deg2rad(i-1));
             double y_prev = msg.ranges.at(i-1)*sin(turtlelib::deg2rad(i-1));
@@ -116,42 +108,51 @@ private:
             }
             else
             {
-                // only include the current cluster if it has >3 points
-                if (current_cluster.size() >= 4)
+                // only include the current cluster if it has 3+ points
+                if (current_cluster.size() >= 3)
                 {
                     clusters.push_back(current_cluster);
                 }
                 // reset the current cluster and add this point
-                current_cluster = {};
+                // current_cluster = {};
+                current_cluster.clear();
                 turtlelib::Vector2D vec{x,y};
                 current_cluster.push_back(vec);
             }
 
         }
-    }
+    } // end of for loop
 
     // check for wrap-around
     // check the last point in the last cluster with the first point in the first cluster
     // if they are within the distance threshold, combine the last cluster and the first cluster
 
-    // // last point in the last cluster
-    // auto last_cluster = clusters.at(clusters.size()-1);
-    // turtlelib::Vector2D last = last_cluster.at(last_cluster.size()-1);
+    if (clusters.size() >= 2)    // only check if we have some clusters to begin with
+    {
+        // last point in the last cluster
+        auto last_cluster = clusters.back();
+        turtlelib::Vector2D last = last_cluster.back();
 
-    // // first point in first cluster
-    // auto first_cluster = clusters.at(0);
-    // turtlelib::Vector2D first = first_cluster.at(0);
+        // first point in first cluster
+        auto first_cluster = clusters.at(0);
+        turtlelib::Vector2D first = first_cluster.at(0);
 
-    // auto wrap_dist = turtlelib::distance_btw(last.x, first.x, last.y, first.y);
+        auto wrap_dist = turtlelib::distance_btw(last.x, last.y, first.x, first.y);
 
-    // if (wrap_dist <= thresh)
-    // {
-    //     // std::vector<turtlelib::Vector2D> combined_cluster(first_cluster.size() + last_cluster.size());
-    //     // combined_cluster.insert( combined_cluster.begin(),  );
-    //     last_cluster.insert( last_cluster.end(), first_cluster.begin(), first_cluster.end() );
-    //     clusters.erase( clusters.begin() );
-    //     clusters.erase ( std::prev(clusters.end()) );
-    // }
+        if (wrap_dist <= thresh)
+        {
+            RCLCPP_INFO_STREAM(get_logger(), "WRAP AROUND");
+            last_cluster.insert( last_cluster.end(), first_cluster.begin(), first_cluster.end() );
+            RCLCPP_INFO_STREAM(get_logger(), "clusters size: " << clusters.size());
+            clusters.erase( clusters.begin() );
+            RCLCPP_INFO_STREAM(get_logger(), "clusters size: " << clusters.size());
+            if (clusters.size() >= 1)
+            {
+                clusters.erase ( std::prev(clusters.end()) );
+            }
+            clusters.push_back(last_cluster);
+        }
+    }
 
     // visualize clusters
     auto marker_stamp = get_clock()->now();
