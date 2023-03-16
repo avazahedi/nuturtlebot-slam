@@ -65,7 +65,7 @@ namespace turtlelib
         H(2,2) = 1;
         H(3,0) = 2;
 
-        // if issues here, try implementing H^-1 manually
+        // H inverse
         arma::mat H_inv (4, 4, arma::fill::zeros);
         H_inv(0,3) = 0.5;
         H_inv(1,1) = 1;
@@ -114,7 +114,7 @@ namespace turtlelib
 
         double a = -A(1) / (2*A(0));
         double b = -A(2) / (2*A(0));
-        double R_sq = ( pow(A(1),2) + pow(A(2),2) - 4*A(0)*A(3)) / (4*pow(A(0),2));
+        double R_sq = (pow(A(1),2) + pow(A(2),2) - 4*A(0)*A(3)) / (4*pow(A(0),2));
 
         double cx = a + xmean;
         double cy = b + ymean;

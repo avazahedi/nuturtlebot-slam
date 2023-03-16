@@ -41,6 +41,7 @@
 #include "visualization_msgs/msg/marker_array.hpp"
 #include "turtlelib/rigid2d.hpp"
 #include "sensor_msgs/msg/laser_scan.hpp"
+#include "turtlelib/circle_fit.hpp"
 #include <armadillo>
 
 using namespace std::chrono_literals;
@@ -114,7 +115,6 @@ private:
                     clusters.push_back(current_cluster);
                 }
                 // reset the current cluster and add this point
-                // current_cluster = {};
                 current_cluster.clear();
                 turtlelib::Vector2D vec{x,y};
                 current_cluster.push_back(vec);
@@ -187,6 +187,44 @@ private:
         }
     }
     clusters_pub_->publish(cmarkers);
+
+    // fit circles to clusters and visualize
+    auto circle_ts = get_clock()->now();
+    visualization_msgs::msg::MarkerArray circle_mkrs;
+    int idc = 0;
+    for (size_t i=0; i < clusters.size(); i++)
+    {
+        turtlelib::Circle circle = turtlelib::circle_fit(clusters.at(i));
+        if (circle.radius <= 0.055 && circle.radius >= 0.025) // actually a circle we care about
+        {
+            visualization_msgs::msg::Marker cmkr;
+            cmkr.header.frame_id = "green/base_scan";
+            cmkr.header.stamp = circle_ts;
+            cmkr.header.stamp.nanosec += 2e4;
+            cmkr.type = visualization_msgs::msg::Marker::CYLINDER;
+            cmkr.id = idc;
+            cmkr.action = visualization_msgs::msg::Marker::ADD;
+            cmkr.scale.x = 2.0*circle.radius;
+            cmkr.scale.y = 2.0*circle.radius;
+            cmkr.scale.z = 0.1;
+            cmkr.pose.position.x = circle.center.x;
+            cmkr.pose.position.y = circle.center.y;
+            cmkr.pose.position.z = 0.0;
+            cmkr.pose.orientation.x = 0.0;
+            cmkr.pose.orientation.y = 0.0;
+            cmkr.pose.orientation.z = 0.0;
+            cmkr.pose.orientation.w = 1.0;
+            cmkr.color.r = 1.0;
+            cmkr.color.g = 0.0;
+            cmkr.color.b = 1.0;
+            cmkr.color.a = 1.0;
+            circle_mkrs.markers.push_back(cmkr);
+            idc++;
+        }
+    }
+
+    landmarks_pub_->publish(circle_mkrs);
+
 
   }
 
