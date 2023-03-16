@@ -109,8 +109,8 @@ private:
             }
             else
             {
-                // only include the current cluster if it has > 3 points
-                if (current_cluster.size() >= 4)
+                // only include the current cluster if it has > 4 points
+                if (current_cluster.size() >= 5)
                 {
                     clusters.push_back(current_cluster);
                 }
@@ -152,41 +152,42 @@ private:
         }
     }
 
-    // visualize clusters
-    auto marker_stamp = get_clock()->now();
-    visualization_msgs::msg::MarkerArray cmarkers;
-    int id_val = 0;
+    // // visualize clusters
+    // auto marker_stamp = get_clock()->now();
+    // visualization_msgs::msg::MarkerArray cmarkers;
+    // int id_val = 0;
 
-    for (size_t j=0; j<clusters.size(); j++) {
-        for (size_t k=0; k<clusters.at(j).size(); k++) {
-            // create markers here
-            turtlelib::Vector2D clust_pt = clusters.at(j).at(k);
-            visualization_msgs::msg::Marker mkr;
-            mkr.header.frame_id = "green/base_scan";
-            mkr.header.stamp = marker_stamp;
-            mkr.type = visualization_msgs::msg::Marker::CYLINDER;
-            mkr.id = id_val;
-            mkr.action = visualization_msgs::msg::Marker::ADD;
-            mkr.scale.x = 0.05;
-            mkr.scale.y = 0.05;
-            mkr.scale.z = 0.5;
-            mkr.pose.position.x = clust_pt.x;
-            mkr.pose.position.y = clust_pt.y;
-            mkr.pose.position.z = mkr.scale.z / 2.0;
-            mkr.pose.orientation.x = 0.0;
-            mkr.pose.orientation.y = 0.0;
-            mkr.pose.orientation.z = 0.0;
-            mkr.pose.orientation.w = 1.0;
-            mkr.color.r = 1.0;
-            mkr.color.g = 0.0;
-            mkr.color.b = 1.0;
-            mkr.color.a = 1.0;
-            cmarkers.markers.push_back(mkr);
+    // for (size_t j=0; j<clusters.size(); j++) {
+    //     for (size_t k=0; k<clusters.at(j).size(); k++) {
+    //         // create markers here
+    //         turtlelib::Vector2D clust_pt = clusters.at(j).at(k);
+    //         visualization_msgs::msg::Marker mkr;
+    //         mkr.header.frame_id = "green/base_scan";
+    //         mkr.header.stamp = marker_stamp;
+    //         mkr.type = visualization_msgs::msg::Marker::CYLINDER;
+    //         mkr.id = id_val;
+    //         mkr.action = visualization_msgs::msg::Marker::ADD;
+    //         mkr.scale.x = 0.05;
+    //         mkr.scale.y = 0.05;
+    //         mkr.scale.z = 0.5;
+    //         mkr.pose.position.x = clust_pt.x;
+    //         mkr.pose.position.y = clust_pt.y;
+    //         mkr.pose.position.z = mkr.scale.z / 2.0;
+    //         mkr.pose.orientation.x = 0.0;
+    //         mkr.pose.orientation.y = 0.0;
+    //         mkr.pose.orientation.z = 0.0;
+    //         mkr.pose.orientation.w = 1.0;
+    //         mkr.color.r = 1.0;
+    //         mkr.color.g = 0.0;
+    //         mkr.color.b = 1.0;
+    //         mkr.color.a = 1.0;
+    //         cmarkers.markers.push_back(mkr);
 
-            id_val++;
-        }
-    }
-    clusters_pub_->publish(cmarkers);
+    //         id_val++;
+    //     }
+    // }
+    // clusters_pub_->publish(cmarkers);
+
 
     // fit circles to clusters and visualize
     auto circle_ts = get_clock()->now();
@@ -200,7 +201,7 @@ private:
             visualization_msgs::msg::Marker cmkr;
             cmkr.header.frame_id = "green/base_scan";
             cmkr.header.stamp = circle_ts;
-            cmkr.header.stamp.nanosec += 2e4;
+            // cmkr.header.stamp.nanosec += 2e4;
             cmkr.type = visualization_msgs::msg::Marker::CYLINDER;
             cmkr.id = idc;
             cmkr.action = visualization_msgs::msg::Marker::ADD;
@@ -224,7 +225,6 @@ private:
     }
 
     landmarks_pub_->publish(circle_mkrs);
-
 
   }
 

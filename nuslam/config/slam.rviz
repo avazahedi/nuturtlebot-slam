@@ -7,7 +7,6 @@ Panels:
         - /Global Options1
         - /Status1
         - /Odometry1/Shape1
-        - /Landmarks1/Status1
       Splitter Ratio: 0.5
     Tree Height: 719
   - Class: rviz_common/Selection
@@ -396,7 +395,7 @@ Visualization Manager:
       Enabled: true
       Name: Fake Sensor Obstacles
       Namespaces:
-        {}
+        "": true
       Topic:
         Depth: 5
         Durability Policy: Volatile
@@ -408,7 +407,7 @@ Visualization Manager:
       Enabled: true
       Name: SLAM Obstacles
       Namespaces:
-        {}
+        "": true
       Topic:
         Depth: 5
         Durability Policy: Volatile
@@ -534,18 +533,6 @@ Visualization Manager:
         Reliability Policy: Reliable
         Value: /green/path
       Value: true
-    - Class: rviz_default_plugins/MarkerArray
-      Enabled: false
-      Name: Clusters
-      Namespaces:
-        {}
-      Topic:
-        Depth: 5
-        Durability Policy: Volatile
-        History Policy: Keep Last
-        Reliability Policy: Reliable
-        Value: /clusters
-      Value: false
     - Class: rviz_default_plugins/MarkerArray
       Enabled: true
       Name: Landmarks
