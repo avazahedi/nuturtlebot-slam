@@ -44,6 +44,7 @@ Landmarks demo:
 
 https://user-images.githubusercontent.com/39091881/226039549-84e7545d-5706-473f-9c18-462cd17d56de.webm
 
+The purple cylinders are the detected landmarks. The green cylinders are the obstacles as detected by SLAM (as a result of the detected landmarks). The red cylinders are the actual obstacles.  
 
 Final positions from the actual robot (red), odometry (blue), and the slam estimate (green) in this demo:  
 * actual robot (red): (0.101, 0.53123, 0)  
