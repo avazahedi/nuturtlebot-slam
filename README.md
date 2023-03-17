@@ -61,6 +61,6 @@ Demo video:
 
 https://user-images.githubusercontent.com/39091881/222293875-aa12083c-0d6c-4983-bd7b-4209988d4196.webm  
 
-
+</br>
 Landmark detection can be done with SLAM by launching `ros2 launch nuslam landmark_detect.launch.xml`.  
 A demo of this is shown in the nuslam package README. 
