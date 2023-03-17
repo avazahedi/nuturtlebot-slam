@@ -1,6 +1,6 @@
 /// \file
-/// \brief The Slam class inherits the Node class and publishes the map to green/odom transform.
-///        It also performs SLAM using the Extended Kalman Filter and is shown by the green robot.
+/// \brief The Landmarks class inherits the Node class and publishes detected landmark locations.
+///        It uses a clustering algorithm followed by a circle-fitting algorithm.
 ///
 /// PUBLISHES:
 ///     landmarks (visualization_msgs/MarkerArray): publishes the landmarks from circle-fitting
@@ -22,7 +22,7 @@
 
 using namespace std::chrono_literals;
 
-/// \brief The Slam class inherits the Node class and publishes the map to green/odom transform.
+/// \brief The Landmarks class inherits the Node class and publishes detected landmark locations.
 class Landmarks : public rclcpp::Node
 {
 public:
@@ -119,7 +119,7 @@ private:
       }
     }
 
-    // // visualize clusters
+    // // visualize clusters - disabled for efficiency
     // auto marker_stamp = get_clock()->now();
     // visualization_msgs::msg::MarkerArray cmarkers;
     // int id_val = 0;
