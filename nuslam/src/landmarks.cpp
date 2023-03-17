@@ -55,6 +55,7 @@ private:
   /// @param msg - lidar sim LaserScan message
   void ls_callback(const sensor_msgs::msg::LaserScan & msg)
   {
+    // clustering algorithm
     std::vector<std::vector<turtlelib::Vector2D>> clusters;
     std::vector<turtlelib::Vector2D> current_cluster;
 

@@ -12,7 +12,8 @@ This repository also contains a custom C++ library
 -  turtlelib - A library for handling transformations in SE(2) and other turtlebot-related math.
     * rigid2d -  vectors, twists, and transformations in 2D
     * diff_drive - kinematics for a differential drive robot in 2D
-    * kalman - Extended Kalman Filter implementation
+    * kalman - Extended Kalman Filter implementation with data association
+    * circle_fit - circle fitting algorithm given a cluster of points
 
 # Launch File Details
 * `ros2 launch nuslam slam.launch.xml`  
@@ -58,4 +59,8 @@ Final result:
 
 Demo video:  
 
-https://user-images.githubusercontent.com/39091881/222293875-aa12083c-0d6c-4983-bd7b-4209988d4196.webm
+https://user-images.githubusercontent.com/39091881/222293875-aa12083c-0d6c-4983-bd7b-4209988d4196.webm  
+
+
+Landmark detection can be done with SLAM by launching `ros2 launch nuslam landmark_detect.launch.xml`.  
+A demo of this is shown in the nuslam package README. 
