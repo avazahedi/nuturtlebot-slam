@@ -6,13 +6,11 @@
 
   <!-- include slam launch -->
   <include file="$(find-pkg-share nuslam)/launch/slam.launch.xml" >
+    <arg name="detect_landmarks" value="true"/>
   </include>
 
   <!-- landmarks -->
-  <!-- <node name="landmarks" pkg="nuslam" exec="landmarks" if="$(eval '\'$(var robot)\' == \'nusim\'')">
-  </node> -->
-
-  <node name="landmarks" pkg="nuslam" exec="landmarks">
+  <node name="landmarks" pkg="nuslam" exec="landmarks" if="$(eval '\'$(var robot)\' == \'nusim\'')">
   </node>
 
 </launch>

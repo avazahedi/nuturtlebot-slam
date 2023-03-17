@@ -86,6 +86,94 @@ namespace turtlelib{
         covar_pred = At*covariance*At.t() + Q_bar;
     }
 
+
+    int EKF::data_association(double cx, double cy)
+    {    
+        double r = sqrt(cx*cx + cy*cy);
+        double phi = atan2(cy, cx);
+        arma::vec z = { r, phi };
+
+        arma::vec tmp = xi_pred;
+        // tmp(3+2*num_seen_ldmk) = tmp(1) + r*cos(phi+tmp(0));
+        // tmp(3+2*num_seen_ldmk+1) = tmp(2) + r*sin(phi+tmp(0));
+
+        tmp(3+2*num_seen_ldmk+1) = tmp(1) + r*cos(phi+tmp(0));
+        tmp(3+2*num_seen_ldmk+1+1) = tmp(2) + r*sin(phi+tmp(0));
+
+        std::vector<double> mdist_list;
+
+        for (int k=0; k < num_seen_ldmk+1; k++)
+        {
+            // construct Hk matrix
+            double delta_xk = tmp(3+2*k) - tmp(1);
+            double delta_yk = tmp(3+2*k+1) - tmp(2);
+            double dk = delta_xk*delta_xk + delta_yk*delta_yk;
+            
+            arma::mat Hk1(2, 3);
+            arma::mat Hk2(2, 2*k, arma::fill::zeros);
+            arma::mat Hk3(2, 2);
+            arma::mat Hk4(2, 2*N-2*(k+1), arma::fill::zeros);
+
+            Hk1(0,0) = 0.0;
+            Hk1(0,1) = -delta_xk/sqrt(dk);
+            Hk1(0,2) = -delta_yk/sqrt(dk);
+            Hk1(1,0) = -1.0;
+            Hk1(1,1) = delta_yk/dk;
+            Hk1(1,2) = -delta_xk/dk;
+
+            Hk3(0,0) = delta_xk/sqrt(dk);
+            Hk3(0,1) = delta_yk/sqrt(dk);
+            Hk3(1,0) = -delta_yk/dk;
+            Hk3(1,1) = delta_xk/dk;
+
+            arma::mat Hk = arma::join_rows(Hk1,Hk2,Hk3,Hk4);
+
+            // R
+            arma::mat R(2,2, arma::fill::eye);
+            double R_val = 0.01;
+            R *= R_val;
+
+            // compute covariance psi
+            arma::mat psi = Hk*covar_pred*Hk.t() + R;
+
+            // expected measurement z_hat
+            double r_hat = sqrt(dk);
+            double phi_hat = atan2(delta_yk, delta_xk) - tmp(0);
+            phi_hat = normalize_angle(phi_hat);
+            arma::vec z_hat = { r_hat, phi_hat };
+
+            // compute mahalanobis distance m_dist
+            arma::vec zdiff = z - z_hat;
+            zdiff(1) = normalize_angle(zdiff(1));
+            arma::mat m_dist = zdiff.t()*psi.i()*zdiff;
+
+            mdist_list.push_back(m_dist(0));
+        }
+
+        double thresh = mdist_list.at(mdist_list.size()-1);
+        bool new_ldmk = true;
+        int l = num_seen_ldmk+1;
+
+        for (size_t i=0; i < mdist_list.size(); i++)
+        {
+            if (mdist_list.at(i) < thresh)
+            {
+                new_ldmk = false;
+                thresh = mdist_list.at(i);
+                l = i;
+            }
+        }
+
+        if (new_ldmk == true)
+        {
+            num_seen_ldmk++;
+        }
+
+        return l;
+
+    }
+
+
     void EKF::update(double obs_x, double obs_y, unsigned int j)
     {
         // ri, phii = rj, phij because we know which i corresponds to which j

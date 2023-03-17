@@ -9,6 +9,7 @@
 ///     odom_id (string): name of the odometry frame
 ///     wheel_left (string): name of the left wheel joint
 ///     wheel_right (string): name of the right wheel joint
+///     detect_landmarks (bool): whether or not the slam node should perform landmark detection
 /// PUBLISHES:
 ///     green/odom (nav_msgs/Odometry): publishes odometry for the green robot
 ///     green/path (nav_msgs/Path): publishes path of the green robot
@@ -40,6 +41,7 @@
 #include "geometry_msgs/msg/pose_stamped.hpp"
 #include "visualization_msgs/msg/marker_array.hpp"
 #include "turtlelib/kalman.hpp"
+#include "turtlelib/circle_fit.hpp"
 #include <armadillo>
 
 using namespace std::chrono_literals;
@@ -71,6 +73,9 @@ public:
       throw(error);
     }
 
+    declare_parameter("detect_landmarks", false);
+    detect_landmarks = get_parameter("detect_landmarks").get_parameter_value().get<bool>();
+
     turtlelib::DiffDrive dd {track, radius};
 
     prev_wheel_pos.left = 0.0;
@@ -93,10 +98,21 @@ public:
       "/joint_states", 10,
       std::bind(&Slam::js_callback, this, std::placeholders::_1));
 
-    // fake_sensor subscriber
-    fs_sub_ = create_subscription<visualization_msgs::msg::MarkerArray>(
-      "/fake_sensor", 10,
-      std::bind(&Slam::fs_callback, this, std::placeholders::_1));
+    if (detect_landmarks == true)
+    {
+        // circle detection subscriber
+        circle_sub_ = create_subscription<visualization_msgs::msg::MarkerArray>(
+        "/landmarks", 10,
+        std::bind(&Slam::circle_callback, this, std::placeholders::_1));
+    }
+
+    else
+    {
+        // fake_sensor subscriber
+        fs_sub_ = create_subscription<visualization_msgs::msg::MarkerArray>(
+        "/fake_sensor", 10,
+        std::bind(&Slam::fs_callback, this, std::placeholders::_1));
+    }
 
     // initial pose service
     initial_pose_srv_ = create_service<nuturtle_control::srv::InitialPose>(
@@ -159,6 +175,65 @@ private:
       obs.color.b = 0.0;
       obs.color.a = 1.0;
       slam_obs.markers.push_back(obs);
+    }
+
+    arma::vec xi = ekf.getStateEst();
+    turtlelib::Vector2D trans{xi(1), xi(2)};
+    Tmr = turtlelib::Transform2D(trans, turtlelib::normalize_angle(xi(0)));
+
+    slam_obs_pub_->publish(slam_obs);
+
+  }
+
+  /// @brief Callback for circle fitting
+  /// @param msg - MarkerArray of detected circles
+  void circle_callback(const visualization_msgs::msg::MarkerArray & msg)
+  {
+    auto q = dd.getConfig();
+    ekf.setConfig(q);
+    ekf.predict();
+
+    visualization_msgs::msg::MarkerArray slam_obs;
+    auto circles = msg.markers;
+    auto marker_stamp = get_clock()->now();
+
+    std::vector<int> index_list;
+    for (size_t i = 0; i < circles.size(); i++)
+    {
+        auto circle = circles.at(i);
+        int l = ekf.data_association(circle.pose.position.x, circle.pose.position.y);
+        // RCLCPP_INFO_STREAM(get_logger(), "l: " << l);
+        index_list.push_back(l);
+    }
+
+    for (size_t i = 0; i < circles.size(); i++) {
+        auto circle = circles.at(i);
+
+        ekf.update(circle.pose.position.x, circle.pose.position.y, index_list.at(i));
+
+        arma::vec xi_temp = ekf.getStateEst();
+        // populate slam_obs MarkerArray
+        visualization_msgs::msg::Marker obs;
+        obs.header.frame_id = "nusim/world";
+        obs.header.stamp = marker_stamp;
+        obs.type = visualization_msgs::msg::Marker::CYLINDER;
+        obs.id = i;
+        obs.action = visualization_msgs::msg::Marker::ADD;
+        obs.scale.x = circle.scale.x;
+        obs.scale.y = circle.scale.y;
+        obs.scale.z = circle.scale.z;
+        obs.pose.position.x = xi_temp.at(2 * i + 3);
+        obs.pose.position.y = xi_temp.at(2 * i + 3 + 1);
+        obs.pose.position.z = circle.pose.position.z;
+        obs.pose.orientation.x = 0.0;
+        obs.pose.orientation.y = 0.0;
+        obs.pose.orientation.z = 0.0;
+        obs.pose.orientation.w = 1.0;
+        obs.color.r = 0.0;
+        obs.color.g = 1.0;
+        obs.color.b = 0.0;
+        obs.color.a = 1.0;
+        slam_obs.markers.push_back(obs);
     }
 
     arma::vec xi = ekf.getStateEst();
@@ -304,16 +379,18 @@ private:
   turtlelib::Transform2D Tmr;
   turtlelib::Transform2D Tmo;
 
-
   nav_msgs::msg::Odometry odom_msg;
   nav_msgs::msg::Path odom_path;
   geometry_msgs::msg::PoseStamped rp_pose;
+
+  bool detect_landmarks;
 
   rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odom_pub_;
   rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr js_sub_;
   rclcpp::Subscription<visualization_msgs::msg::MarkerArray>::SharedPtr fs_sub_;
   rclcpp::Publisher<nav_msgs::msg::Path>::SharedPtr odom_path_pub_;
   rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr slam_obs_pub_;
+  rclcpp::Subscription<visualization_msgs::msg::MarkerArray>::SharedPtr circle_sub_;
 
   rclcpp::Service<nuturtle_control::srv::InitialPose>::SharedPtr initial_pose_srv_;
 
@@ -325,13 +402,13 @@ private:
 int main(int argc, char * argv[])
 {
   rclcpp::init(argc, argv);
-  try {
+//   try {
     rclcpp::spin(std::make_shared<Slam>());
-  } catch (std::exception & e) {
-    RCLCPP_ERROR(
-      std::make_shared<Slam>()->get_logger(),
-      "Error: Not all necessary parameters are defined.");
-  }
+//   } catch (std::exception & e) {
+//     RCLCPP_ERROR(
+//       std::make_shared<Slam>()->get_logger(),
+//       "Error: Not all necessary parameters are defined.");
+//   }
   rclcpp::shutdown();
   return 0;
 }

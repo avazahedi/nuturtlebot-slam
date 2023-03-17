@@ -2,26 +2,11 @@
 /// \brief The Slam class inherits the Node class and publishes the map to green/odom transform.
 ///        It also performs SLAM using the Extended Kalman Filter and is shown by the green robot.
 ///
-/// PARAMETERS:
-///     wheel_radius (double): wheel radius
-///     track_width (double): track width (distance between the wheels)
-///     body_id (string): name of the body frame of the robot
-///     odom_id (string): name of the odometry frame
-///     wheel_left (string): name of the left wheel joint
-///     wheel_right (string): name of the right wheel joint
 /// PUBLISHES:
-///     green/odom (nav_msgs/Odometry): publishes odometry for the green robot
-///     green/path (nav_msgs/Path): publishes path of the green robot
-///     slam_obstacles (visualization_msgs/MarkerArray): publishes the obstacles as detected
-///                                                      by SLAM
+///     landmarks (visualization_msgs/MarkerArray): publishes the landmarks from circle-fitting
+///     clusters (visualization_msgs/MarkerArray): publishes the detected clusters (disabled)
 /// SUBSCRIBES:
-///     joint_states (sensor_msgs/JointState): joint states of the robot
-///     fake_sensor (visualization_msgs/MarkerArray): obstacles as detected by the simulated sensor
-/// SERVICES:
-///     initial_pose (nuturtle_control/InitialPose.srv): resets the location of the odometry
-/// BROADCASTERS:
-///     green/odom to green/robot
-///     map to green/odom
+///     lidar_sim (sensor_msgs/LaserScan): laser scan from the robot
 
 #include <chrono>
 #include <functional>
@@ -30,16 +15,7 @@
 #include <vector>
 
 #include "rclcpp/rclcpp.hpp"
-#include "sensor_msgs/msg/joint_state.hpp"
-#include "nav_msgs/msg/odometry.hpp"
-#include "geometry_msgs/msg/transform_stamped.hpp"
-#include "tf2/LinearMath/Quaternion.h"
-#include "tf2_ros/transform_broadcaster.h"
-#include "nuturtle_control/srv/initial_pose.hpp"
-#include "nav_msgs/msg/path.hpp"
-#include "geometry_msgs/msg/pose_stamped.hpp"
 #include "visualization_msgs/msg/marker_array.hpp"
-#include "turtlelib/rigid2d.hpp"
 #include "sensor_msgs/msg/laser_scan.hpp"
 #include "turtlelib/circle_fit.hpp"
 #include <armadillo>

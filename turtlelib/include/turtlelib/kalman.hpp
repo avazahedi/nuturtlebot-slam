@@ -23,6 +23,7 @@ namespace turtlelib
         arma::mat covariance;   // covariance matrix sigma
         arma::mat covar_pred;   // covariance prediction sigma_t_hat_minus
         std::unordered_set<unsigned int> measure_set{}; // set of measurements to keep track of what landmarks we've seen before
+        int num_seen_ldmk = 0;      // number of landmarks already seen
 
     public:
         /// @brief Default EKF constructor.
@@ -54,6 +55,12 @@ namespace turtlelib
 
         /// @brief Compute state and covariance prediction
         void predict();
+
+        /// @brief Data association for circle detection and landmarks
+        /// @param cx - center of circle x coordinate
+        /// @param cy - center of circle y coordinate
+        /// @return landmark index
+        int data_association(double cx, double cy);
 
         /// @brief Update/correct the state and covariance predictions
         /// @param obs_x - sensed obstacle x-coordinate

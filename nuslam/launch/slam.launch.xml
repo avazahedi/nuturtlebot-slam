@@ -3,6 +3,7 @@
   <arg name="cmd_src" default="none"/>
   <arg name="robot" default="nusim"/>
   <arg name="use_rviz" default="true"/>
+  <arg name="detect_landmarks" default="false" />
 
   <!-- start_robot -->
   <include file="$(find-pkg-share nuturtle_control)/launch/start_robot.launch.xml" >
@@ -17,6 +18,7 @@
     <param name="odom_id" value="green/odom"/>
     <param name="wheel_left" value="wheel_left_joint"/>
     <param name="wheel_right" value="wheel_right_joint"/>
+    <param name="detect_landmarks" value="$(var detect_landmarks)"/>
     <remap from="/joint_states" to="blue/joint_states" />
   </node>
 
