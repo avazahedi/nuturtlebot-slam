@@ -98,18 +98,14 @@ public:
       "/joint_states", 10,
       std::bind(&Slam::js_callback, this, std::placeholders::_1));
 
-    if (detect_landmarks == true)
-    {
-        // circle detection subscriber
-        circle_sub_ = create_subscription<visualization_msgs::msg::MarkerArray>(
+    if (detect_landmarks == true) {
+      // circle detection subscriber
+      circle_sub_ = create_subscription<visualization_msgs::msg::MarkerArray>(
         "/landmarks", 10,
         std::bind(&Slam::circle_callback, this, std::placeholders::_1));
-    }
-
-    else
-    {
-        // fake_sensor subscriber
-        fs_sub_ = create_subscription<visualization_msgs::msg::MarkerArray>(
+    } else {
+      // fake_sensor subscriber
+      fs_sub_ = create_subscription<visualization_msgs::msg::MarkerArray>(
         "/fake_sensor", 10,
         std::bind(&Slam::fs_callback, this, std::placeholders::_1));
     }
@@ -198,42 +194,41 @@ private:
     auto marker_stamp = get_clock()->now();
 
     std::vector<int> index_list;
-    for (size_t i = 0; i < circles.size(); i++)
-    {
-        auto circle = circles.at(i);
-        int l = ekf.data_association(circle.pose.position.x, circle.pose.position.y);
-        // RCLCPP_INFO_STREAM(get_logger(), "l: " << l);
-        index_list.push_back(l);
+    for (size_t i = 0; i < circles.size(); i++) {
+      auto circle = circles.at(i);
+      int l = ekf.data_association(circle.pose.position.x, circle.pose.position.y);
+      // RCLCPP_INFO_STREAM(get_logger(), "l: " << l);
+      index_list.push_back(l);
     }
 
     for (size_t i = 0; i < circles.size(); i++) {
-        auto circle = circles.at(i);
+      auto circle = circles.at(i);
 
-        ekf.update(circle.pose.position.x, circle.pose.position.y, index_list.at(i));
+      ekf.update(circle.pose.position.x, circle.pose.position.y, index_list.at(i));
 
-        arma::vec xi_temp = ekf.getStateEst();
-        // populate slam_obs MarkerArray
-        visualization_msgs::msg::Marker obs;
-        obs.header.frame_id = "nusim/world";
-        obs.header.stamp = marker_stamp;
-        obs.type = visualization_msgs::msg::Marker::CYLINDER;
-        obs.id = i;
-        obs.action = visualization_msgs::msg::Marker::ADD;
-        obs.scale.x = circle.scale.x;
-        obs.scale.y = circle.scale.y;
-        obs.scale.z = circle.scale.z;
-        obs.pose.position.x = xi_temp.at(2 * i + 3);
-        obs.pose.position.y = xi_temp.at(2 * i + 3 + 1);
-        obs.pose.position.z = circle.pose.position.z;
-        obs.pose.orientation.x = 0.0;
-        obs.pose.orientation.y = 0.0;
-        obs.pose.orientation.z = 0.0;
-        obs.pose.orientation.w = 1.0;
-        obs.color.r = 0.0;
-        obs.color.g = 1.0;
-        obs.color.b = 0.0;
-        obs.color.a = 1.0;
-        slam_obs.markers.push_back(obs);
+      arma::vec xi_temp = ekf.getStateEst();
+      // populate slam_obs MarkerArray
+      visualization_msgs::msg::Marker obs;
+      obs.header.frame_id = "nusim/world";
+      obs.header.stamp = marker_stamp;
+      obs.type = visualization_msgs::msg::Marker::CYLINDER;
+      obs.id = i;
+      obs.action = visualization_msgs::msg::Marker::ADD;
+      obs.scale.x = circle.scale.x;
+      obs.scale.y = circle.scale.y;
+      obs.scale.z = circle.scale.z;
+      obs.pose.position.x = xi_temp.at(2 * i + 3);
+      obs.pose.position.y = xi_temp.at(2 * i + 3 + 1);
+      obs.pose.position.z = circle.pose.position.z;
+      obs.pose.orientation.x = 0.0;
+      obs.pose.orientation.y = 0.0;
+      obs.pose.orientation.z = 0.0;
+      obs.pose.orientation.w = 1.0;
+      obs.color.r = 0.0;
+      obs.color.g = 1.0;
+      obs.color.b = 0.0;
+      obs.color.a = 1.0;
+      slam_obs.markers.push_back(obs);
     }
 
     arma::vec xi = ekf.getStateEst();
@@ -403,7 +398,7 @@ int main(int argc, char * argv[])
 {
   rclcpp::init(argc, argv);
 //   try {
-    rclcpp::spin(std::make_shared<Slam>());
+  rclcpp::spin(std::make_shared<Slam>());
 //   } catch (std::exception & e) {
 //     RCLCPP_ERROR(
 //       std::make_shared<Slam>()->get_logger(),

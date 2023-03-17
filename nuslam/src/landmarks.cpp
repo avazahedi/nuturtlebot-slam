@@ -58,74 +58,65 @@ private:
     std::vector<std::vector<turtlelib::Vector2D>> clusters;
     std::vector<turtlelib::Vector2D> current_cluster;
 
-    for (size_t i=0; i < msg.ranges.size(); i++)
-    {
-        double d = msg.ranges.at(i);
-        if (d != 0.0)   // found a non-zero range
-        {
-            double theta = turtlelib::deg2rad(i);
-            double x = d*cos(theta);
-            double y = d*sin(theta);
+    for (size_t i = 0; i < msg.ranges.size(); i++) {
+      double d = msg.ranges.at(i);
+      if (d != 0.0) {   // found a non-zero range
+        double theta = turtlelib::deg2rad(i);
+        double x = d * cos(theta);
+        double y = d * sin(theta);
 
-            // if first point of first cluster
-            if (clusters.empty() && current_cluster.empty())
-            {
-                turtlelib::Vector2D vec{x,y};
-                current_cluster.push_back(vec);
-                continue;
-            }
-
-            double x_prev = msg.ranges.at(i-1)*cos(turtlelib::deg2rad(i-1));
-            double y_prev = msg.ranges.at(i-1)*sin(turtlelib::deg2rad(i-1));
-            double dist = turtlelib::distance_btw(x, y, x_prev, y_prev);
-            if (dist <= thresh)
-            {
-                turtlelib::Vector2D vec{x,y};
-                current_cluster.push_back(vec);
-            }
-            else
-            {
-                // only include the current cluster if it has > 4 points
-                if (current_cluster.size() >= 5)
-                {
-                    clusters.push_back(current_cluster);
-                }
-                // reset the current cluster and add this point
-                current_cluster.clear();
-                turtlelib::Vector2D vec{x,y};
-                current_cluster.push_back(vec);
-            }
-
+        // if first point of first cluster
+        if (clusters.empty() && current_cluster.empty()) {
+          turtlelib::Vector2D vec{x, y};
+          current_cluster.push_back(vec);
+          continue;
         }
+
+        double x_prev = msg.ranges.at(i - 1) * cos(turtlelib::deg2rad(i - 1));
+        double y_prev = msg.ranges.at(i - 1) * sin(turtlelib::deg2rad(i - 1));
+        double dist = turtlelib::distance_btw(x, y, x_prev, y_prev);
+        if (dist <= thresh) {
+          turtlelib::Vector2D vec{x, y};
+          current_cluster.push_back(vec);
+        } else {
+          // only include the current cluster if it has > 4 points
+          if (current_cluster.size() >= 5) {
+            clusters.push_back(current_cluster);
+          }
+          // reset the current cluster and add this point
+          current_cluster.clear();
+          turtlelib::Vector2D vec{x, y};
+          current_cluster.push_back(vec);
+        }
+
+      }
     } // end of for loop
 
     // check for wrap-around
     // check the last point in the last cluster with the first point in the first cluster
     // if they are within the distance threshold, combine the last cluster and the first cluster
 
-    if (clusters.size() >= 2)    // only check if we have some clusters to begin with
-    {
-        // last point in the last cluster
-        auto last_cluster = clusters.back();
-        turtlelib::Vector2D last = last_cluster.back();
+    if (clusters.size() >= 2) {  // only check if we have some clusters to begin with
+      // last point in the last cluster
+      auto last_cluster = clusters.back();
+      turtlelib::Vector2D last = last_cluster.back();
 
-        // first point in first cluster
-        auto first_cluster = clusters.at(0);
-        turtlelib::Vector2D first = first_cluster.at(0);
+      // first point in first cluster
+      auto first_cluster = clusters.at(0);
+      turtlelib::Vector2D first = first_cluster.at(0);
 
-        auto wrap_dist = turtlelib::distance_btw(last.x, last.y, first.x, first.y);
+      auto wrap_dist = turtlelib::distance_btw(last.x, last.y, first.x, first.y);
 
-        if (wrap_dist <= thresh)
-        {
-            RCLCPP_INFO_STREAM(get_logger(), "WRAP AROUND");
+      if (wrap_dist <= thresh) {
+        RCLCPP_INFO_STREAM(get_logger(), "WRAP AROUND");
 
-            // concatenate the last cluster and first cluster
-            // append the first cluster to the end of the last one
-            last_cluster.insert( last_cluster.end(), first_cluster.begin(), first_cluster.end() );
-            clusters.erase( clusters.begin() ); // delete the first cluster
-            clusters.erase ( std::prev(clusters.end()) );   // delete the last cluster
-            clusters.push_back(last_cluster);   // add the new combined cluster
-        }
+        // concatenate the last cluster and first cluster
+        // append the first cluster to the end of the last one
+        last_cluster.insert(last_cluster.end(), first_cluster.begin(), first_cluster.end() );
+        clusters.erase(clusters.begin() );      // delete the first cluster
+        clusters.erase(std::prev(clusters.end()) );         // delete the last cluster
+        clusters.push_back(last_cluster);       // add the new combined cluster
+      }
     }
 
     // // visualize clusters
@@ -169,35 +160,33 @@ private:
     auto circle_ts = get_clock()->now();
     visualization_msgs::msg::MarkerArray circle_mkrs;
     int idc = 0;
-    for (size_t i=0; i < clusters.size(); i++)
-    {
-        turtlelib::Circle circle = turtlelib::circle_fit(clusters.at(i));
-        if (circle.radius <= 0.055 && circle.radius >= 0.025) // actually a circle we care about
-        {
-            visualization_msgs::msg::Marker cmkr;
-            cmkr.header.frame_id = "green/base_scan";
-            cmkr.header.stamp = circle_ts;
-            // cmkr.header.stamp.nanosec += 2e4;
-            cmkr.type = visualization_msgs::msg::Marker::CYLINDER;
-            cmkr.id = idc;
-            cmkr.action = visualization_msgs::msg::Marker::ADD;
-            cmkr.scale.x = 2.0*circle.radius;
-            cmkr.scale.y = 2.0*circle.radius;
-            cmkr.scale.z = 0.1;
-            cmkr.pose.position.x = circle.center.x;
-            cmkr.pose.position.y = circle.center.y;
-            cmkr.pose.position.z = 0.0;
-            cmkr.pose.orientation.x = 0.0;
-            cmkr.pose.orientation.y = 0.0;
-            cmkr.pose.orientation.z = 0.0;
-            cmkr.pose.orientation.w = 1.0;
-            cmkr.color.r = 1.0;
-            cmkr.color.g = 0.0;
-            cmkr.color.b = 1.0;
-            cmkr.color.a = 1.0;
-            circle_mkrs.markers.push_back(cmkr);
-            idc++;
-        }
+    for (size_t i = 0; i < clusters.size(); i++) {
+      turtlelib::Circle circle = turtlelib::circle_fit(clusters.at(i));
+      if (circle.radius <= 0.055 && circle.radius >= 0.025) { // actually a circle we care about
+        visualization_msgs::msg::Marker cmkr;
+        cmkr.header.frame_id = "green/base_scan";
+        cmkr.header.stamp = circle_ts;
+        // cmkr.header.stamp.nanosec += 2e4;
+        cmkr.type = visualization_msgs::msg::Marker::CYLINDER;
+        cmkr.id = idc;
+        cmkr.action = visualization_msgs::msg::Marker::ADD;
+        cmkr.scale.x = 2.0 * circle.radius;
+        cmkr.scale.y = 2.0 * circle.radius;
+        cmkr.scale.z = 0.1;
+        cmkr.pose.position.x = circle.center.x;
+        cmkr.pose.position.y = circle.center.y;
+        cmkr.pose.position.z = 0.0;
+        cmkr.pose.orientation.x = 0.0;
+        cmkr.pose.orientation.y = 0.0;
+        cmkr.pose.orientation.z = 0.0;
+        cmkr.pose.orientation.w = 1.0;
+        cmkr.color.r = 1.0;
+        cmkr.color.g = 0.0;
+        cmkr.color.b = 1.0;
+        cmkr.color.a = 1.0;
+        circle_mkrs.markers.push_back(cmkr);
+        idc++;
+      }
     }
 
     landmarks_pub_->publish(circle_mkrs);
